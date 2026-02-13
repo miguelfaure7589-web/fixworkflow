@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─── Auth Models ───
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Subscription
+  plan          String    @default("free") // "free" | "premium"
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  stripePriceId        String?
+  stripeCurrentPeriodEnd DateTime?
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  diagnoses     Diagnosis[]
+  affiliateClicks AffiliateClick[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Core Platform Models ───
+
+model Diagnosis {
+  id        String   @id @default(cuid())
+  userId    String?
+  email     String?
+  createdAt DateTime @default(now())
+
+  // Diagnostic inputs
+  role          String   // freelancer, solopreneur, remote_employee, team_lead
+  industry      String
+  teamSize      String
+  workEnvironment String
+  productivityScore Int
+  frictionAreas String   // JSON array of selected friction areas
+  currentTools  String   // JSON array of current tools
+  detailedAnswers String // JSON object of drill-down answers
+
+  // Results
+  healthScore       Int?
+  recommendations   Recommendation[]
+  status            String @default("pending") // pending, processing, completed
+
+  user User? @relation(fields: [userId], references: [id])
+}
+
+model Recommendation {
+  id          String @id @default(cuid())
+  diagnosisId String
+  priority    String // high, medium, low
+  category    String // project_management, automation, communication, etc.
+  title       String
+  problem     String
+  solution    String
+  impact      String
+  tools       String // JSON array of recommended tool slugs
+  order       Int
+  isPremium   Boolean @default(false)
+
+  diagnosis Diagnosis @relation(fields: [diagnosisId], references: [id], onDelete: Cascade)
+}
+
+// ─── Tool & Affiliate Models ───
+
+model Tool {
+  id          String @id @default(cuid())
+  slug        String @unique
+  name        String
+  description String
+  category    String
+  affiliateUrl String
+  affiliateProgram String?
+  commissionType String? // recurring, cpa
+  commissionRate String?
+  cookieWindow   String?
+  hasFreeTier    Boolean @default(false)
+  logoUrl        String?
+  features       String  // JSON array
+  bestFor        String  // JSON array of user types
+  pricing        String?
+  rating         Float?
+
+  affiliateClicks AffiliateClick[]
+}
+
+model AccessoryProduct {
+  id          String @id @default(cuid())
+  slug        String @unique
+  name        String
+  description String
+  category    String // laptop_stand, desk_organizer, bag, webcam, etc.
+  affiliateUrl String
+  imageUrl    String?
+  price       String?
+  bestFor     String // JSON array of user types
+  isActive    Boolean @default(true)
+  rotationGroup String? // for weekly rotation
+}
+
+model AffiliateClick {
+  id          String   @id @default(cuid())
+  userId      String?
+  toolId      String?
+  slug        String
+  diagnosisId String?
+  source      String?  // recommendation, comparison, email
+  createdAt   DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+  tool Tool? @relation(fields: [toolId], references: [id])
+}
+
+// ─── SEO & Comparison Models ───
+
+model ComparisonPage {
+  id          String @id @default(cuid())
+  slug        String @unique // e.g., "clickup-vs-monday"
+  tool1Slug   String
+  tool2Slug   String
+  title       String
+  metaDescription String
+  introText   String
+  verdict     String
+  isPublished Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DiagnosticLandingPage {
+  id              String @id @default(cuid())
+  slug            String @unique // e.g., "project-management"
+  title           String
+  metaDescription String
+  heroHeadline    String
+  heroSubheadline String
+  introText       String
+  prefilledCategory String
+  isPublished     Boolean @default(true)
+}
+
+model StackPage {
+  id              String @id @default(cuid())
+  slug            String @unique // e.g., "freelancer"
+  role            String
+  title           String
+  metaDescription String
+  introText       String
+  recommendedTools String // JSON array of tool slugs
+  isPublished     Boolean @default(true)
+}

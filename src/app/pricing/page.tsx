@@ -1,0 +1,143 @@
+"use client";
+
+import { Check, Zap, ArrowRight } from "lucide-react";
+import Link from "next/link";
+
+const freeFeatures = [
+  "Workflow diagnostic questionnaire",
+  "Workflow health score",
+  "Top 3 recommendations",
+  "Basic tool suggestions",
+  "1 diagnosis per 30 days",
+];
+
+const premiumFeatures = [
+  "Everything in Free",
+  "Full 12+ recommendations",
+  "Integration mapping (visual diagram)",
+  "Automation blueprints (step-by-step)",
+  "Stack cost analysis",
+  "Unlimited saved reports",
+  "Monthly re-diagnosis with change tracking",
+  "Priority AI responses",
+  "Exclusive partner discounts",
+  "Workspace optimization tips",
+  "Email support",
+];
+
+export default function PricingPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Nav */}
+      <nav className="border-b border-slate-800">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center">
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-white">FixWorkflow</span>
+          </Link>
+          <Link
+            href="/diagnose"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg transition-colors"
+          >
+            Start Free Diagnosis
+          </Link>
+        </div>
+      </nav>
+
+      <div className="max-w-4xl mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-white mb-4">Simple, transparent pricing</h1>
+          <p className="text-slate-400 text-lg">
+            Start free. Upgrade when you need the full picture.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Free Plan */}
+          <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-8">
+            <h2 className="text-xl font-semibold text-white mb-1">Free</h2>
+            <p className="text-slate-400 text-sm mb-6">Get started with a basic diagnosis</p>
+            <div className="mb-6">
+              <span className="text-4xl font-bold text-white">$0</span>
+              <span className="text-slate-400">/forever</span>
+            </div>
+            <Link
+              href="/diagnose"
+              className="block w-full text-center px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium transition-colors mb-8"
+            >
+              Start Free Diagnosis
+            </Link>
+            <ul className="space-y-3">
+              {freeFeatures.map((feature) => (
+                <li key={feature} className="flex items-start gap-3 text-sm text-slate-300">
+                  <Check className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Premium Plan */}
+          <div className="bg-gradient-to-b from-blue-600/10 to-slate-800/40 border border-blue-500/30 rounded-2xl p-8 relative">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-semibold rounded-full">
+              MOST POPULAR
+            </div>
+            <h2 className="text-xl font-semibold text-white mb-1">Premium</h2>
+            <p className="text-slate-400 text-sm mb-6">Full workflow transformation</p>
+            <div className="mb-2">
+              <span className="text-4xl font-bold text-white">$12</span>
+              <span className="text-slate-400">/month</span>
+            </div>
+            <p className="text-sm text-slate-500 mb-6">or $97/year (save 33%)</p>
+            <button className="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white rounded-xl font-medium transition-all mb-8 flex items-center justify-center gap-2">
+              Upgrade to Premium
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <ul className="space-y-3">
+              {premiumFeatures.map((feature) => (
+                <li key={feature} className="flex items-start gap-3 text-sm text-slate-300">
+                  <Check className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* FAQ */}
+        <div className="mt-16 max-w-2xl mx-auto">
+          <h2 className="text-2xl font-bold text-white text-center mb-8">
+            Frequently asked questions
+          </h2>
+          <div className="space-y-6">
+            {[
+              {
+                q: "Is the free diagnosis really free?",
+                a: "Yes, completely. You get a real workflow diagnosis with your top 3 personalized recommendations. No credit card required.",
+              },
+              {
+                q: "What do I get with Premium?",
+                a: "Your full 12+ recommendation report, visual integration maps, step-by-step automation blueprints, monthly re-diagnosis to track progress, and exclusive discounts on recommended tools.",
+              },
+              {
+                q: "Can I cancel anytime?",
+                a: "Yes. Cancel anytime from your dashboard. You keep access until the end of your billing period.",
+              },
+              {
+                q: "Do you earn commissions on tool recommendations?",
+                a: "Yes, we may earn affiliate commissions when you sign up for recommended tools through our links. This doesn't cost you anything extra, and our recommendations are based on your diagnostic results, not commission rates.",
+              },
+            ].map((faq) => (
+              <div key={faq.q} className="border-b border-slate-800 pb-6">
+                <h3 className="text-white font-medium mb-2">{faq.q}</h3>
+                <p className="text-slate-400 text-sm">{faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
