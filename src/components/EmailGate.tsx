@@ -19,36 +19,33 @@ export default function EmailGate({ onSubmit, isLoading }: EmailGateProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4">
       <div className="w-full max-w-md text-center">
-        {/* Animated processing indicator */}
         <div className="mb-8">
-          <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-cyan-400 rounded-2xl flex items-center justify-center mb-6 animate-pulse">
+          <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-violet-500 rounded-2xl flex items-center justify-center mb-6 animate-pulse">
             <Mail className="w-10 h-10 text-white" />
           </div>
-          <h2 className="text-3xl font-bold text-white mb-3">Your report is ready!</h2>
-          <p className="text-slate-400">
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">Your report is ready!</h2>
+          <p className="text-gray-500">
             We&apos;ve analyzed your workflow and found personalized recommendations. Enter your email to
             view your results.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="relative">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-              className="w-full px-5 py-4 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-lg"
-            />
-          </div>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            required
+            className="w-full px-5 py-4 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-lg"
+          />
 
           <button
             type="submit"
             disabled={isLoading || !email.includes("@")}
-            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white rounded-xl font-semibold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-semibold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>
@@ -64,7 +61,7 @@ export default function EmailGate({ onSubmit, isLoading }: EmailGateProps) {
           </button>
         </form>
 
-        <div className="mt-6 flex items-center justify-center gap-2 text-sm text-slate-500">
+        <div className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-400">
           <Shield className="w-4 h-4" />
           <span>No spam. Unsubscribe anytime. We respect your inbox.</span>
         </div>

@@ -1,6 +1,6 @@
 import { type DiagnosticInput, type RecommendationOutput } from "./recommendation-engine";
 
-const SYSTEM_PROMPT = `You are FixWorkflow's AI diagnostic assistant. You help remote workers, freelancers, and small business owners optimize their workflows and productivity.
+const SYSTEM_PROMPT = `You are FixWorkFlow's AI diagnostic assistant. You help remote workers, freelancers, and small business owners optimize their workflows and productivity.
 
 Your role is to take structured recommendation data and enhance it with personalized, conversational explanations. You should:
 - Be direct and practical, not generic
@@ -46,7 +46,7 @@ User Profile:
 - Work Environment: ${input.workEnvironment}
 - Productivity Self-Score: ${input.productivityScore}/5
 - Friction Areas: ${input.frictionAreas.join(", ")}
-- Current Tools: ${input.currentTools.join(", ")}
+- Current Tools: ${input.currentTools.join(", ")}${input.goals ? `\n- User's Goals: "${input.goals}"` : ""}
 
 Top Recommendations: ${recommendations.slice(0, 3).map((r) => r.title).join(", ")}
 

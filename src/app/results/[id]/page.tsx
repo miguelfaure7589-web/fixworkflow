@@ -54,12 +54,16 @@ export default async function ResultsPage({ params }: PageProps) {
 
   const summary = await enhanceRecommendations(input, recommendations);
 
+  const frictionAreas: string[] = JSON.parse(diagnosis.frictionAreas);
+
   return (
     <ResultsDashboard
       healthScore={diagnosis.healthScore || 50}
       summary={summary}
       recommendations={recommendations}
       userRole={diagnosis.role}
+      userIndustry={diagnosis.industry}
+      frictionAreas={frictionAreas}
     />
   );
 }

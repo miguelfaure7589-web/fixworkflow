@@ -10,26 +10,16 @@ datasource db {
 // ─── Auth Models ───
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                   String   @id @default(cuid())
+  email                String   @unique
+  name                 String?
+  image                String?
 
-  // Subscription
-  plan          String    @default("free") // "free" | "premium"
-  stripeCustomerId     String?   @unique
-  stripeSubscriptionId String?   @unique
-  stripePriceId        String?
-  stripeCurrentPeriodEnd DateTime?
+  isPremium            Boolean  @default(false)
+  stripeSubscriptionId String?  @unique
 
-  // Relations
-  accounts      Account[]
-  sessions      Session[]
-  diagnoses     Diagnosis[]
-  affiliateClicks AffiliateClick[]
+  accounts             Account[]
+  sessions             Session[]
 }
 
 model Account {
@@ -91,7 +81,6 @@ model Diagnosis {
   recommendations   Recommendation[]
   status            String @default("pending") // pending, processing, completed
 
-  user User? @relation(fields: [userId], references: [id])
 }
 
 model Recommendation {
@@ -156,7 +145,6 @@ model AffiliateClick {
   source      String?  // recommendation, comparison, email
   createdAt   DateTime @default(now())
 
-  user User? @relation(fields: [userId], references: [id])
   tool Tool? @relation(fields: [toolId], references: [id])
 }
 

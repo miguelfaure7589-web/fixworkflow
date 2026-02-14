@@ -19,7 +19,7 @@ const stacks: StackConfig[] = [
     role: "freelancer",
     title: "Best Tool Stack for Freelancers (2026)",
     description:
-      "The ultimate freelancer tech stack. Project management, time tracking, invoicing, CRM, and automation tools recommended by FixWorkflow.",
+      "The ultimate freelancer tech stack. Project management, time tracking, invoicing, CRM, and automation tools recommended by FixWorkFlow.",
     introText:
       "As a freelancer, you need tools that handle client work, time tracking, invoicing, and communication without overwhelming you. This stack is designed for solo operators who want maximum productivity with minimal tool bloat.",
     toolSlugs: ["clickup", "toggl", "freshbooks", "pipedrive", "zapier", "calendly", "loom", "convertkit"],
@@ -77,9 +77,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const stack = stacks.find((s) => s.slug === slug);
-  if (!stack) return { title: "Stack — FixWorkflow" };
+  if (!stack) return { title: "Stack — FixWorkFlow" };
   return {
-    title: `${stack.title} — FixWorkflow`,
+    title: `${stack.title} — FixWorkFlow`,
     description: stack.description,
   };
 }
@@ -112,18 +112,18 @@ export default async function StackPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <nav className="border-b border-slate-800">
+    <div className="min-h-screen bg-[#fafafa]">
+      <nav className="bg-white border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-violet-500 rounded-xl flex items-center justify-center">
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-white">FixWorkflow</span>
+            <span className="text-xl font-bold text-gray-900">FixWorkFlow</span>
           </Link>
           <Link
             href="/diagnose"
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg transition-colors"
+            className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
           >
             Start Free Diagnosis
           </Link>
@@ -131,8 +131,8 @@ export default async function StackPage({
       </nav>
 
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-white mb-4">{stack.title}</h1>
-        <p className="text-slate-300 mb-10 leading-relaxed">{stack.introText}</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">{stack.title}</h1>
+        <p className="text-gray-600 mb-10 leading-relaxed">{stack.introText}</p>
 
         {/* Tool Stack */}
         <div className="space-y-8">
@@ -140,28 +140,28 @@ export default async function StackPage({
             const categoryTools = tools.filter((t) => t.category === category);
             return (
               <div key={category}>
-                <h2 className="text-lg font-semibold text-blue-400 mb-4">
+                <h2 className="text-lg font-semibold text-blue-600 mb-4">
                   {categoryLabels[category] || category}
                 </h2>
                 <div className="space-y-3">
                   {categoryTools.map((tool) => (
                     <div
                       key={tool.slug}
-                      className="bg-slate-800/50 border border-slate-700 rounded-xl p-5"
+                      className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:border-gray-200 transition-all"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3 flex-1">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0 mt-0.5">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-violet-500 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0 mt-0.5">
                             {tool.name.charAt(0)}
                           </div>
                           <div>
-                            <h3 className="text-white font-semibold">{tool.name}</h3>
-                            <p className="text-slate-400 text-sm mt-1">{tool.description}</p>
-                            <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
+                            <h3 className="text-gray-900 font-semibold">{tool.name}</h3>
+                            <p className="text-gray-500 text-sm mt-1">{tool.description}</p>
+                            <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
                               <span>{tool.pricing}</span>
                               <span>Rating: {tool.rating}/5</span>
                               {tool.hasFreeTier && (
-                                <span className="text-green-400">Free tier available</span>
+                                <span className="text-emerald-500">Free tier available</span>
                               )}
                             </div>
                           </div>
@@ -170,7 +170,7 @@ export default async function StackPage({
                           href={`/go/${tool.slug}?source=stack`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors flex-shrink-0"
+                          className="flex items-center gap-1.5 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-full text-sm font-medium transition-colors flex-shrink-0"
                         >
                           Try it
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -185,25 +185,25 @@ export default async function StackPage({
         </div>
 
         {/* CTA */}
-        <div className="mt-12 text-center bg-gradient-to-r from-blue-600/10 to-cyan-500/10 border border-blue-500/20 rounded-xl p-8">
+        <div className="mt-12 text-center bg-gradient-to-br from-blue-600 to-violet-600 rounded-2xl p-8">
           <h3 className="text-xl font-semibold text-white mb-3">
             Get a stack recommendation tailored to you
           </h3>
-          <p className="text-slate-400 mb-6">
+          <p className="text-blue-100 mb-6">
             This is a general recommendation. Your ideal stack depends on your specific workflow,
             clients, and pain points.
           </p>
           <Link
             href="/diagnose"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl font-medium hover:from-blue-500 hover:to-cyan-400 transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 rounded-full font-semibold hover:bg-gray-50 transition-all shadow-lg"
           >
             Get Personalized Recommendations
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
-        <p className="text-xs text-slate-600 text-center mt-8">
-          Affiliate Disclosure: FixWorkflow may earn a commission from purchases made through links
+        <p className="text-xs text-gray-300 text-center mt-8">
+          Affiliate Disclosure: FixWorkFlow may earn a commission from purchases made through links
           on this page, at no extra cost to you.
         </p>
       </div>

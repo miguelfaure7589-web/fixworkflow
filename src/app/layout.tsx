@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import AiChat from "@/components/AiChat";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FixWorkflow — AI Workflow Diagnosis for Remote Workers & Freelancers",
+  title: "FixWorkFlow — AI Workflow Diagnosis for Remote Workers & Freelancers",
   description:
     "Free AI-powered workflow diagnostic. Discover what's slowing you down and get a personalized plan to fix it. For remote workers, freelancers, and small teams.",
   keywords: [
@@ -25,6 +26,10 @@ export const metadata: Metadata = {
     "workflow automation",
     "fix workflow",
   ],
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -33,11 +38,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#fafafa] text-[#111]`}
       >
         {children}
+        <AiChat />
       </body>
     </html>
   );

@@ -1,0 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Reviews | FixWorkFlow",
+  description:
+    "See what freelancers, consultants, and small teams say about FixWorkFlow's AI-powered workflow diagnosis.",
+};
+
+export default function ReviewsLayout({ children }: { children: React.ReactNode }) {
+  return children;
+}

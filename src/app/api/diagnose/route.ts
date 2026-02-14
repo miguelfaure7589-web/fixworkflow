@@ -12,18 +12,28 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const input: DiagnosticInput = {
-      role: body.role || "freelancer",
-      industry: body.industry || "other",
+      role: Array.isArray(body.role) ? body.role[0] : (body.role || "freelancer"),
+      industry: Array.isArray(body.industry) ? body.industry[0] : (body.industry || "other"),
       teamSize: body.teamSize || "solo",
       workEnvironment: body.workEnvironment || "fully_remote",
       productivityScore: body.productivityScore || 3,
+      moraleScore: body.moraleScore || 3,
       frictionAreas: body.frictionAreas || [],
       currentTools: body.currentTools || [],
+      goals: body.goals || "",
       detailedAnswers: {
         task_detail: body.task_detail,
         communication_detail: body.communication_detail,
         client_detail: body.client_detail,
         automation_detail: body.automation_detail,
+        morale_detail: body.morale_detail,
+        finance_detail: body.finance_detail,
+        phone_internet_detail: body.phone_internet_detail,
+        payments_detail: body.payments_detail,
+        sales_leads_detail: body.sales_leads_detail,
+        hiring_detail: body.hiring_detail,
+        training_detail: body.training_detail,
+        scaling_detail: body.scaling_detail,
       },
     };
 
@@ -38,8 +48,8 @@ export async function POST(request: NextRequest) {
     const diagnosis = await prisma.diagnosis.create({
       data: {
         email: body.email,
-        role: input.role,
-        industry: input.industry,
+        role: Array.isArray(body.role) ? body.role.join(", ") : input.role,
+        industry: Array.isArray(body.industry) ? body.industry.join(", ") : input.industry,
         teamSize: input.teamSize,
         workEnvironment: input.workEnvironment,
         productivityScore: input.productivityScore,
