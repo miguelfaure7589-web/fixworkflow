@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Check, Zap, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -28,6 +29,19 @@ const premiumFeatures = [
 ];
 
 export default function PricingPage() {
+  const [loading, setLoading] = useState(false);
+
+  async function handleUpgrade() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/stripe/checkout", { method: "POST" });
+      const data = await res.json();
+      if (data?.url) window.location.href = data.url;
+    } catch {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#fafafa]">
       {/* Nav */}
@@ -97,9 +111,13 @@ export default function PricingPage() {
               <Zap className="w-3 h-3" />
               7-day free trial — no credit card required
             </div>
-            <button className="w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white rounded-full font-medium transition-all mb-8 flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
-              Start Free Trial
-              <ArrowRight className="w-4 h-4" />
+            <button
+              onClick={handleUpgrade}
+              disabled={loading}
+              className="w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white rounded-full font-medium transition-all mb-8 flex items-center justify-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-50"
+            >
+              {loading ? "Redirecting..." : "Start Free Trial"}
+              {!loading && <ArrowRight className="w-4 h-4" />}
             </button>
             <ul className="space-y-3">
               {premiumFeatures.map((feature) => (
