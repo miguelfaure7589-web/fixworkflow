@@ -10,16 +10,27 @@ datasource db {
 // ─── Auth Models ───
 
 model User {
-  id                   String   @id @default(cuid())
-  email                String   @unique
+  id                   String    @id @default(cuid())
   name                 String?
+  email                String?   @unique
+  emailVerified        DateTime?
   image                String?
-
-  isPremium            Boolean  @default(false)
-  stripeSubscriptionId String?  @unique
-
   accounts             Account[]
   sessions             Session[]
+
+  isPremium            Boolean   @default(false)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+
+  businessProfiles        BusinessProfile[]
+  metricSnapshots         MetricSnapshot[]
+  revenueHealthSnapshots  RevenueHealthSnapshot[]
+  bottleneckAssessments   BottleneckAssessment[]
+  insights                Insight[]
+
+  revenueProfile          RevenueProfile?
+  revenueScoreSnapshots   RevenueScoreSnapshot[]
+  aiInsights              AiInsight[]
 }
 
 model Account {
@@ -78,6 +89,7 @@ model Diagnosis {
 
   // Results
   healthScore       Int?
+  bottleneckScores  String?  // JSON: Record<category, score>
   recommendations   Recommendation[]
   status            String @default("pending") // pending, processing, completed
 
@@ -87,7 +99,7 @@ model Recommendation {
   id          String @id @default(cuid())
   diagnosisId String
   priority    String // high, medium, low
-  category    String // project_management, automation, communication, etc.
+  category    String // lead_generation, conversion, retention, etc.
   title       String
   problem     String
   solution    String
@@ -95,6 +107,14 @@ model Recommendation {
   tools       String // JSON array of recommended tool slugs
   order       Int
   isPremium   Boolean @default(false)
+
+  // V2 engine fields
+  difficulty      Int?     // 1-5
+  impactScore     Int?     // 1-5
+  timeToImplement String?
+  toolTags        String?  // JSON array of affiliate tool category tags
+  resourceLinks   String?  // JSON array of resource suggestions
+  aiInsight       String?  // AI-generated "why this matters" + "how to start"
 
   diagnosis Diagnosis @relation(fields: [diagnosisId], references: [id], onDelete: Cascade)
 }
@@ -185,4 +205,188 @@ model StackPage {
   introText       String
   recommendedTools String // JSON array of tool slugs
   isPublished     Boolean @default(true)
+}
+
+// ─── Revenue Intelligence Models ───
+
+model BusinessProfile {
+  id              String   @id @default(cuid())
+  userId          String
+  businessType    String
+  revenueStage    String
+  primaryChannel  String
+  teamSize        String
+  currentRevenue  Float
+  confidenceScore Float
+  lastUpdated     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MetricSnapshot {
+  id                  String   @id @default(cuid())
+  userId              String
+  revenue             Float
+  revenueTrend7d      Float
+  revenueTrend30d     Float
+  leadCount           Int
+  closeRate           Float
+  averageDealValue    Float
+  taskCompletionRate  Float
+  followUpDelayHours  Float
+  contentFrequency    Float
+  burnoutRiskScore    Float
+  timestamp           DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RevenueHealthSnapshot {
+  id                 String   @id @default(cuid())
+  userId             String
+  totalScore         Float
+  componentScores    String   // JSON: { trend, conversion, leadConsistency, stability, followUp, leverage }
+  primaryBottleneck  String
+  revenueGap         Float
+  interpretationBand String
+  calculatedAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BottleneckAssessment {
+  id                    String   @id @default(cuid())
+  userId                String
+  primaryBottleneck     String
+  secondaryBottlenecks  String   // JSON array
+  severityScore         Float
+  calculatedAt          DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BenchmarkProfile {
+  id                    String @id @default(cuid())
+  businessType          String
+  revenueStage          String
+  avgRevenueGrowth      Float
+  avgCloseRate          Float
+  avgFollowUpTime       Float
+  avgLeadConsistency    Float
+  commonToolStack       String // JSON array
+  commonGrowthPatterns  String // JSON array
+
+  @@unique([businessType, revenueStage])
+}
+
+model Insight {
+  id                  String   @id @default(cuid())
+  userId              String
+  summary             String
+  weeklyExecutionPlan String   // JSON array
+  recommendedTools    String   // JSON array
+  riskWarnings        String   // JSON array
+  opportunitySignals  String   // JSON array
+  createdAt           DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AffiliateTrigger {
+  id                 String @id @default(cuid())
+  bottleneckType     String
+  recommendedTool    String
+  reason             String
+  metricGapThreshold Float
+}
+
+// ─── Prompt Templates ───
+
+enum PromptVisibility {
+  FREE
+  PREMIUM
+}
+
+model PromptTemplate {
+  id             String           @id @default(cuid())
+  slug           String           @unique
+  title          String
+  category       String
+  businessType   BusinessType?
+  visibility     PromptVisibility @default(FREE)
+  template       String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+// ─── Revenue Health Score (Phase 1 — manual inputs) ───
+
+enum BusinessType {
+  ecommerce
+  saas
+  service_agency
+  creator
+  local_business
+}
+
+model RevenueProfile {
+  id                    String        @id @default(cuid())
+  userId                String        @unique
+  businessType          BusinessType?
+  revenueMonthly        Float?
+  grossMarginPct        Float?
+  netProfitMonthly      Float?
+  runwayMonths          Float?
+  churnMonthlyPct       Float?
+  conversionRatePct     Float?
+  trafficMonthly        Float?
+  avgOrderValue         Float?
+  cac                   Float?
+  ltv                   Float?
+  opsHoursPerWeek       Float?
+  fulfillmentDays       Float?
+  supportTicketsPerWeek Float?
+  connectedApps         String?  // JSON metadata for future integrations
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── AI Insight Cache ───
+
+model AiInsight {
+  id           String   @id @default(cuid())
+  userId       String
+  itemType     String   // "focus" | "tool"
+  itemKey      String
+  tier         String   // "preview" | "full"
+  businessType String?
+  profileHash  String
+  contentJson  String   // JSON blob
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemType, itemKey, tier, profileHash])
+}
+
+model RevenueScoreSnapshot {
+  id                   String   @id @default(cuid())
+  userId               String
+  score                Int
+  pillarRevenue        Int
+  pillarProfitability  Int
+  pillarRetention      Int
+  pillarAcquisition    Int
+  pillarOps            Int
+  pillarsJson          String   // Full pillar details JSON (reasons, levers)
+  primaryRisk          String
+  fastestLever         String
+  nextStepsJson        String   // JSON array of recommendedNextSteps
+  missingDataJson      String   // JSON array of missing keys
+  createdAt            DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
