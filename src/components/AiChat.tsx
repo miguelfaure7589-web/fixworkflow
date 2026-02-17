@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Zap, CheckCheck } from "lucide-react";
+import { onChatPrefill } from "@/lib/prompts/chatContext";
+import type { ChatPrefillPayload } from "@/lib/prompts/chatContext";
 
 interface Message {
   role: "user" | "assistant";
@@ -19,11 +21,21 @@ export default function AiChat() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [prefillMeta, setPrefillMeta] = useState<{ title: string; rationale: string[] } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Listen for prefill events from dashboard "Ask AI" buttons
+  useEffect(() => {
+    return onChatPrefill((payload: ChatPrefillPayload) => {
+      setInput(payload.prompt);
+      setPrefillMeta({ title: payload.templateTitle, rationale: payload.rationale });
+      setOpen(true);
+    });
+  }, []);
 
   async function handleSend() {
     const text = input.trim();
@@ -156,22 +168,43 @@ export default function AiChat() {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Prefill banner */}
+          {prefillMeta && (
+            <div className="border-t border-blue-100 bg-blue-50 px-4 py-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-blue-700">Prompt: {prefillMeta.title}</p>
+                <button onClick={() => { setPrefillMeta(null); setInput(""); }} className="text-xs text-blue-500 hover:text-blue-700">Clear</button>
+              </div>
+              <p className="text-[10px] text-blue-500 mt-0.5">Review the prompt below, then hit send.</p>
+            </div>
+          )}
+
           {/* Input */}
           <div className="border-t border-gray-100 px-4 py-3">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
+                setPrefillMeta(null);
                 handleSend();
               }}
               className="flex items-center gap-2"
             >
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all"
-              />
+              {prefillMeta ? (
+                <textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  rows={3}
+                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all resize-none"
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Type a message..."
+                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all"
+                />
+              )}
               <button
                 type="submit"
                 disabled={!input.trim() || loading}

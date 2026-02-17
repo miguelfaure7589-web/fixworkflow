@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { Check, Zap, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -29,7 +30,11 @@ const premiumFeatures = [
 ];
 
 export default function PricingPage() {
+  const { data: session } = useSession();
+  // @ts-ignore
+  const isPremium = session?.user?.isPremium;
   const [loading, setLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   async function handleUpgrade() {
     setLoading(true);
@@ -42,19 +47,30 @@ export default function PricingPage() {
     }
   }
 
+  async function handleManageBilling() {
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const data = await res.json();
+      if (data?.url) window.location.href = data.url;
+    } catch {
+      setPortalLoading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#fafafa]">
       {/* Nav */}
       <nav className="bg-white border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-violet-500 rounded-xl flex items-center justify-center">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
               <Zap className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900">FixWorkFlow</span>
           </Link>
           <Link
-            href="/diagnose"
+            href="/signup"
             className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
           >
             Start Free Diagnosis
@@ -80,7 +96,7 @@ export default function PricingPage() {
               <span className="text-gray-400">/forever</span>
             </div>
             <Link
-              href="/diagnose"
+              href="/signup"
               className="block w-full text-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-medium transition-colors mb-8"
             >
               Start Free Diagnosis
@@ -107,18 +123,36 @@ export default function PricingPage() {
               <span className="text-gray-400">/month</span>
             </div>
             <p className="text-sm text-gray-400 mb-4">or $79/year (save 34%)</p>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-xs font-medium text-emerald-600 mb-6">
-              <Zap className="w-3 h-3" />
-              7-day free trial — no credit card required
-            </div>
-            <button
-              onClick={handleUpgrade}
-              disabled={loading}
-              className="w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white rounded-full font-medium transition-all mb-8 flex items-center justify-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-50"
-            >
-              {loading ? "Redirecting..." : "Start Free Trial"}
-              {!loading && <ArrowRight className="w-4 h-4" />}
-            </button>
+            {isPremium ? (
+              <>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-xs font-medium text-emerald-600 mb-6">
+                  <Check className="w-3 h-3" />
+                  You&apos;re Premium
+                </div>
+                <button
+                  onClick={handleManageBilling}
+                  disabled={portalLoading}
+                  className="w-full text-center px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-medium transition-colors mb-8 disabled:opacity-50"
+                >
+                  {portalLoading ? "Loading..." : "Manage Billing"}
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-xs font-medium text-emerald-600 mb-6">
+                  <Zap className="w-3 h-3" />
+                  7-day free trial — no credit card required
+                </div>
+                <button
+                  onClick={handleUpgrade}
+                  disabled={loading}
+                  className="w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white rounded-full font-medium transition-all mb-8 flex items-center justify-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-50"
+                >
+                  {loading ? "Redirecting..." : "Start Free Trial"}
+                  {!loading && <ArrowRight className="w-4 h-4" />}
+                </button>
+              </>
+            )}
             <ul className="space-y-3">
               {premiumFeatures.map((feature) => (
                 <li key={feature} className="flex items-start gap-3 text-sm text-gray-600">

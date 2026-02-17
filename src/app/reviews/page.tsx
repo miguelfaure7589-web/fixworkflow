@@ -15,7 +15,7 @@ export default function ReviewsPage() {
       <nav className="bg-white border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-violet-500 rounded-xl flex items-center justify-center">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
               <Zap className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900">FixWorkFlow</span>
@@ -31,7 +31,7 @@ export default function ReviewsPage() {
               Pricing
             </Link>
             <Link
-              href="/diagnose"
+              href="/signup"
               className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
             >
               Start Free Diagnosis
@@ -185,7 +185,7 @@ export default function ReviewsPage() {
             takes 3 minutes and it&apos;s completely free.
           </p>
           <Link
-            href="/diagnose"
+            href="/signup"
             className="inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-900 rounded-full font-semibold text-lg hover:bg-gray-50 transition-all shadow-lg"
           >
             Start Free Diagnosis
@@ -198,7 +198,7 @@ export default function ReviewsPage() {
       <footer className="bg-white border-t border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between text-sm text-gray-400">
           <Link href="/" className="flex items-center gap-2.5 mb-4 md:mb-0">
-            <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-violet-500 rounded-lg flex items-center justify-center">
+            <div className="w-7 h-7 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-lg flex items-center justify-center">
               <Zap className="w-3.5 h-3.5 text-white" />
             </div>
             <span className="text-gray-600 font-medium">FixWorkFlow</span>

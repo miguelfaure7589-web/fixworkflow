@@ -144,6 +144,83 @@ export const reviews: Review[] = [
   },
 ];
 
+// ── Dashboard Social Proof Data ──
+
+export interface DashboardReview {
+  name: string;
+  initials: string;
+  role: string;
+  type: string;
+  avatarColor: string;
+  stars: number;
+  text: string;
+  result?: string;
+}
+
+export interface MiniReview {
+  text: string;
+  name: string;
+  role: string;
+}
+
+export const DASHBOARD_STATS = [
+  { number: "850+", label: "Businesses scored" },
+  { number: "4.9", label: "Average rating", suffix: "/5 \u2605" },
+  { number: "$2.4M", label: "Revenue unlocked" },
+  { number: "89%", label: "Score improvement rate" },
+];
+
+export const DASHBOARD_REVIEWS: DashboardReview[] = [
+  {
+    name: "Marcus J.",
+    initials: "MJ",
+    role: "Freelance Brand Strategist",
+    type: "Service",
+    avatarColor: "#4361ee",
+    stars: 5,
+    text: "I was guessing at what was wrong with my business. FixWorkFlow showed me my conversion rate was the problem, not my traffic. Saved me from wasting $2k on ads.",
+    result: "Conversion up 1.8% in 3 weeks",
+  },
+  {
+    name: "Sarah K.",
+    initials: "SK",
+    role: "Agency Owner, 4-person team",
+    type: "Agency",
+    avatarColor: "#7c3aed",
+    stars: 5,
+    text: "The playbook steps were so specific to my situation. It was not generic advice \u2014 it actually referenced my numbers and told me exactly what to do first. The AI summary alone was worth upgrading.",
+    result: "Revenue from $8k to $13.5k/mo in 6 weeks",
+  },
+  {
+    name: "David R.",
+    initials: "DR",
+    role: "E-commerce Store Owner",
+    type: "E-commerce",
+    avatarColor: "#10b981",
+    stars: 5,
+    text: "I have used business tools before but they all give the same cookie-cutter advice. This actually broke down MY margins, MY conversion rate, and showed me where I was bleeding money.",
+    result: "Found $3,200/mo in margin leaks",
+  },
+];
+
+export const MINI_REVIEWS: MiniReview[] = [
+  {
+    text: "Finally understand where my churn is coming from.",
+    name: "Alex T.",
+    role: "SaaS Founder",
+  },
+  {
+    text: "The Operations pillar exposed how much time I was wasting on manual work.",
+    name: "Priya M.",
+    role: "Consultant",
+  },
+  {
+    text: "Went from guessing to knowing in 3 minutes. My score went from 42 to 71 in two months.",
+    name: "James L.",
+    role: "Content Creator",
+  },
+];
+
 export function getAverageRating(): number {
   const total = reviews.reduce((sum, r) => sum + r.rating, 0);
   return Math.round((total / reviews.length) * 10) / 10;

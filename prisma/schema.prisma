@@ -18,9 +18,22 @@ model User {
   accounts             Account[]
   sessions             Session[]
 
+  isAdmin              Boolean   @default(false)
   isPremium            Boolean   @default(false)
   stripeCustomerId     String?
   stripeSubscriptionId String?
+  onboardingCompleted  Boolean   @default(false)
+  diagnosisCompleted   Boolean   @default(false)
+  frictionAreas        Json?
+  toolPain             String?
+  primaryGoal          String?
+  freeTextChallenge    String?
+  aiSummary            String?
+  aiSummaryGeneratedAt DateTime?
+  phone                String?
+  notificationPrefs    Json?
+  privacyPrefs         Json?
+  cancellationDate     DateTime?
 
   businessProfiles        BusinessProfile[]
   metricSnapshots         MetricSnapshot[]
@@ -31,6 +44,8 @@ model User {
   revenueProfile          RevenueProfile?
   revenueScoreSnapshots   RevenueScoreSnapshot[]
   aiInsights              AiInsight[]
+  playbookProgress        UserPlaybookProgress[]
+  creditReferrals         CreditReferral[]
 }
 
 model Account {
@@ -212,6 +227,7 @@ model StackPage {
 model BusinessProfile {
   id              String   @id @default(cuid())
   userId          String
+  businessName    String?
   businessType    String
   revenueStage    String
   primaryChannel  String
@@ -319,6 +335,22 @@ model PromptTemplate {
   updatedAt      DateTime         @updatedAt
 }
 
+// ─── Action Playbooks ───
+
+model ActionPlaybook {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  category      String
+  businessTypes String[]
+  triggerRule    Json
+  baseSteps     Json
+  baseImpact    String
+  effortLevel   String   // low | medium | high
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 // ─── Revenue Health Score (Phase 1 — manual inputs) ───
 
 enum BusinessType {
@@ -346,6 +378,7 @@ model RevenueProfile {
   opsHoursPerWeek       Float?
   fulfillmentDays       Float?
   supportTicketsPerWeek Float?
+  usesPersonalCredit    String?  // 'yes', 'sometimes', 'no'
   connectedApps         String?  // JSON metadata for future integrations
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -389,4 +422,36 @@ model RevenueScoreSnapshot {
   createdAt            DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Playbook Progress Tracking ───
+
+model UserPlaybookProgress {
+  id           String    @id @default(cuid())
+  userId       String
+  playbookSlug String
+  stepIndex    Int
+  completed    Boolean   @default(false)
+  completedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, playbookSlug, stepIndex])
+}
+
+// ─── Credit Repair Referrals ───
+
+model CreditReferral {
+  id             String   @id @default(cuid())
+  userId         String
+  name           String
+  email          String
+  phone          String
+  bestTimeToCall String?
+  notes          String?  @db.VarChar(500)
+  status         String   @default("pending") // pending, contacted, converted, declined
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id])
 }

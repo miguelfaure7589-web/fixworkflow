@@ -98,7 +98,7 @@ function ToolColumn({ tool }: { tool: ToolData }) {
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-violet-500 rounded-lg flex items-center justify-center text-white font-bold">
+        <div className="w-10 h-10 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-lg flex items-center justify-center text-white font-bold">
           {tool.name.charAt(0)}
         </div>
         <div>
@@ -170,13 +170,13 @@ export default async function ComparisonPage({
       <nav className="bg-white border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-violet-500 rounded-xl flex items-center justify-center">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
               <Zap className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900">FixWorkFlow</span>
           </Link>
           <Link
-            href="/diagnose"
+            href="/signup"
             className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
           >
             Start Free Diagnosis
@@ -210,7 +210,7 @@ export default async function ComparisonPage({
             specific situation.
           </p>
           <Link
-            href="/diagnose"
+            href="/signup"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white rounded-full font-medium transition-all shadow-lg shadow-blue-200"
           >
             Start Free Diagnosis
