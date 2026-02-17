@@ -41,6 +41,7 @@ const DEFAULT_PRIVACY: PrivacyPrefs = {
 
 const SECTIONS = [
   { id: "account", icon: "\u{1F464}", label: "Account" },
+  { id: "integrations", icon: "\u{1F517}", label: "Integrations" },
   { id: "billing", icon: "\u{1F4B3}", label: "Subscription & Billing" },
   { id: "notifications", icon: "\u{1F514}", label: "Notifications" },
   { id: "privacy", icon: "\u{1F512}", label: "Privacy & Data" },
@@ -87,6 +88,98 @@ const labelStyle: React.CSSProperties = {
 };
 
 const gradientBg = "linear-gradient(135deg, #4361ee, #6366f1)";
+
+// ── Integration types ──
+
+interface ConnectedIntegration {
+  id: string;
+  provider: string;
+  status: string;
+  storeDomain: string | null;
+  lastSyncAt: string | null;
+  lastSyncStatus: string | null;
+  lastSyncError: string | null;
+}
+
+const PILLAR_LABELS_MAP: Record<string, string> = {
+  revenue: "Revenue",
+  profitability: "Profitability",
+  retention: "Retention",
+  acquisition: "Acquisition",
+  operations: "Operations",
+};
+
+const PROVIDER_CATALOG = [
+  {
+    id: "shopify",
+    name: "Shopify",
+    icon: "cdn.shopify.com",
+    description: "Sync revenue, orders, customers, and conversion data.",
+    pillarsAffected: ["revenue", "profitability", "retention", "acquisition"],
+    status: "active" as const,
+    scopesPlainEnglish: [
+      "Read your orders and revenue data",
+      "Read customer information (repeat rates, new customers)",
+      "Read store analytics (traffic, conversion)",
+    ],
+    noAccessLabel: "We cannot modify orders, products, or settings",
+    needsStoreDomain: true,
+    connectEndpoint: "/api/integrations/shopify/connect",
+  },
+  {
+    id: "stripe-data",
+    name: "Stripe",
+    icon: "stripe.com",
+    description: "Sync payment data, MRR, fees, and customer growth.",
+    pillarsAffected: ["revenue", "profitability", "retention"],
+    status: "active" as const,
+    scopesPlainEnglish: [
+      "Read your charges and payment data",
+      "Read subscription and MRR data",
+      "Read customer information",
+    ],
+    noAccessLabel: "We cannot create charges or modify your account",
+    needsStoreDomain: false,
+    connectEndpoint: "/api/integrations/stripe-data/connect",
+    extraNote: "This connects to the Stripe account where you collect payments from your customers. It is separate from your FixWorkFlow Pro subscription.",
+  },
+  {
+    id: "quickbooks",
+    name: "QuickBooks",
+    icon: "quickbooks.intuit.com",
+    description: "Sync accounting data, margins, expenses, and invoices.",
+    pillarsAffected: ["profitability", "operations"],
+    status: "coming_soon" as const,
+    scopesPlainEnglish: ["Read income and expense reports", "Read invoice and payment data"],
+    noAccessLabel: "",
+    needsStoreDomain: false,
+    connectEndpoint: "",
+  },
+  {
+    id: "google-analytics",
+    name: "Google Analytics",
+    icon: "analytics.google.com",
+    description: "Sync traffic, conversion rates, and acquisition channels.",
+    pillarsAffected: ["acquisition", "revenue"],
+    status: "coming_soon" as const,
+    scopesPlainEnglish: ["Read traffic and session data", "Read conversion and goal data"],
+    noAccessLabel: "",
+    needsStoreDomain: false,
+    connectEndpoint: "",
+  },
+  {
+    id: "mailchimp",
+    name: "Mailchimp",
+    icon: "mailchimp.com",
+    description: "Sync email performance, list growth, and campaign revenue.",
+    pillarsAffected: ["acquisition", "retention"],
+    status: "coming_soon" as const,
+    scopesPlainEnglish: ["Read email campaign performance", "Read subscriber list data"],
+    noAccessLabel: "",
+    needsStoreDomain: false,
+    connectEndpoint: "",
+  },
+];
 
 // ── Toggle Switch ──
 
@@ -449,6 +542,16 @@ export default function SettingsPage() {
   const [privacyPrefs, setPrivacyPrefs] = useState<PrivacyPrefs>(DEFAULT_PRIVACY);
   const [exporting, setExporting] = useState(false);
 
+  // Integrations
+  const [connectedIntegrations, setConnectedIntegrations] = useState<ConnectedIntegration[]>([]);
+  const [integrationsLoading, setIntegrationsLoading] = useState(true);
+  const [connectModalProvider, setConnectModalProvider] = useState<string | null>(null);
+  const [shopifyStore, setShopifyStore] = useState("");
+  const [connecting, setConnecting] = useState(false);
+  const [connectError, setConnectError] = useState("");
+  const [syncing, setSyncing] = useState<string | null>(null);
+  const [disconnectConfirm, setDisconnectConfirm] = useState<string | null>(null);
+
   // Auth guard
   useEffect(() => {
     if (status === "loading") return;
@@ -485,6 +588,15 @@ export default function SettingsPage() {
         if (data.privacyPrefs) setPrivacyPrefs({ ...DEFAULT_PRIVACY, ...data.privacyPrefs });
         if (data.cancellationDate) setCancellationDate(data.cancellationDate);
         if (data.hasStripeSubscription) setHasStripeSub(true);
+
+        // Fetch integrations
+        fetch("/api/integrations")
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.integrations) setConnectedIntegrations(d.integrations);
+          })
+          .catch(() => {})
+          .finally(() => setIntegrationsLoading(false));
 
         // Fetch billing history if user has a Stripe customer
         if (data.stripeCustomerId) {
@@ -606,6 +718,57 @@ export default function SettingsPage() {
       if (data.cancellationDate) setCancellationDate(data.cancellationDate);
     } catch {}
     setCancelOpen(false);
+  }, []);
+
+  // Integration actions
+  const connectIntegration = useCallback(async (providerId: string, storeDomain?: string) => {
+    setConnecting(true);
+    setConnectError("");
+    const catalog = PROVIDER_CATALOG.find((p) => p.id === providerId);
+    if (!catalog || catalog.status !== "active") return;
+
+    try {
+      const body: Record<string, string> = {};
+      if (storeDomain) body.storeDomain = storeDomain;
+
+      const res = await fetch(catalog.connectEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setConnectError(data.error || "Failed to connect");
+        setConnecting(false);
+        return;
+      }
+      if (data.authUrl) {
+        window.location.href = data.authUrl;
+      }
+    } catch {
+      setConnectError("Connection failed. Please try again.");
+      setConnecting(false);
+    }
+  }, []);
+
+  const triggerSync = useCallback(async (integrationId: string) => {
+    setSyncing(integrationId);
+    try {
+      await fetch(`/api/integrations/${integrationId}/sync`, { method: "POST" });
+      // Refresh integrations list
+      const res = await fetch("/api/integrations");
+      const data = await res.json();
+      if (data.integrations) setConnectedIntegrations(data.integrations);
+    } catch {}
+    setSyncing(null);
+  }, []);
+
+  const disconnectIntegration = useCallback(async (integrationId: string) => {
+    try {
+      await fetch(`/api/integrations/${integrationId}`, { method: "DELETE" });
+      setConnectedIntegrations((prev) => prev.filter((i) => i.id !== integrationId));
+    } catch {}
+    setDisconnectConfirm(null);
   }, []);
 
   const scrollTo = (id: string) => {
@@ -812,6 +975,177 @@ export default function SettingsPage() {
                 Delete My Account
               </button>
             </div>
+          </section>
+
+          {/* ── SECTION: INTEGRATIONS ── */}
+          <section id="section-integrations">
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: "0 0 4px" }}>Connected Services</h2>
+            <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 20px" }}>Connect your tools to auto-sync your business metrics every week.</p>
+
+            {integrationsLoading ? (
+              <div style={{ ...cardStyle, textAlign: "center", padding: 32 }}>
+                <Loader2 style={{ width: 20, height: 20, color: "#8d95a3", animation: "spin 1s linear infinite", margin: "0 auto 8px" }} />
+                <p style={{ fontSize: 13, color: "#8d95a3", margin: 0 }}>Loading integrations...</p>
+              </div>
+            ) : (
+              <>
+                {/* Connected integrations */}
+                {connectedIntegrations.length > 0 && (
+                  <div style={{ marginBottom: 20 }}>
+                    {connectedIntegrations.map((intg) => {
+                      const catalog = PROVIDER_CATALOG.find((p) => p.id === intg.provider);
+                      const statusColor = intg.status === "connected" ? "#10b981" : intg.status === "syncing" ? "#f59e0b" : "#ef4444";
+                      const statusLabel = intg.status === "connected" ? "Connected" : intg.status === "syncing" ? "Syncing..." : "Error";
+
+                      return (
+                        <div key={intg.id} style={{ ...cardStyle, marginBottom: 12 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                            {/* Provider icon */}
+                            <img
+                              src={`https://www.google.com/s2/favicons?domain=${catalog?.icon || intg.provider}&sz=64`}
+                              alt=""
+                              style={{ width: 40, height: 40, borderRadius: 10, background: "#f4f5f8" }}
+                            />
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span style={{ fontSize: 16, fontWeight: 700, color: "#1b2434" }}>{catalog?.name || intg.provider}</span>
+                                <span style={{
+                                  display: "inline-flex", alignItems: "center", gap: 4,
+                                  fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 10,
+                                  background: statusColor + "14", color: statusColor,
+                                }}>
+                                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: statusColor }} />
+                                  {statusLabel}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: 12, color: "#8d95a3", marginTop: 2 }}>
+                                {intg.lastSyncAt
+                                  ? `Last synced: ${new Date(intg.lastSyncAt).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })} at ${new Date(intg.lastSyncAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`
+                                  : "Never synced \u2014 first sync pending"
+                                }
+                                {intg.storeDomain && <span> &middot; {intg.storeDomain}</span>}
+                              </div>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <button
+                                onClick={() => triggerSync(intg.id)}
+                                disabled={syncing === intg.id}
+                                style={{
+                                  padding: "7px 16px", borderRadius: 8,
+                                  border: "1px solid #4361ee", background: "transparent",
+                                  color: "#4361ee", fontSize: 12, fontWeight: 600,
+                                  cursor: syncing === intg.id ? "not-allowed" : "pointer",
+                                  fontFamily: "inherit", opacity: syncing === intg.id ? 0.6 : 1,
+                                }}
+                              >
+                                {syncing === intg.id ? "Syncing..." : "Sync Now"}
+                              </button>
+                              <button
+                                onClick={() => setDisconnectConfirm(intg.id)}
+                                style={{
+                                  background: "none", border: "none",
+                                  fontSize: 12, color: "#ef4444",
+                                  cursor: "pointer", fontFamily: "inherit",
+                                }}
+                              >
+                                Disconnect
+                              </button>
+                            </div>
+                          </div>
+                          {/* Error message */}
+                          {intg.status === "error" && intg.lastSyncError && (
+                            <div style={{
+                              marginTop: 10, padding: "8px 12px", borderRadius: 8,
+                              background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.12)",
+                              fontSize: 12, color: "#ef4444",
+                            }}>
+                              {intg.lastSyncError}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Available integrations */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  {PROVIDER_CATALOG
+                    .filter((p) => !connectedIntegrations.some((c) => c.provider === p.id))
+                    .map((provider) => {
+                      const isComingSoon = provider.status === "coming_soon";
+                      return (
+                        <div
+                          key={provider.id}
+                          style={{
+                            ...cardStyle,
+                            opacity: isComingSoon ? 0.65 : 1,
+                            display: "flex", flexDirection: "column",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                            <img
+                              src={`https://www.google.com/s2/favicons?domain=${provider.icon}&sz=64`}
+                              alt=""
+                              style={{ width: 40, height: 40, borderRadius: 10, background: "#f4f5f8" }}
+                            />
+                            <span style={{ fontSize: 16, fontWeight: 700, color: "#1b2434" }}>{provider.name}</span>
+                          </div>
+                          <p style={{ fontSize: 13, color: "#5a6578", margin: "0 0 8px", lineHeight: 1.5 }}>
+                            {provider.description}
+                          </p>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 12 }}>
+                            {provider.pillarsAffected.map((p) => (
+                              <span key={p} style={{
+                                fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 4,
+                                background: "rgba(67,97,238,0.06)", color: "#4361ee",
+                              }}>
+                                {PILLAR_LABELS_MAP[p] || p}
+                              </span>
+                            ))}
+                          </div>
+                          <div style={{ marginTop: "auto" }}>
+                            {isComingSoon ? (
+                              <button
+                                disabled
+                                style={{
+                                  width: "100%", padding: "10px 18px", borderRadius: 9,
+                                  border: "1px solid #e6e9ef", background: "#f4f5f8",
+                                  color: "#8d95a3", fontSize: 13, fontWeight: 600,
+                                  cursor: "not-allowed", fontFamily: "inherit",
+                                }}
+                              >
+                                Coming Soon
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setConnectModalProvider(provider.id);
+                                  setConnectError("");
+                                  setShopifyStore("");
+                                }}
+                                style={{
+                                  width: "100%", padding: "10px 18px", borderRadius: 9,
+                                  border: "none", background: gradientBg,
+                                  color: "#fff", fontSize: 13, fontWeight: 700,
+                                  cursor: "pointer", fontFamily: "inherit",
+                                }}
+                              >
+                                Connect
+                              </button>
+                            )}
+                          </div>
+                          {!isComingSoon && (
+                            <div style={{ fontSize: 11, color: "#8d95a3", marginTop: 8 }}>
+                              Access: {provider.scopesPlainEnglish.join(" \u00b7 ")}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              </>
+            )}
           </section>
 
           {/* ── SECTION 2: SUBSCRIPTION & BILLING ── */}
@@ -1256,6 +1590,162 @@ export default function SettingsPage() {
       {/* Modals */}
       <DeleteModal open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={deleteAccount} />
       <CancelModal open={cancelOpen} onClose={() => setCancelOpen(false)} onConfirm={cancelSubscription} />
+
+      {/* Connect Integration Modal */}
+      {connectModalProvider && (() => {
+        const provider = PROVIDER_CATALOG.find((p) => p.id === connectModalProvider);
+        if (!provider) return null;
+        return (
+          <div
+            style={{
+              position: "fixed", inset: 0, zIndex: 1000,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)",
+            }}
+            onClick={() => { setConnectModalProvider(null); setConnecting(false); }}
+          >
+            <div
+              style={{
+                background: "#fff", borderRadius: 18, padding: 28,
+                maxWidth: 480, width: "100%", margin: "0 16px",
+                boxShadow: "0 16px 48px rgba(0,0,0,0.12)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                <img
+                  src={`https://www.google.com/s2/favicons?domain=${provider.icon}&sz=64`}
+                  alt=""
+                  style={{ width: 40, height: 40, borderRadius: 10, background: "#f4f5f8" }}
+                />
+                <h3 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: 0 }}>
+                  Connect {provider.id === "stripe-data" ? "your Stripe account" : `your ${provider.name} store`}
+                </h3>
+              </div>
+
+              {provider.extraNote && (
+                <p style={{ fontSize: 13, color: "#5a6578", margin: "0 0 16px", lineHeight: 1.6, padding: "8px 12px", background: "#fafbfd", borderRadius: 8, border: "1px solid #e6e9ef" }}>
+                  {provider.extraNote}
+                </p>
+              )}
+
+              {provider.needsStoreDomain && (
+                <div style={{ marginBottom: 16 }}>
+                  <label style={labelStyle}>Your Shopify store URL</label>
+                  <input
+                    style={inputStyle}
+                    value={shopifyStore}
+                    onChange={(e) => setShopifyStore(e.target.value)}
+                    placeholder="mystore.myshopify.com"
+                  />
+                </div>
+              )}
+
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#1b2434", marginBottom: 8 }}>What we access:</div>
+                {provider.scopesPlainEnglish.map((scope) => (
+                  <div key={scope} style={{ fontSize: 13, color: "#10b981", marginBottom: 4, display: "flex", gap: 6 }}>
+                    <span>&#10003;</span> {scope}
+                  </div>
+                ))}
+                {provider.noAccessLabel && (
+                  <div style={{ fontSize: 13, color: "#ef4444", marginTop: 4, display: "flex", gap: 6 }}>
+                    <span>&#10007;</span> {provider.noAccessLabel}
+                  </div>
+                )}
+              </div>
+
+              <p style={{ fontSize: 12, color: "#8d95a3", margin: "0 0 16px" }}>
+                We request read-only access. We never modify your data.
+              </p>
+
+              {connectError && (
+                <div style={{ fontSize: 12, color: "#ef4444", marginBottom: 12, padding: "8px 12px", background: "rgba(239,68,68,0.06)", borderRadius: 8 }}>
+                  {connectError}
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={() => { setConnectModalProvider(null); setConnecting(false); }}
+                  style={{
+                    flex: 1, padding: "10px 18px", borderRadius: 9,
+                    border: "1px solid #e6e9ef", background: "#fff",
+                    color: "#5a6578", fontSize: 13, fontWeight: 600,
+                    cursor: "pointer", fontFamily: "inherit",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  disabled={connecting || (provider.needsStoreDomain && !shopifyStore.trim())}
+                  onClick={() => connectIntegration(provider.id, provider.needsStoreDomain ? shopifyStore : undefined)}
+                  style={{
+                    flex: 1, padding: "10px 18px", borderRadius: 9,
+                    border: "none", background: gradientBg,
+                    color: "#fff", fontSize: 13, fontWeight: 700,
+                    cursor: connecting ? "not-allowed" : "pointer",
+                    fontFamily: "inherit",
+                    opacity: connecting || (provider.needsStoreDomain && !shopifyStore.trim()) ? 0.6 : 1,
+                  }}
+                >
+                  {connecting ? "Connecting..." : `Connect to ${provider.name} \u2192`}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Disconnect Confirmation Modal */}
+      {disconnectConfirm && (
+        <div
+          style={{
+            position: "fixed", inset: 0, zIndex: 1000,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)",
+          }}
+          onClick={() => setDisconnectConfirm(null)}
+        >
+          <div
+            style={{
+              background: "#fff", borderRadius: 18, padding: 28,
+              maxWidth: 400, width: "100%", margin: "0 16px",
+              boxShadow: "0 16px 48px rgba(0,0,0,0.12)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: "0 0 8px" }}>Disconnect integration?</h3>
+            <p style={{ fontSize: 13, color: "#5a6578", lineHeight: 1.7, margin: "0 0 16px" }}>
+              This will stop auto-syncing data from this service. Your existing data and scores will remain, but will no longer be updated automatically.
+            </p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => setDisconnectConfirm(null)}
+                style={{
+                  flex: 1, padding: "10px 18px", borderRadius: 9,
+                  border: "1px solid #e6e9ef", background: "#fff",
+                  color: "#5a6578", fontSize: 13, fontWeight: 600,
+                  cursor: "pointer", fontFamily: "inherit",
+                }}
+              >
+                Keep Connected
+              </button>
+              <button
+                onClick={() => disconnectIntegration(disconnectConfirm)}
+                style={{
+                  flex: 1, padding: "10px 18px", borderRadius: 9,
+                  border: "none", background: "#ef4444",
+                  color: "#fff", fontSize: 13, fontWeight: 700,
+                  cursor: "pointer", fontFamily: "inherit",
+                }}
+              >
+                Disconnect
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

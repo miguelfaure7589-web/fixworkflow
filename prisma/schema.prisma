@@ -46,6 +46,9 @@ model User {
   aiInsights              AiInsight[]
   playbookProgress        UserPlaybookProgress[]
   creditReferrals         CreditReferral[]
+
+  integrations            Integration[]
+  metricHistory           MetricHistory[]
 }
 
 model Account {
@@ -234,6 +237,7 @@ model BusinessProfile {
   teamSize        String
   currentRevenue  Float
   confidenceScore Float
+  metricSources   Json?
   lastUpdated     DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -454,4 +458,60 @@ model CreditReferral {
   updatedAt      DateTime @updatedAt
 
   user           User     @relation(fields: [userId], references: [id])
+}
+
+// ─── Integration Framework ───
+
+model Integration {
+  id              String    @id @default(cuid())
+  userId          String
+  provider        String
+  status          String    @default("connected")
+  accessToken     String    @db.Text
+  refreshToken    String?   @db.Text
+  tokenExpiresAt  DateTime?
+  storeDomain     String?
+  externalId      String?
+  scopes          String?
+  lastSyncAt      DateTime?
+  lastSyncStatus  String?
+  lastSyncError   String?
+  syncFrequency   String    @default("weekly")
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  syncLogs        SyncLog[]
+
+  @@unique([userId, provider])
+}
+
+model SyncLog {
+  id              String   @id @default(cuid())
+  integrationId   String
+  status          String
+  metricsUpdated  Json?
+  dataSnapshot    Json?
+  pillarImpact    Json?
+  error           String?
+  duration        Int?
+  createdAt       DateTime @default(now())
+
+  integration     Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+}
+
+model MetricHistory {
+  id              String   @id @default(cuid())
+  userId          String
+  pillar          String
+  score           Int
+  metrics         Json
+  source          String
+  weekOf          DateTime
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pillar, weekOf])
 }

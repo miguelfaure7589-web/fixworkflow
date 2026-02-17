@@ -15,6 +15,14 @@ interface Metrics {
   funnel: { signedUp: number; startedDiagnosis: number; completedOnboarding: number; activeDashboard: number };
 }
 
+interface IntegrationHealth {
+  totalConnected: number;
+  providerBreakdown: Record<string, number>;
+  lastSync: { date: string; status: string } | null;
+  failedSyncsCount: number;
+  failedSyncs: { id: string; provider: string; userEmail: string | null; userName: string | null; error: string | null; createdAt: string }[];
+}
+
 interface Referral {
   id: string;
   name: string;
@@ -111,6 +119,8 @@ export default function AdminDashboard() {
   const [affData, setAffData] = useState<AffiliateData | null>(null);
   const [affRange, setAffRange] = useState("all");
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [integrationHealth, setIntegrationHealth] = useState<IntegrationHealth | null>(null);
+  const [syncRunning, setSyncRunning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -118,16 +128,18 @@ export default function AdminDashboard() {
 
   const fetchAll = useCallback(async (rf: string, ar: string) => {
     try {
-      const [m, r, a, u] = await Promise.all([
+      const [m, r, a, u, ih] = await Promise.all([
         fetch("/api/admin/metrics").then(x => x.ok ? x.json() : null),
         fetch("/api/admin/referrals" + (rf !== "all" ? "?status=" + rf : "")).then(x => x.ok ? x.json() : null),
         fetch("/api/admin/affiliate-analytics?range=" + ar).then(x => x.ok ? x.json() : null),
         fetch("/api/admin/users?limit=20").then(x => x.ok ? x.json() : null),
+        fetch("/api/admin/integrations").then(x => x.ok ? x.json() : null),
       ]);
       if (m) setMetrics(m);
       if (r) setReferrals(r.referrals || []);
       if (a) setAffData(a);
       if (u) setUsers(u.users || []);
+      if (ih) setIntegrationHealth(ih);
     } catch { /* silent */ }
     setLoading(false);
     setRefreshing(false);
@@ -197,6 +209,103 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* INTEGRATION HEALTH */}
+        {integrationHealth && (
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+              <span style={{ fontSize: 16, fontWeight: 700, color: "#1b2434" }}>Integration Health</span>
+              <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 10, background: "rgba(16,185,129,0.08)", color: "#10b981" }}>
+                {integrationHealth.totalConnected} connected
+              </span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 16 }}>
+              <div style={card}>
+                <div style={{ fontSize: 32, fontWeight: 900, color: "#1b2434", lineHeight: 1 }}>{integrationHealth.totalConnected}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#5a6578", marginTop: 4 }}>Connected Integrations</div>
+                <div style={{ fontSize: 12, color: "#8d95a3", marginTop: 4 }}>
+                  {Object.entries(integrationHealth.providerBreakdown).map(([p, c]) => (
+                    <span key={p} style={{ marginRight: 8 }}>
+                      {p === "shopify" ? "Shopify" : p === "stripe-data" ? "Stripe" : p}: <strong>{c}</strong>
+                    </span>
+                  ))}
+                  {Object.keys(integrationHealth.providerBreakdown).length === 0 && "No integrations yet"}
+                </div>
+              </div>
+              <div style={card}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#1b2434", marginBottom: 8 }}>Last Sync</div>
+                {integrationHealth.lastSync ? (
+                  <>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: integrationHealth.lastSync.status === "success" ? "#10b981" : "#ef4444" }}>
+                      {integrationHealth.lastSync.status === "success" ? "Success" : "Failed"}
+                    </div>
+                    <div style={{ fontSize: 12, color: "#8d95a3", marginTop: 2 }}>
+                      {new Date(integrationHealth.lastSync.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      {" "}at{" "}
+                      {new Date(integrationHealth.lastSync.date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ fontSize: 13, color: "#8d95a3" }}>No syncs yet</div>
+                )}
+              </div>
+              <div style={card}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 32, fontWeight: 900, color: integrationHealth.failedSyncsCount > 0 ? "#ef4444" : "#10b981", lineHeight: 1 }}>
+                      {integrationHealth.failedSyncsCount}
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#5a6578", marginTop: 4 }}>Failed Syncs (7d)</div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      setSyncRunning(true);
+                      try {
+                        await fetch("/api/cron/weekly-sync", { method: "POST" });
+                        // Refresh data
+                        const ih = await fetch("/api/admin/integrations").then(x => x.ok ? x.json() : null);
+                        if (ih) setIntegrationHealth(ih);
+                      } catch {}
+                      setSyncRunning(false);
+                    }}
+                    disabled={syncRunning}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6,
+                      padding: "8px 16px", borderRadius: 8,
+                      border: "1px solid #4361ee", background: syncRunning ? "#f4f5f8" : "transparent",
+                      fontSize: 12, fontWeight: 600, color: "#4361ee",
+                      cursor: syncRunning ? "not-allowed" : "pointer",
+                      opacity: syncRunning ? 0.6 : 1,
+                    }}
+                  >
+                    <RefreshCw style={{ width: 12, height: 12 }} />
+                    {syncRunning ? "Running..." : "Run Weekly Sync"}
+                  </button>
+                </div>
+              </div>
+            </div>
+            {integrationHealth.failedSyncs.length > 0 && (
+              <div style={{ ...card, padding: 0, overflow: "hidden" }}>
+                <div style={{ padding: "12px 16px", borderBottom: "1px solid #e6e9ef", fontSize: 13, fontWeight: 700, color: "#ef4444" }}>Failed Syncs</div>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead><tr style={{ background: "#fafbfd", borderBottom: "1px solid #e6e9ef" }}>
+                    {["Date", "Provider", "User", "Error"].map(h => <th key={h} style={th}>{h}</th>)}
+                  </tr></thead>
+                  <tbody>
+                    {integrationHealth.failedSyncs.map(f => (
+                      <tr key={f.id} style={{ borderBottom: "1px solid #f0f2f6" }}>
+                        <td style={{ ...td, whiteSpace: "nowrap", fontSize: 12 }}>{new Date(f.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</td>
+                        <td style={{ ...td, fontWeight: 600, color: "#1b2434", textTransform: "capitalize" as const }}>{f.provider === "stripe-data" ? "Stripe" : f.provider}</td>
+                        <td style={td}>{f.userEmail || f.userName || "—"}</td>
+                        <td style={{ ...td, color: "#ef4444", maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={f.error || ""}>{f.error || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 

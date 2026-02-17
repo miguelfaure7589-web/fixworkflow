@@ -206,7 +206,9 @@ export default function OnboardingPage() {
   const filledCount = [grossMargin, conversionRate, traffic].filter((v) => v !== "").length;
   const accuracy = ACCURACY_LEVELS[filledCount];
 
-  const progress = (step / 4) * 100;
+  const [integrationConnecting, setIntegrationConnecting] = useState(false);
+
+  const progress = (step / 5) * 100;
 
   return (
     <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4">
@@ -215,7 +217,7 @@ export default function OnboardingPage() {
         <div className="mb-8">
           <div className="flex justify-between text-sm text-gray-400 mb-2">
             <span>Business Profile Setup</span>
-            <span>Step {step} of 4</span>
+            <span>Step {step} of 5</span>
           </div>
           <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
             <div
@@ -472,13 +474,13 @@ export default function OnboardingPage() {
             {/* Buttons */}
             <div className="flex gap-3">
               <button
-                onClick={() => handleSubmit(!!grossMargin || !!conversionRate || !!traffic)}
+                onClick={() => setStep(5)}
                 className="flex-1 px-6 py-3 rounded-full border-2 border-gray-200 text-gray-600 font-medium hover:border-gray-300 hover:bg-gray-50 transition-all duration-150"
               >
                 Skip
               </button>
               <button
-                onClick={() => handleSubmit(!!grossMargin || !!conversionRate || !!traffic)}
+                onClick={() => setStep(5)}
                 disabled={!usesPersonalCredit}
                 className={`flex-1 px-6 py-3 rounded-full font-semibold transition-all duration-150 ${
                   usesPersonalCredit
@@ -486,13 +488,100 @@ export default function OnboardingPage() {
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 }`}
               >
-                Build My Score
+                Continue
               </button>
             </div>
 
             {/* Back button */}
             <button
               onClick={() => setStep(3)}
+              className="flex items-center gap-1.5 mt-6 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back
+            </button>
+          </div>
+        )}
+
+        {/* ── Step 5: Optional Integration Connect ── */}
+        {step === 5 && (
+          <div className="bg-white border border-gray-100 rounded-[14px] p-8 shadow-sm">
+            <div className="text-center mb-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center mx-auto mb-4">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                Want more accurate results?
+              </h2>
+              <p className="text-gray-400">
+                Connect a service to auto-sync your real metrics instead of estimates.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              {[
+                { id: "shopify", name: "Shopify", icon: "cdn.shopify.com", desc: "Sync orders, revenue, and customers", endpoint: "/api/integrations/shopify/connect", needsStore: true },
+                { id: "stripe-data", name: "Stripe", icon: "stripe.com", desc: "Sync payments, MRR, and fees", endpoint: "/api/integrations/stripe-data/connect", needsStore: false },
+              ].map((svc) => (
+                <button
+                  key={svc.id}
+                  onClick={async () => {
+                    if (svc.needsStore) {
+                      // For Shopify, they'll connect from settings after onboarding
+                      handleSubmit(!!grossMargin || !!conversionRate || !!traffic);
+                      return;
+                    }
+                    setIntegrationConnecting(true);
+                    try {
+                      const res = await fetch(svc.endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+                      const data = await res.json();
+                      if (data.authUrl) window.location.href = data.authUrl;
+                      else setIntegrationConnecting(false);
+                    } catch {
+                      setIntegrationConnecting(false);
+                    }
+                  }}
+                  disabled={integrationConnecting}
+                  className="text-left p-4 rounded-xl border border-gray-100 bg-gray-50 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={`https://www.google.com/s2/favicons?domain=${svc.icon}&sz=64`}
+                      alt=""
+                      className="w-8 h-8 rounded-lg bg-white"
+                    />
+                    <div>
+                      <div className="font-semibold text-gray-900">{svc.name}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">{svc.desc}</div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <p className="text-xs text-gray-400 text-center mb-6">
+              Read-only access only. You can always connect later from Settings.
+            </p>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleSubmit(!!grossMargin || !!conversionRate || !!traffic)}
+                className="flex-1 px-6 py-3 rounded-full border-2 border-gray-200 text-gray-600 font-medium hover:border-gray-300 hover:bg-gray-50 transition-all duration-150"
+              >
+                Skip for now
+              </button>
+              <button
+                onClick={() => handleSubmit(!!grossMargin || !!conversionRate || !!traffic)}
+                className="flex-1 px-6 py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-800 hover:-translate-y-px hover:shadow-md transition-all duration-150"
+              >
+                Build My Score
+              </button>
+            </div>
+
+            {/* Back button */}
+            <button
+              onClick={() => setStep(4)}
               className="flex items-center gap-1.5 mt-6 text-sm text-gray-400 hover:text-gray-600 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />

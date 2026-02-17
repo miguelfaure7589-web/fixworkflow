@@ -2499,6 +2499,9 @@ export default function RevenueDashboard() {
   const [hasScore, setHasScore] = useState(false);
   const [missingKeys, setMissingKeys] = useState<string[]>([]);
   const [scoreRefreshKey, setScoreRefreshKey] = useState(0);
+  const [integrations, setIntegrations] = useState<{ id: string; provider: string; status: string; lastSyncAt: string | null; lastSyncStatus: string | null; lastSyncError: string | null }[]>([]);
+  const [metricSources, setMetricSources] = useState<Record<string, string>>({});
+  const [pillarHistory, setPillarHistory] = useState<Record<string, { prev: number; current: number }>>({});
   const [whyOpen, setWhyOpen] = useState(false);
   const [whySelected, setWhySelected] = useState<WhyItem | null>(null);
   const [whyData, setWhyData] = useState<WhyData | null>(null);
@@ -2592,6 +2595,17 @@ export default function RevenueDashboard() {
         setError(err.message);
         setLoading(false);
       });
+
+    // Fetch integration data
+    fetch("/api/integrations").then((r) => r.json()).then((d) => {
+      if (d.integrations) setIntegrations(d.integrations);
+    }).catch(() => {});
+
+    // Fetch metric sources and pillar history
+    fetch("/api/dashboard/integration-status").then((r) => r.json()).then((d) => {
+      if (d.metricSources) setMetricSources(d.metricSources);
+      if (d.pillarHistory) setPillarHistory(d.pillarHistory);
+    }).catch(() => {});
   }, [session, status, isPremium, router]);
 
   if (status === "loading" || loading) {
@@ -2669,6 +2683,40 @@ export default function RevenueDashboard() {
       <div className="max-w-5xl mx-auto px-4 py-10 space-y-8">
         {/* AI Business Summary — top of dashboard */}
         <AiBusinessSummary isPremium={isPremium} />
+
+        {/* Integration Sync Status Bar */}
+        {integrations.length > 0 && (
+          <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-100 rounded-xl shadow-sm text-sm">
+            {integrations.map((intg) => {
+              const providerName = intg.provider === "shopify" ? "Shopify" : intg.provider === "stripe-data" ? "Stripe" : intg.provider;
+              const isSynced = intg.lastSyncStatus === "success" && intg.lastSyncAt;
+              const isFailed = intg.lastSyncStatus === "failed";
+              const dotColor = isSynced ? "#10b981" : isFailed ? "#f59e0b" : "#4361ee";
+
+              return (
+                <div key={intg.id} className="flex items-center gap-2">
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: dotColor, display: "inline-block" }} />
+                  {isSynced && (
+                    <span className="text-gray-600">
+                      Data synced from <strong className="text-gray-800">{providerName}</strong> &middot; Last updated {new Date(intg.lastSyncAt!).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                    </span>
+                  )}
+                  {isFailed && (
+                    <span className="text-amber-600">
+                      {providerName} sync failed &middot; Using last known data
+                      {intg.lastSyncAt && <> from {new Date(intg.lastSyncAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</>}
+                    </span>
+                  )}
+                  {!isSynced && !isFailed && (
+                    <span className="text-blue-600">
+                      Connecting to {providerName}... first sync will run shortly.
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Revenue Health Score Section */}
         <RevenueHealthSection isPremium={isPremium} onScoreChange={setHasScore} onMissingData={setMissingKeys} key={scoreRefreshKey} />
