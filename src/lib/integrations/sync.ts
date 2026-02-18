@@ -10,6 +10,7 @@ import { getProvider } from "./registry";
 import { computeRevenueHealthScore } from "@/lib/revenue-health";
 import type { RevenueInputs, BusinessTypeName } from "@/lib/revenue-health";
 import type { SyncResult, PillarMetrics } from "./types";
+import { sendWeeklyScoreUpdateEmail, shouldSendEmail } from "@/lib/email";
 
 // ── Helpers ──
 
@@ -234,6 +235,56 @@ export async function syncIntegration(integrationId: string): Promise<SyncResult
               metrics: pillar as any,
               source: integration.provider,
             },
+          });
+        }
+
+        // Send weekly score update email (fire-and-forget, respect prefs)
+        const user = integration.user;
+        if (user.email) {
+          // Get previous snapshot for delta calculation
+          const previousSnapshot = await prisma.revenueScoreSnapshot.findFirst({
+            where: { userId: integration.userId },
+            orderBy: { createdAt: "desc" },
+            skip: 1, // skip the one we just created
+          });
+          const previousScore = previousSnapshot?.score ?? result.score;
+
+          const pillarNames: Record<string, string> = {
+            revenue: "Revenue",
+            profitability: "Profitability",
+            retention: "Retention",
+            acquisition: "Acquisition",
+            ops: "Operations",
+          };
+          const pillarChanges = Object.entries(result.pillars).map(
+            ([key, p]) => ({
+              name: pillarNames[key] || key,
+              score: p.score,
+              delta:
+                p.score -
+                (previousSnapshot
+                  ? {
+                      revenue: previousSnapshot.pillarRevenue,
+                      profitability: previousSnapshot.pillarProfitability,
+                      retention: previousSnapshot.pillarRetention,
+                      acquisition: previousSnapshot.pillarAcquisition,
+                      ops: previousSnapshot.pillarOps,
+                    }[key] ?? p.score
+                  : p.score),
+            }),
+          );
+
+          shouldSendEmail(integration.userId, "scoreUpdates").then((ok) => {
+            if (ok) {
+              sendWeeklyScoreUpdateEmail(
+                user.email!,
+                result.score,
+                previousScore,
+                pillarChanges,
+              ).catch((err) =>
+                console.error("[EMAIL] Weekly score email failed:", err),
+              );
+            }
           });
         }
       }

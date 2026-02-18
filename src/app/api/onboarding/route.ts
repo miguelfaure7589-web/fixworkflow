@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
 import { computeRevenueHealthScore } from "@/lib/revenue-health";
 import type { RevenueInputs, BusinessTypeName } from "@/lib/revenue-health";
+import { sendScoreReadyEmail, shouldSendEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -186,10 +187,28 @@ export async function POST(req: Request) {
     });
 
     // Mark onboarding complete
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { onboardingCompleted: true },
+      select: { email: true },
     });
+
+    // Send score ready email (fire-and-forget, respect prefs)
+    if (updatedUser.email) {
+      const weakestPillar = result.primaryRisk || "revenue";
+      const recommendation =
+        result.recommendedNextSteps?.[0]?.title || "Check your dashboard for personalized recommendations.";
+      shouldSendEmail(userId, "scoreUpdates").then((ok) => {
+        if (ok) {
+          sendScoreReadyEmail(
+            updatedUser.email!,
+            result.score,
+            weakestPillar,
+            recommendation,
+          ).catch((err) => console.error("[EMAIL] Score ready email failed:", err));
+        }
+      });
+    }
 
     return NextResponse.json({ ok: true, result });
   } catch (err: unknown) {

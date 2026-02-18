@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
+import {
+  sendCreditReferralConfirmationEmail,
+  sendAdminCreditReferralNotification,
+} from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -70,6 +74,16 @@ export async function POST(req: Request) {
     const referral = await prisma.creditReferral.create({
       data: { userId, name, email, phone, bestTimeToCall, notes },
     });
+
+    // Send confirmation email to user (fire-and-forget, transactional — always send)
+    sendCreditReferralConfirmationEmail(email, phone).catch((err) =>
+      console.error("[EMAIL] Credit referral confirmation failed:", err),
+    );
+
+    // Notify admin (fire-and-forget)
+    sendAdminCreditReferralNotification({ name, email, phone, bestTimeToCall, notes }).catch(
+      (err) => console.error("[EMAIL] Admin referral notification failed:", err),
+    );
 
     return NextResponse.json({ ok: true, referral }, { status: 201 });
   } catch (err: unknown) {

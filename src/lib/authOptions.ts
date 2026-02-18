@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import type { NextAuthOptions } from "next-auth";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -41,6 +42,16 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  events: {
+    // Send welcome email when a user is created via OAuth (Google)
+    async createUser({ user }) {
+      if (user.email) {
+        sendWelcomeEmail(user.email, user.name).catch((err) =>
+          console.error("[EMAIL] OAuth welcome email failed:", err),
+        );
+      }
+    },
+  },
   callbacks: {
     async jwt({ token, user, account }) {
       // On initial sign-in, populate token with user fields
