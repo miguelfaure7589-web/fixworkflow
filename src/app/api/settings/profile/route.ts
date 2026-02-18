@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
+import { computeRevenueHealthScore } from "@/lib/revenue-health";
+import type { RevenueInputs, BusinessTypeName } from "@/lib/revenue-health";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -78,12 +80,16 @@ export async function PATCH(req: Request) {
   });
 
   // Update or create BusinessProfile
+  let businessTypeChanged = false;
   if (businessName !== undefined || businessType !== undefined) {
     const existing = await prisma.businessProfile.findFirst({
       where: { userId },
     });
 
     if (existing) {
+      if (businessType && businessType !== existing.businessType) {
+        businessTypeChanged = true;
+      }
       await prisma.businessProfile.update({
         where: { id: existing.id },
         data: {
@@ -107,5 +113,45 @@ export async function PATCH(req: Request) {
     }
   }
 
-  return NextResponse.json({ success: true });
+  // If business type changed, recalculate the Revenue Health Score (pillar weights differ by type)
+  if (businessTypeChanged) {
+    const revenueProfile = await prisma.revenueProfile.findUnique({ where: { userId } });
+    if (revenueProfile) {
+      const inputs: RevenueInputs = {
+        revenueMonthly: revenueProfile.revenueMonthly ?? undefined,
+        grossMarginPct: revenueProfile.grossMarginPct ?? undefined,
+        netProfitMonthly: revenueProfile.netProfitMonthly ?? undefined,
+        runwayMonths: revenueProfile.runwayMonths ?? undefined,
+        churnMonthlyPct: revenueProfile.churnMonthlyPct ?? undefined,
+        conversionRatePct: revenueProfile.conversionRatePct ?? undefined,
+        trafficMonthly: revenueProfile.trafficMonthly ?? undefined,
+        avgOrderValue: revenueProfile.avgOrderValue ?? undefined,
+        cac: revenueProfile.cac ?? undefined,
+        ltv: revenueProfile.ltv ?? undefined,
+        opsHoursPerWeek: revenueProfile.opsHoursPerWeek ?? undefined,
+        fulfillmentDays: revenueProfile.fulfillmentDays ?? undefined,
+        supportTicketsPerWeek: revenueProfile.supportTicketsPerWeek ?? undefined,
+      };
+      const bt = (businessType as BusinessTypeName) ?? undefined;
+      const result = computeRevenueHealthScore(inputs, bt);
+      await prisma.revenueScoreSnapshot.create({
+        data: {
+          userId,
+          score: result.score,
+          pillarRevenue: result.pillars.revenue.score,
+          pillarProfitability: result.pillars.profitability.score,
+          pillarRetention: result.pillars.retention.score,
+          pillarAcquisition: result.pillars.acquisition.score,
+          pillarOps: result.pillars.ops.score,
+          pillarsJson: JSON.stringify(result.pillars),
+          primaryRisk: result.primaryRisk,
+          fastestLever: result.fastestLever,
+          nextStepsJson: JSON.stringify(result.recommendedNextSteps),
+          missingDataJson: JSON.stringify(result.missingData),
+        },
+      });
+    }
+  }
+
+  return NextResponse.json({ success: true, scoreRecalculated: businessTypeChanged });
 }

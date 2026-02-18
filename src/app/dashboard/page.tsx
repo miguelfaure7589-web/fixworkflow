@@ -467,6 +467,7 @@ const PROFILE_FIELDS = [
 // ── Revenue Health Section ──
 
 function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isPremium: boolean; onScoreChange: (has: boolean) => void; onMissingData?: (keys: string[]) => void }) {
+  const { toast } = useToast();
   const [healthData, setHealthData] = useState<RevenueHealthData | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
@@ -474,6 +475,7 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [recalculating, setRecalculating] = useState(false);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [businessType, setBusinessType] = useState<string>("");
   const [dismissedMissing, setDismissedMissing] = useState(false);
@@ -538,6 +540,25 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
     setShowForm(true);
     setSaveError(null);
   };
+
+  const handleRecalculate = useCallback(() => {
+    setRecalculating(true);
+    fetch("/api/score/recalculate", { method: "POST" })
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed");
+        return r.json();
+      })
+      .then((json: { ok: boolean; result: RevenueHealthData; updatedAt: string }) => {
+        setHealthData(json.result);
+        setUpdatedAt(json.updatedAt);
+        onMissingData?.(json.result?.missingData ?? []);
+        toast("Score updated!", "success");
+      })
+      .catch(() => {
+        toast("Failed to recalculate score.", "error");
+      })
+      .finally(() => setRecalculating(false));
+  }, [onMissingData, toast]);
 
   const handleSaveProfile = () => {
     setSaving(true);
@@ -721,12 +742,28 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
               Updated {new Date(updatedAt).toLocaleDateString()} {new Date(updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </p>
           )}
-          <button
-            onClick={handleEditProfile}
-            className="mt-2 text-xs text-blue-500 hover:text-blue-700"
-          >
-            Update Profile
-          </button>
+          <div className="flex items-center gap-3 mt-2">
+            <button
+              onClick={handleEditProfile}
+              className="text-xs text-blue-500 hover:text-blue-700"
+            >
+              Update Profile
+            </button>
+            <span className="text-gray-300">|</span>
+            <button
+              onClick={handleRecalculate}
+              disabled={recalculating}
+              className="text-xs text-gray-400 hover:text-blue-500 disabled:opacity-50 flex items-center gap-1"
+            >
+              {recalculating && (
+                <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.3" />
+                  <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                </svg>
+              )}
+              {recalculating ? "Recalculating..." : "Recalculate Score"}
+            </button>
+          </div>
           {/* Missing data nudge — compact, dismissible */}
           {healthData.missingData.length > 0 && !dismissedMissing && (
             <div className="mt-3 w-full">
