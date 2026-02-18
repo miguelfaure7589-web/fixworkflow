@@ -161,7 +161,7 @@ export default function AdminDashboard() {
   }, []);
 
   if (status === "loading" || loading) {
-    return <div style={{ minHeight: "100vh", background: "#f4f5f8", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 14, color: "#8d95a3" }}>Loading admin dashboard...</span></div>;
+    return null; // Next.js loading.tsx skeleton handles this
   }
 
   return (

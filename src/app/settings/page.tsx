@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import UserAvatarDropdown from "@/components/UserAvatarDropdown";
 import { Zap, Loader2, ChevronDown } from "lucide-react";
+import { useToast } from "@/components/Toast";
 
 // ── Types ──
 
@@ -501,6 +502,7 @@ function CancelModal({ open, onClose, onConfirm }: { open: boolean; onClose: () 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { toast } = useToast();
   const [active, setActive] = useState("account");
 
   // Account form state
@@ -602,7 +604,7 @@ export default function SettingsPage() {
           .then((d) => {
             if (d.integrations) setConnectedIntegrations(d.integrations);
           })
-          .catch(() => {})
+          .catch(() => toast("Failed to load integrations. Please try again.", "error"))
           .finally(() => setIntegrationsLoading(false));
 
         // Fetch billing history if user has a Stripe customer
@@ -613,12 +615,12 @@ export default function SettingsPage() {
             .then((bh) => {
               if (bh.invoices) setInvoices(bh.invoices);
             })
-            .catch(() => {})
+            .catch(() => toast("Failed to load billing history.", "error"))
             .finally(() => setInvoicesLoading(false));
         }
       })
-      .catch(() => {});
-  }, [session]);
+      .catch(() => toast("Failed to load profile data.", "error"));
+  }, [session, toast]);
 
   const profileChanged =
     name !== origProfile.name ||
@@ -665,8 +667,8 @@ export default function SettingsPage() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ key, value }),
-    }).catch(() => {});
-  }, []);
+    }).catch(() => toast("Failed to save notification preferences. Please try again.", "error"));
+  }, [toast]);
 
   const updatePrivacy = useCallback(async (key: keyof PrivacyPrefs, value: boolean) => {
     setPrivacyPrefs((prev) => ({ ...prev, [key]: value }));
@@ -674,8 +676,8 @@ export default function SettingsPage() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ key, value, type: "privacy" }),
-    }).catch(() => {});
-  }, []);
+    }).catch(() => toast("Failed to save privacy preferences. Please try again.", "error"));
+  }, [toast]);
 
   const exportData = useCallback(async () => {
     setExporting(true);
@@ -784,11 +786,7 @@ export default function SettingsPage() {
   };
 
   if (status === "loading" || !session?.user) {
-    return (
-      <div style={{ minHeight: "100vh", background: "#f4f5f8", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Loader2 style={{ width: 24, height: 24, color: "#8d95a3", animation: "spin 1s linear infinite" }} />
-      </div>
-    );
+    return null; // Next.js loading.tsx skeleton handles this
   }
 
   return (

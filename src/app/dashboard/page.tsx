@@ -73,6 +73,7 @@ import {
   type UserProfile as RecUserProfile,
   type ScoredProduct,
 } from "@/lib/recommendations";
+import { useToast } from "@/components/Toast";
 
 // ── Revenue Health Score Types ──
 
@@ -1576,7 +1577,16 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh }: { isPremium: 
     };
   }, [healthPillars, profileData, profileBusinessType]);
 
-  if (!hasScore || (!loading && playbooks.length === 0)) return null;
+  if (!hasScore) return null;
+
+  if (!loading && playbooks.length === 0) {
+    return (
+      <div className="bg-white border border-gray-100 rounded-[14px] p-8 shadow-sm text-center">
+        <p className="text-sm text-gray-500">Start your first step to see progress here.</p>
+        <p className="text-xs text-gray-400 mt-1">Playbooks will appear once your Revenue Health Score identifies areas to improve.</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -2493,6 +2503,7 @@ function RecommendationsSection({ isPremium, hasScore }: { isPremium: boolean; h
 export default function RevenueDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { toast } = useToast();
   const [dashData, setDashData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -2599,21 +2610,17 @@ export default function RevenueDashboard() {
     // Fetch integration data
     fetch("/api/integrations").then((r) => r.json()).then((d) => {
       if (d.integrations) setIntegrations(d.integrations);
-    }).catch(() => {});
+    }).catch(() => toast("Failed to load integrations.", "error"));
 
     // Fetch metric sources and pillar history
     fetch("/api/dashboard/integration-status").then((r) => r.json()).then((d) => {
       if (d.metricSources) setMetricSources(d.metricSources);
       if (d.pillarHistory) setPillarHistory(d.pillarHistory);
-    }).catch(() => {});
-  }, [session, status, isPremium, router]);
+    }).catch(() => toast("Failed to load integration status.", "error"));
+  }, [session, status, isPremium, router, toast]);
 
   if (status === "loading" || loading) {
-    return (
-      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
-        <div className="text-gray-400 text-sm">Loading...</div>
-      </div>
-    );
+    return null; // Next.js loading.tsx skeleton handles this
   }
 
   if (!session?.user) {
