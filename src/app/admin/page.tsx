@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Zap, RefreshCw } from "lucide-react";
+import { Zap, RefreshCw, Menu, X } from "lucide-react";
 import Link from "next/link";
 import UserAvatarDropdown from "@/components/UserAvatarDropdown";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 
 interface Metrics {
   totalUsers: number;
@@ -114,6 +115,7 @@ function PlacementBars({ data }: { data: Record<string, number> }) {
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [refFilter, setRefFilter] = useState("all");
@@ -124,6 +126,7 @@ export default function AdminDashboard() {
   const [syncRunning, setSyncRunning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const isAdmin = (session?.user as Record<string, unknown> | undefined)?.isAdmin;
 
@@ -166,29 +169,51 @@ export default function AdminDashboard() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#f4f5f8" }}>
-      <nav style={{ background: "#fff", borderBottom: "1px solid #e6e9ef" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #4361ee, #6366f1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Zap style={{ width: 20, height: 20, color: "#fff" }} />
+      <nav style={{ background: "#fff", borderBottom: "1px solid #e6e9ef", position: "relative", zIndex: 50 }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: isMobile ? "12px 16px" : "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+              <div style={{ width: isMobile ? 32 : 36, height: isMobile ? 32 : 36, borderRadius: 10, background: "linear-gradient(135deg, #4361ee, #6366f1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Zap style={{ width: isMobile ? 16 : 20, height: isMobile ? 16 : 20, color: "#fff" }} />
               </div>
-              <span style={{ fontSize: 20, fontWeight: 700, color: "#1b2434" }}>FixWorkFlow</span>
+              {!isMobile && <span style={{ fontSize: 20, fontWeight: 700, color: "#1b2434" }}>FixWorkFlow</span>}
             </Link>
             <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 6px", borderRadius: 4, background: "#6366f1", color: "#fff", letterSpacing: 0.5 }}>ADMIN</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Link href="/dashboard" style={{ fontSize: 13, color: "#5a6578", textDecoration: "none", fontWeight: 500 }}>Dashboard</Link>
-            {session?.user && <UserAvatarDropdown user={session.user} />}
-          </div>
+          {/* Desktop nav */}
+          {!isMobile && (
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <Link href="/dashboard" style={{ fontSize: 13, color: "#5a6578", textDecoration: "none", fontWeight: 500 }}>Dashboard</Link>
+              <Link href="/settings" style={{ fontSize: 13, color: "#5a6578", textDecoration: "none", fontWeight: 500 }}>Settings</Link>
+              {session?.user && <UserAvatarDropdown user={session.user} />}
+            </div>
+          )}
+          {/* Mobile hamburger */}
+          {isMobile && (
+            <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", padding: 6, cursor: "pointer", color: "#1b2434" }} aria-label="Toggle menu">
+              {menuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          )}
         </div>
       </nav>
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+      {/* Mobile menu overlay */}
+      {isMobile && menuOpen && (
+        <div style={{ position: "fixed", top: 56, left: 0, right: 0, bottom: 0, zIndex: 40, background: "#fff", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 4, overflowY: "auto" }}>
+          <Link href="/dashboard" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "14px 12px", fontSize: 16, color: "#1b2434", textDecoration: "none", borderRadius: 10, fontWeight: 500 }}>Dashboard</Link>
+          <Link href="/settings" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "14px 12px", fontSize: 16, color: "#1b2434", textDecoration: "none", borderRadius: 10, fontWeight: 500 }}>Settings</Link>
+          <Link href="/admin/referrals" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "14px 12px", fontSize: 16, color: "#1b2434", textDecoration: "none", borderRadius: 10, fontWeight: 500 }}>Credit Referrals</Link>
+          <div style={{ marginTop: 8, paddingTop: 12, borderTop: "1px solid #e6e9ef" }}>
+            {session?.user && <UserAvatarDropdown user={session.user} />}
+          </div>
+        </div>
+      )}
+
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: isMobile ? "16px" : 24 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 16 : 24, gap: 12 }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1b2434", margin: 0 }}>Admin Dashboard</h1>
-            <p style={{ fontSize: 13, color: "#8d95a3", marginTop: 4 }}>FixWorkFlow business metrics and management</p>
+            <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, color: "#1b2434", margin: 0 }}>Admin Dashboard</h1>
+            <p style={{ fontSize: isMobile ? 12 : 13, color: "#8d95a3", marginTop: 4 }}>FixWorkFlow business metrics</p>
           </div>
           <button onClick={handleRefresh} disabled={refreshing} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 8, border: "1px solid #e6e9ef", background: "#fff", fontSize: 13, fontWeight: 600, color: "#5a6578", cursor: "pointer", opacity: refreshing ? 0.6 : 1 }}>
             <RefreshCw style={{ width: 14, height: 14 }} />
@@ -198,7 +223,7 @@ export default function AdminDashboard() {
 
         {/* METRICS */}
         {metrics && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: isMobile ? 12 : 16, marginBottom: isMobile ? 16 : 24 }}>
             <MCard icon="U" accent="#4361ee" value={metrics.totalUsers} label="Total Users" sub="All time signups" />
             <MCard icon="O" accent="#10b981" value={metrics.completedOnboarding} label="Completed Onboarding" sub="Finished full setup" badge={pct(metrics.completedOnboarding, metrics.totalUsers)} />
             <MCard icon="P" accent="#8b5cf6" value={metrics.proSubscribers} label="Pro Subscribers" sub="Paying customers" badge={pct(metrics.proSubscribers, metrics.totalUsers)} />
@@ -228,7 +253,7 @@ export default function AdminDashboard() {
                 {integrationHealth.totalConnected} connected
               </span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: isMobile ? 12 : 16, marginBottom: 16 }}>
               <div style={card}>
                 <div style={{ fontSize: 32, fontWeight: 900, color: "#1b2434", lineHeight: 1 }}>{integrationHealth.totalConnected}</div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "#5a6578", marginTop: 4 }}>Connected Integrations</div>
@@ -296,7 +321,8 @@ export default function AdminDashboard() {
             {integrationHealth.failedSyncs.length > 0 && (
               <div style={{ ...card, padding: 0, overflow: "hidden" }}>
                 <div style={{ padding: "12px 16px", borderBottom: "1px solid #e6e9ef", fontSize: 13, fontWeight: 700, color: "#ef4444" }}>Failed Syncs</div>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
                   <thead><tr style={{ background: "#fafbfd", borderBottom: "1px solid #e6e9ef" }}>
                     {["Date", "Provider", "User", "Error"].map(h => <th key={h} style={th}>{h}</th>)}
                   </tr></thead>
@@ -311,6 +337,7 @@ export default function AdminDashboard() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
           </div>
@@ -327,7 +354,8 @@ export default function AdminDashboard() {
             </select>
           </div>
           <div style={{ ...card, padding: 0, overflow: "hidden" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
               <thead><tr style={{ background: "#fafbfd", borderBottom: "1px solid #e6e9ef" }}>
                 {["Date", "Name", "Email", "Phone", "Best Time", "Notes", "Score", "Status"].map(h => <th key={h} style={th}>{h}</th>)}
               </tr></thead>
@@ -351,6 +379,7 @@ export default function AdminDashboard() {
                 {referrals.length === 0 && <tr><td colSpan={8} style={{ padding: "32px 16px", textAlign: "center", color: "#8d95a3", fontSize: 13 }}>No referrals yet.</td></tr>}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
 
@@ -366,10 +395,11 @@ export default function AdminDashboard() {
           </div>
           {affData && (affData.topProducts.length > 0 || affData.recentClicks.length > 0) ? (
             <>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 12 : 16, marginBottom: 16 }}>
                 <div style={{ ...card, padding: 0, overflow: "hidden" }}>
                   <div style={{ padding: "14px 16px", borderBottom: "1px solid #e6e9ef", fontSize: 13, fontWeight: 700, color: "#1b2434" }}>Top Products</div>
-                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 400 }}>
                     <thead><tr style={{ background: "#fafbfd", borderBottom: "1px solid #e6e9ef" }}>
                       <th style={{ ...th, width: 36 }}>#</th><th style={th}>Product</th><th style={{ ...th, textAlign: "right" as const }}>Clicks</th><th style={th}>Placements</th>
                     </tr></thead>
@@ -390,6 +420,7 @@ export default function AdminDashboard() {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
                 <div style={card}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#1b2434", marginBottom: 16 }}>Clicks by Placement</div>
@@ -401,8 +432,8 @@ export default function AdminDashboard() {
                   <div style={{ padding: "14px 16px", borderBottom: "1px solid #e6e9ef", fontSize: 13, fontWeight: 700, color: "#1b2434" }}>Recent Clicks</div>
                   <div style={{ maxHeight: 320, overflowY: "auto" as const }}>
                     {affData.recentClicks.map((c, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", borderBottom: "1px solid #f0f2f6", fontSize: 12 }}>
-                        <span style={{ color: "#8d95a3", minWidth: 80 }}>{relTime(c.timestamp)}</span>
+                      <div key={i} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: isMobile ? 6 : 12, padding: isMobile ? "8px 12px" : "10px 16px", borderBottom: "1px solid #f0f2f6", fontSize: 12 }}>
+                        <span style={{ color: "#8d95a3", minWidth: isMobile ? 60 : 80 }}>{relTime(c.timestamp)}</span>
                         <span style={{ color: "#5a6578" }}>{c.userEmail}</span>
                         <span style={{ fontWeight: 600, color: "#1b2434" }}>{c.productName}</span>
                         <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 600, padding: "2px 6px", borderRadius: 4, background: (PL_COLOR[c.placement] || "#8d95a3") + "14", color: PL_COLOR[c.placement] || "#8d95a3" }}>{c.placement.replace(/_/g, " ")}</span>
@@ -426,7 +457,8 @@ export default function AdminDashboard() {
             <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 10, background: "rgba(67,97,238,0.08)", color: "#4361ee" }}>{metrics?.totalUsers ?? users.length}</span>
           </div>
           <div style={{ ...card, padding: 0, overflow: "hidden" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
               <thead><tr style={{ background: "#fafbfd", borderBottom: "1px solid #e6e9ef" }}>
                 {["Name", "Email", "Business Type", "Score", "Stage", "Personal Credit"].map(h => <th key={h} style={th}>{h}</th>)}
               </tr></thead>
@@ -449,6 +481,7 @@ export default function AdminDashboard() {
                 {users.length === 0 && <tr><td colSpan={6} style={{ padding: "32px 16px", textAlign: "center", color: "#8d95a3", fontSize: 13 }}>No users yet.</td></tr>}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       </div>

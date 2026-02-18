@@ -13,28 +13,28 @@ export default function ReviewsPage() {
     <div className="min-h-screen bg-[#fafafa]">
       {/* Navigation */}
       <nav className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">FixWorkFlow</span>
+            <span className="text-lg sm:text-xl font-bold text-gray-900">FixWorkFlow</span>
           </Link>
-          <div className="flex items-center gap-6">
-            <Link href="/blog" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+          <div className="flex items-center gap-3 sm:gap-6">
+            <Link href="/blog" className="text-sm text-gray-500 hover:text-gray-900 transition-colors hidden sm:inline">
               Blog
             </Link>
             <Link href="/reviews" className="text-sm text-gray-900 font-medium transition-colors">
               Reviews
             </Link>
-            <Link href="/pricing" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+            <Link href="/pricing" className="text-sm text-gray-500 hover:text-gray-900 transition-colors hidden sm:inline">
               Pricing
             </Link>
             <Link
               href="/signup"
-              className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
+              className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gray-900 text-white text-xs sm:text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
             >
-              Start Free Diagnosis
+              Start Free
             </Link>
           </div>
         </div>
@@ -42,16 +42,16 @@ export default function ReviewsPage() {
 
       {/* Header with summary */}
       <section className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 pt-16 pb-12">
-          <div className="text-center mb-10">
+        <div className="max-w-6xl mx-auto px-4 pt-10 sm:pt-16 pb-8 sm:pb-12">
+          <div className="text-center mb-8 sm:mb-10">
             <div className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-amber-50 rounded-full text-sm text-amber-600 font-medium mb-6">
               <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
               {avg}/5 average rating
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
               Real people, real results
             </h1>
-            <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-gray-500 max-w-2xl mx-auto">
               See how freelancers, consultants, and small teams transformed their
               workflows with FixWorkFlow.
             </p>

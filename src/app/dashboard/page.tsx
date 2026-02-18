@@ -35,6 +35,7 @@ import {
   Info,
   HelpCircle,
   X,
+  Menu,
   Copy,
   Check,
   Lightbulb,
@@ -203,7 +204,7 @@ function ComponentBar({ label, value }: { label: string; value: number }) {
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-gray-500 w-28 text-right capitalize">
+      <span className="text-xs text-gray-500 w-20 sm:w-28 text-right capitalize truncate">
         {label.replace(/([A-Z])/g, " $1").trim()}
       </span>
       <div className="flex-1 bg-gray-100 rounded-full h-2">
@@ -243,7 +244,7 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-3">
-        <span className="text-xs font-medium text-gray-600 w-28 text-right">
+        <span className="text-xs font-medium text-gray-600 w-20 sm:w-28 text-right truncate">
           {PILLAR_LABELS[name] || name}
         </span>
         <div className="flex-1 bg-gray-100 rounded-full h-3">
@@ -298,7 +299,7 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
         )}
       </div>
       {pillar.reasons.length > 0 && (
-        <div className="ml-32 space-y-0.5">
+        <div className="ml-0 sm:ml-32 space-y-0.5 pl-2 sm:pl-0">
           {isPro || isTopOrBottom ? (
             pillar.reasons.map((r, i) => (
               <p key={i} className="text-xs text-gray-400">{r}</p>
@@ -323,7 +324,7 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
       )}
       {/* Estimated pillar detail expansion (Pro only) */}
       {estimatedOpen && isPro && estimatedDetails && (
-        <div className="ml-32" style={{ animation: "fadeSlide 0.2s ease" }}>
+        <div className="ml-0 sm:ml-32" style={{ animation: "fadeSlide 0.2s ease" }}>
           <div style={{
             marginTop: 6, padding: "12px 14px", borderRadius: 8,
             background: "rgba(245,158,11,0.05)", border: "1px solid rgba(245,158,11,0.15)",
@@ -334,13 +335,13 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {estimatedDetails.fields.map((f) => (
                 <div key={f.field} style={{
-                  display: "flex", alignItems: "center", gap: 8,
+                  display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8,
                   padding: "6px 8px", borderRadius: 6, background: "white",
                   border: "1px solid #f0f2f6",
                 }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "#1b2434", minWidth: 120 }}>{f.label}</span>
-                  <span style={{ fontSize: 11, color: "#d97706", fontWeight: 600, minWidth: 80 }}>{f.assumedValue}</span>
-                  <span style={{ fontSize: 10, color: "#8d95a3", flex: 1 }}>{f.reason}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#1b2434", minWidth: 100 }}>{f.label}</span>
+                  <span style={{ fontSize: 11, color: "#d97706", fontWeight: 600 }}>{f.assumedValue}</span>
+                  <span style={{ fontSize: 10, color: "#8d95a3", flex: 1, minWidth: 120 }}>{f.reason}</span>
                 </div>
               ))}
             </div>
@@ -742,18 +743,18 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
               Updated {new Date(updatedAt).toLocaleDateString()} {new Date(updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </p>
           )}
-          <div className="flex items-center gap-3 mt-2 flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-3 mt-2 flex-wrap justify-center">
             <button
               onClick={handleEditProfile}
-              className="text-xs text-blue-500 hover:text-blue-700"
+              className="text-[11px] sm:text-xs text-blue-500 hover:text-blue-700"
             >
               Update Profile
             </button>
-            <span className="text-gray-300">|</span>
+            <span className="text-gray-300 hidden sm:inline">|</span>
             <button
               onClick={handleRecalculate}
               disabled={recalculating}
-              className="text-xs text-gray-400 hover:text-blue-500 disabled:opacity-50 flex items-center gap-1"
+              className="text-[11px] sm:text-xs text-gray-400 hover:text-blue-500 disabled:opacity-50 flex items-center gap-1"
             >
               {recalculating && (
                 <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -761,19 +762,19 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
                   <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
                 </svg>
               )}
-              {recalculating ? "Recalculating..." : "Recalculate Score"}
+              {recalculating ? "Recalculating..." : "Recalculate"}
             </button>
-            <span className="text-gray-300">|</span>
+            <span className="text-gray-300 hidden sm:inline">|</span>
             <Link
               href="/diagnosis?edit=true"
-              className="text-xs text-gray-400 hover:text-blue-500"
+              className="text-[11px] sm:text-xs text-gray-400 hover:text-blue-500"
             >
               Edit Diagnosis
             </Link>
-            <span className="text-gray-300">|</span>
+            <span className="text-gray-300 hidden sm:inline">|</span>
             <Link
               href="/onboarding?edit=true"
-              className="text-xs text-gray-400 hover:text-blue-500"
+              className="text-[11px] sm:text-xs text-gray-400 hover:text-blue-500"
             >
               Edit Metrics
             </Link>
@@ -2105,10 +2106,10 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh }: { isPremium: 
                       ) : (
                         <>
                           {/* Before / After scores */}
-                          <div className="grid grid-cols-3 gap-4 text-center items-center">
-                            <div className="p-5 bg-gray-50 rounded-[12px]">
+                          <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center items-center">
+                            <div className="p-3 sm:p-5 bg-gray-50 rounded-[12px]">
                               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Before</p>
-                              <p className="text-4xl font-extrabold text-gray-400 tabular-nums">{beforeScore?.score ?? "—"}</p>
+                              <p className="text-2xl sm:text-4xl font-extrabold text-gray-400 tabular-nums">{beforeScore?.score ?? "—"}</p>
                             </div>
                             <div className="flex items-center justify-center">
                               <div className={`px-4 py-2 rounded-full text-sm font-bold tabular-nums ${
@@ -2122,9 +2123,9 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh }: { isPremium: 
                                 {afterScore.score - (beforeScore?.score ?? 0)} pts
                               </div>
                             </div>
-                            <div className="p-5 bg-violet-50 rounded-[12px]">
+                            <div className="p-3 sm:p-5 bg-violet-50 rounded-[12px]">
                               <p className="text-[10px] font-semibold text-violet-500 uppercase tracking-wider mb-1">After</p>
-                              <p className="text-4xl font-extrabold text-violet-600 tabular-nums">{afterScore.score}</p>
+                              <p className="text-2xl sm:text-4xl font-extrabold text-violet-600 tabular-nums">{afterScore.score}</p>
                             </div>
                           </div>
 
@@ -2138,15 +2139,15 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh }: { isPremium: 
                                   const diff = (after as PillarData).score - (before?.score ?? 0);
                                   if (diff === 0) return null;
                                   return (
-                                    <div key={name} className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-[10px]">
-                                      <span className="text-xs font-semibold text-gray-600 w-24">{PILLAR_LABELS[name] || name}</span>
-                                      <span className="text-xs text-gray-400 w-10 text-right tabular-nums">{before?.score ?? 0}</span>
+                                    <div key={name} className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 p-2.5 bg-gray-50 rounded-[10px]">
+                                      <span className="text-xs font-semibold text-gray-600 w-20 sm:w-24">{PILLAR_LABELS[name] || name}</span>
+                                      <span className="text-xs text-gray-400 w-8 sm:w-10 text-right tabular-nums">{before?.score ?? 0}</span>
                                       <ArrowRight className="w-3 h-3 text-gray-300" />
-                                      <span className="text-xs font-bold text-gray-800 w-10 tabular-nums">{(after as PillarData).score}</span>
+                                      <span className="text-xs font-bold text-gray-800 w-8 sm:w-10 tabular-nums">{(after as PillarData).score}</span>
                                       <span className={`text-xs font-bold tabular-nums ${diff > 0 ? "text-emerald-600" : "text-red-500"}`}>
                                         {diff > 0 ? "+" : ""}{diff}
                                       </span>
-                                      <span className="text-[10px] text-gray-400 flex-1">
+                                      <span className="text-[10px] text-gray-400 flex-1 hidden sm:inline">
                                         {diff > 0
                                           ? `${PILLAR_LABELS[name]} improved from metric updates`
                                           : `${PILLAR_LABELS[name]} decreased — review inputs`}
@@ -2561,6 +2562,7 @@ export default function RevenueDashboard() {
   const [hasScore, setHasScore] = useState(false);
   const [missingKeys, setMissingKeys] = useState<string[]>([]);
   const [scoreRefreshKey, setScoreRefreshKey] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [integrations, setIntegrations] = useState<{ id: string; provider: string; status: string; lastSyncAt: string | null; lastSyncStatus: string | null; lastSyncError: string | null }[]>([]);
   const [metricSources, setMetricSources] = useState<Record<string, string>>({});
   const [pillarHistory, setPillarHistory] = useState<Record<string, { prev: number; current: number }>>({});
@@ -2698,15 +2700,16 @@ export default function RevenueDashboard() {
   return (
     <div className="min-h-screen bg-[#fafafa]">
       {/* Nav */}
-      <nav className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
+      <nav className="bg-white border-b border-gray-100 relative z-50">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">FixWorkFlow</span>
+            <span className="text-lg sm:text-xl font-bold text-gray-900">FixWorkFlow</span>
           </Link>
-          <div className="flex items-center gap-3">
+          {/* Desktop nav */}
+          <div className="hidden sm:flex items-center gap-3">
             {!isPremium && (
               <Link
                 href="/pricing"
@@ -2730,8 +2733,40 @@ export default function RevenueDashboard() {
             )}
             {session?.user && <UserAvatarDropdown user={session.user} />}
           </div>
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="sm:hidden p-1.5 text-gray-700"
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
       </nav>
+
+      {/* Mobile menu overlay */}
+      {menuOpen && (
+        <div className="sm:hidden fixed inset-0 top-[52px] z-40 bg-white overflow-y-auto">
+          <div className="flex flex-col p-4 gap-1">
+            <Link href="/settings" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50">
+              Settings
+            </Link>
+            {!isPremium && (
+              <Link href="/pricing" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50">
+                Upgrade to Pro
+              </Link>
+            )}
+            {!!(session?.user as Record<string, unknown> | undefined)?.isAdmin && (
+              <Link href="/admin" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-semibold text-violet-600 rounded-lg hover:bg-violet-50">
+                Admin
+              </Link>
+            )}
+            <div className="mt-2 pt-3 border-t border-gray-100">
+              {session?.user && <UserAvatarDropdown user={session.user} />}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Why Drawer */}
       <WhyDrawer
@@ -2744,13 +2779,13 @@ export default function RevenueDashboard() {
         isPremium={isPremium}
       />
 
-      <div className="max-w-5xl mx-auto px-4 py-10 space-y-8">
+      <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-10 space-y-6 sm:space-y-8">
         {/* AI Business Summary — top of dashboard */}
         <AiBusinessSummary isPremium={isPremium} />
 
         {/* Integration Sync Status Bar */}
         {integrations.length > 0 && (
-          <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-100 rounded-xl shadow-sm text-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 bg-white border border-gray-100 rounded-xl shadow-sm text-xs sm:text-sm">
             {integrations.map((intg) => {
               const providerName = intg.provider === "shopify" ? "Shopify" : intg.provider === "stripe-data" ? "Stripe" : intg.provider;
               const isSynced = intg.lastSyncStatus === "success" && intg.lastSyncAt;

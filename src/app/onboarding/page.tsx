@@ -332,8 +332,8 @@ function OnboardingForm() {
 
         {/* ── Step 1: Business Type ── */}
         {step === 1 && (
-          <div className="bg-white border border-gray-100 rounded-[14px] p-8 shadow-sm">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-white border border-gray-100 rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
               What type of business do you run?
             </h2>
             <p className="text-gray-400 mb-6">
@@ -376,8 +376,8 @@ function OnboardingForm() {
 
         {/* ── Step 2: Revenue Range ── */}
         {step === 2 && (
-          <div className="bg-white border border-gray-100 rounded-[14px] p-8 shadow-sm">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-white border border-gray-100 rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
               Where is your revenue at?
             </h2>
             <p className="text-gray-400 mb-6">
@@ -423,8 +423,8 @@ function OnboardingForm() {
 
         {/* ── Step 3: Optional Metrics ── */}
         {step === 3 && (
-          <div className="bg-white border border-gray-100 rounded-[14px] p-8 shadow-sm">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-white border border-gray-100 rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
               A few more numbers for a sharper score
             </h2>
             <p className="text-gray-400 mb-6">
@@ -535,8 +535,8 @@ function OnboardingForm() {
 
         {/* ── Step 4: Personal Credit ── */}
         {step === 4 && (
-          <div className="bg-white border border-gray-100 rounded-[14px] p-8 shadow-sm">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-white border border-gray-100 rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
               One last question
             </h2>
             <p className="text-gray-400 mb-6">
@@ -617,12 +617,12 @@ function OnboardingForm() {
 
         {/* ── Step 5: Optional Integration Connect ── */}
         {step === 5 && (
-          <div className="bg-white border border-gray-100 rounded-[14px] p-8 shadow-sm">
+          <div className="bg-white border border-gray-100 rounded-[14px] p-5 sm:p-8 shadow-sm">
             <div className="text-center mb-6">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center mx-auto mb-4">
                 <Zap className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
                 Want more accurate results?
               </h2>
               <p className="text-gray-400">

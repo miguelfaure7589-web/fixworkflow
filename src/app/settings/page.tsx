@@ -5,8 +5,9 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import UserAvatarDropdown from "@/components/UserAvatarDropdown";
-import { Zap, Loader2, ChevronDown } from "lucide-react";
+import { Zap, Loader2, ChevronDown, Menu, X } from "lucide-react";
 import { useToast } from "@/components/Toast";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 
 // ── Types ──
 
@@ -503,7 +504,9 @@ export default function SettingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [active, setActive] = useState("account");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Account form state
   const [name, setName] = useState("");
@@ -792,87 +795,154 @@ export default function SettingsPage() {
   return (
     <div style={{ minHeight: "100vh", background: "#f4f5f8", fontFamily: "var(--font-outfit, var(--font-geist-sans)), sans-serif" }}>
       {/* NAV — matches dashboard */}
-      <nav style={{ background: "#fff", borderBottom: "1px solid #e6e9ef" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: gradientBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Zap style={{ width: 20, height: 20, color: "#fff" }} />
+      <nav style={{ background: "#fff", borderBottom: "1px solid #e6e9ef", position: "relative", zIndex: 50 }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto", padding: isMobile ? "12px 16px" : "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+            <div style={{ width: isMobile ? 32 : 36, height: isMobile ? 32 : 36, borderRadius: 10, background: gradientBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Zap style={{ width: isMobile ? 16 : 20, height: isMobile ? 16 : 20, color: "#fff" }} />
             </div>
-            <span style={{ fontSize: 20, fontWeight: 700, color: "#1b2434" }}>FixWorkFlow</span>
+            <span style={{ fontSize: isMobile ? 17 : 20, fontWeight: 700, color: "#1b2434" }}>FixWorkFlow</span>
           </Link>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Link href="/dashboard" style={{ fontSize: 13, color: "#5a6578", textDecoration: "none", fontWeight: 500 }}>Dashboard</Link>
-            {!isPremium && (
-              <Link
-                href="/pricing"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "8px 18px",
-                  borderRadius: 8,
-                  background: gradientBg,
-                  color: "white",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  textDecoration: "none",
-                }}
-              >
-                Upgrade to Pro
-              </Link>
-            )}
-            {!!(session.user as Record<string, unknown>)?.isAdmin && (
-              <Link href="/admin" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, color: "#7c3aed", textDecoration: "none", fontWeight: 600 }}>
-                Admin
-                <span style={{ fontSize: 9, fontWeight: 800, background: "#7c3aed", color: "#fff", padding: "2px 6px", borderRadius: 4, letterSpacing: 0.5 }}>ADMIN</span>
-              </Link>
-            )}
-            <UserAvatarDropdown user={session.user} />
-          </div>
+          {/* Desktop nav */}
+          {!isMobile && (
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <Link href="/dashboard" style={{ fontSize: 13, color: "#5a6578", textDecoration: "none", fontWeight: 500 }}>Dashboard</Link>
+              {!isPremium && (
+                <Link
+                  href="/pricing"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "8px 18px",
+                    borderRadius: 8,
+                    background: gradientBg,
+                    color: "white",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    textDecoration: "none",
+                  }}
+                >
+                  Upgrade to Pro
+                </Link>
+              )}
+              {!!(session.user as Record<string, unknown>)?.isAdmin && (
+                <Link href="/admin" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, color: "#7c3aed", textDecoration: "none", fontWeight: 600 }}>
+                  Admin
+                  <span style={{ fontSize: 9, fontWeight: 800, background: "#7c3aed", color: "#fff", padding: "2px 6px", borderRadius: 4, letterSpacing: 0.5 }}>ADMIN</span>
+                </Link>
+              )}
+              <UserAvatarDropdown user={session.user} />
+            </div>
+          )}
+          {/* Mobile hamburger */}
+          {isMobile && (
+            <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", padding: 6, cursor: "pointer", color: "#1b2434" }} aria-label="Toggle menu">
+              {menuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          )}
         </div>
       </nav>
 
-      {/* CONTENT */}
-      <div style={{ maxWidth: 1000, margin: "0 auto", padding: 24, display: "flex", gap: 32 }}>
-        {/* LEFT SIDEBAR */}
-        <div style={{ width: 220, flexShrink: 0, position: "sticky", top: 80, alignSelf: "flex-start" }}>
-          {SECTIONS.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => scrollTo(s.id)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                width: "100%",
-                padding: "10px 14px",
-                borderRadius: 8,
-                fontSize: 13,
-                fontWeight: active === s.id ? 600 : 500,
-                color: active === s.id ? "#4361ee" : "#5a6578",
-                background: active === s.id ? "rgba(67,97,238,0.07)" : "transparent",
-                border: "none",
-                cursor: "pointer",
-                textAlign: "left",
-                fontFamily: "inherit",
-                transition: "background 0.15s",
-                marginBottom: 2,
-              }}
-              onMouseEnter={(e) => {
-                if (active !== s.id) (e.currentTarget.style.background = "#fafbfd");
-              }}
-              onMouseLeave={(e) => {
-                if (active !== s.id) (e.currentTarget.style.background = "transparent");
-              }}
-            >
-              <span style={{ fontSize: 15 }}>{s.icon}</span>
-              {s.label}
-            </button>
-          ))}
+      {/* Mobile menu overlay */}
+      {isMobile && menuOpen && (
+        <div style={{ position: "fixed", top: 56, left: 0, right: 0, bottom: 0, zIndex: 40, background: "#fff", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 4, overflowY: "auto" }}>
+          <Link href="/dashboard" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "14px 12px", fontSize: 16, color: "#1b2434", textDecoration: "none", borderRadius: 10, fontWeight: 500 }}>Dashboard</Link>
+          {!isPremium && (
+            <Link href="/pricing" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "14px 12px", fontSize: 16, color: "#1b2434", textDecoration: "none", borderRadius: 10, fontWeight: 500 }}>Upgrade to Pro</Link>
+          )}
+          {!!(session.user as Record<string, unknown>)?.isAdmin && (
+            <Link href="/admin" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "14px 12px", fontSize: 16, color: "#7c3aed", textDecoration: "none", borderRadius: 10, fontWeight: 600 }}>Admin</Link>
+          )}
+          <div style={{ marginTop: 8, paddingTop: 12, borderTop: "1px solid #e6e9ef" }}>
+            <UserAvatarDropdown user={session.user} />
+          </div>
         </div>
+      )}
+
+      {/* CONTENT */}
+      <div style={{ maxWidth: 1000, margin: "0 auto", padding: isMobile ? "0 16px 24px" : 24, display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 0 : 32 }}>
+        {/* LEFT SIDEBAR / MOBILE HORIZONTAL TABS */}
+        {isMobile ? (
+          <div style={{
+            display: "flex",
+            overflowX: "auto",
+            gap: 4,
+            padding: "12px 0",
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
+            background: "#f4f5f8",
+            WebkitOverflowScrolling: "touch",
+            msOverflowStyle: "none",
+            scrollbarWidth: "none",
+          }}>
+            {SECTIONS.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => scrollTo(s.id)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "8px 12px",
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: active === s.id ? 600 : 500,
+                  color: active === s.id ? "#4361ee" : "#5a6578",
+                  background: active === s.id ? "rgba(67,97,238,0.07)" : "#fff",
+                  border: active === s.id ? "1px solid rgba(67,97,238,0.2)" : "1px solid #e6e9ef",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                }}
+              >
+                <span style={{ fontSize: 13 }}>{s.icon}</span>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div style={{ width: 220, flexShrink: 0, position: "sticky", top: 80, alignSelf: "flex-start" }}>
+            {SECTIONS.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => scrollTo(s.id)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  width: "100%",
+                  padding: "10px 14px",
+                  borderRadius: 8,
+                  fontSize: 13,
+                  fontWeight: active === s.id ? 600 : 500,
+                  color: active === s.id ? "#4361ee" : "#5a6578",
+                  background: active === s.id ? "rgba(67,97,238,0.07)" : "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  fontFamily: "inherit",
+                  transition: "background 0.15s",
+                  marginBottom: 2,
+                }}
+                onMouseEnter={(e) => {
+                  if (active !== s.id) (e.currentTarget.style.background = "#fafbfd");
+                }}
+                onMouseLeave={(e) => {
+                  if (active !== s.id) (e.currentTarget.style.background = "transparent");
+                }}
+              >
+                <span style={{ fontSize: 15 }}>{s.icon}</span>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* RIGHT CONTENT */}
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 48 }}>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: isMobile ? 32 : 48 }}>
 
           {/* ── SECTION 1: ACCOUNT ── */}
           <section id="section-account">
@@ -881,7 +951,7 @@ export default function SettingsPage() {
 
             {/* Profile */}
             <div style={{ ...cardStyle, marginBottom: 16 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16, marginBottom: 16 }}>
                 <div>
                   <label style={labelStyle}>Full Name</label>
                   <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} />
@@ -1183,7 +1253,7 @@ export default function SettingsPage() {
                 )}
 
                 {/* Available integrations */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
                   {PROVIDER_CATALOG
                     .filter((p) => !connectedIntegrations.some((c) => c.provider === p.id))
                     .map((provider) => {
@@ -1359,7 +1429,7 @@ export default function SettingsPage() {
                     You are on the free plan. Upgrade to Pro to unlock AI summaries, full playbooks, score projections,
                     and deep reasoning.
                   </p>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14, marginBottom: 16 }}>
                     <div style={{ padding: 14, borderRadius: 10, background: "#fafbfd", border: "1px solid #e6e9ef" }}>
                       <div style={{ fontSize: 12, fontWeight: 700, color: "#8d95a3", marginBottom: 8 }}>Free</div>
                       {[

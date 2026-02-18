@@ -168,25 +168,25 @@ export default async function ComparisonPage({
   return (
     <div className="min-h-screen bg-[#fafafa]">
       <nav className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">FixWorkFlow</span>
+            <span className="text-lg sm:text-xl font-bold text-gray-900">FixWorkFlow</span>
           </Link>
           <Link
             href="/signup"
-            className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
+            className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gray-900 text-white text-xs sm:text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
           >
-            Start Free Diagnosis
+            Start Free
           </Link>
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">{comparison.title}</h1>
-        <p className="text-gray-500 mb-10">{comparison.description}</p>
+      <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">{comparison.title}</h1>
+        <p className="text-sm sm:text-base text-gray-500 mb-8 sm:mb-10">{comparison.description}</p>
 
         {/* Side by side */}
         <div className="grid md:grid-cols-2 gap-6 mb-10">
@@ -201,8 +201,8 @@ export default async function ComparisonPage({
         </div>
 
         {/* CTA */}
-        <div className="text-center bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">
+        <div className="text-center bg-white border border-gray-100 rounded-2xl p-6 sm:p-8 shadow-sm">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3">
             Not sure which is right for you?
           </h3>
           <p className="text-gray-500 mb-6">

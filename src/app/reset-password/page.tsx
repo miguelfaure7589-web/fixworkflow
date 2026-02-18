@@ -71,9 +71,9 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center px-4 py-6">
       <div className="w-full max-w-md">
-        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+        <div className="bg-white border border-gray-100 rounded-2xl p-6 sm:p-8 shadow-sm">
           <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">
             Set new password
           </h1>

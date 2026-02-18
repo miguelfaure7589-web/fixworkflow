@@ -37,26 +37,26 @@ export default async function BlogPostPage({
     <div className="min-h-screen bg-[#fafafa]">
       {/* Navigation */}
       <nav className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">FixWorkFlow</span>
+            <span className="text-lg sm:text-xl font-bold text-gray-900">FixWorkFlow</span>
           </Link>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 sm:gap-6">
             <Link href="/blog" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
               Blog
             </Link>
-            <Link href="/reviews" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+            <Link href="/reviews" className="text-sm text-gray-500 hover:text-gray-900 transition-colors hidden sm:inline">
               Reviews
             </Link>
-            <Link href="/pricing" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+            <Link href="/pricing" className="text-sm text-gray-500 hover:text-gray-900 transition-colors hidden sm:inline">
               Pricing
             </Link>
             <Link
               href="/signup"
-              className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
+              className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gray-900 text-white text-xs sm:text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
             >
               Start Free Diagnosis
             </Link>

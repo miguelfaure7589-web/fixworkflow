@@ -92,24 +92,25 @@ export default function AdminReferralsPage() {
     <div className="min-h-screen bg-[#fafafa]">
       {/* Nav */}
       <nav className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">Admin</span>
+            <span className="text-lg sm:text-xl font-bold text-gray-900">Admin</span>
           </Link>
         </div>
       </nav>
 
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
         <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1b2434" }}>Credit Referrals</h1>
+          <h1 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434" }} className="sm:!text-[22px]">Credit Referrals</h1>
           <p style={{ fontSize: 13, color: "#8d95a3", marginTop: 4 }}>{referrals.length} total referrals</p>
         </div>
 
         <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e6e9ef", overflow: "hidden" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 700 }}>
             <thead>
               <tr style={{ background: "#fafbfd", borderBottom: "1px solid #e6e9ef" }}>
                 {["Date", "Name", "Email", "Phone", "Best Time", "Notes", "Status"].map((h) => (
@@ -161,6 +162,7 @@ export default function AdminReferralsPage() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>

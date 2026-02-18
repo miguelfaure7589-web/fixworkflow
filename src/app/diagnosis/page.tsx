@@ -254,8 +254,8 @@ function DiagnosisForm() {
 
         {/* ── Step 1: Friction Areas (multi-select) ── */}
         {step === 1 && (
-          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-8 shadow-sm">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
               Where do you feel the most friction?
             </h2>
             <p className="text-gray-400 mb-6">
@@ -317,8 +317,8 @@ function DiagnosisForm() {
 
         {/* ── Step 2: Tool Frustration (single-select, auto-advance) ── */}
         {step === 2 && (
-          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-8 shadow-sm">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
               What is your #1 frustration with your current setup?
             </h2>
             <p className="text-gray-400 mb-6">
@@ -363,8 +363,8 @@ function DiagnosisForm() {
 
         {/* ── Step 3: Primary Goal (single-select, auto-advance) ── */}
         {step === 3 && (
-          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-8 shadow-sm">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
               What is your #1 goal right now?
             </h2>
             <p className="text-gray-400 mb-6">
@@ -409,8 +409,8 @@ function DiagnosisForm() {
 
         {/* ── Step 4: Free Text (optional) ── */}
         {step === 4 && (
-          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-8 shadow-sm">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
               Anything else we should know?
             </h2>
             <p className="text-gray-400 mb-6">

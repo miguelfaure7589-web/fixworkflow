@@ -114,25 +114,25 @@ export default async function StackPage({
   return (
     <div className="min-h-screen bg-[#fafafa]">
       <nav className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">FixWorkFlow</span>
+            <span className="text-lg sm:text-xl font-bold text-gray-900">FixWorkFlow</span>
           </Link>
           <Link
             href="/signup"
-            className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
+            className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gray-900 text-white text-xs sm:text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
           >
-            Start Free Diagnosis
+            Start Free
           </Link>
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">{stack.title}</h1>
-        <p className="text-gray-600 mb-10 leading-relaxed">{stack.introText}</p>
+      <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">{stack.title}</h1>
+        <p className="text-sm sm:text-base text-gray-600 mb-8 sm:mb-10 leading-relaxed">{stack.introText}</p>
 
         {/* Tool Stack */}
         <div className="space-y-8">
@@ -149,7 +149,7 @@ export default async function StackPage({
                       key={tool.slug}
                       className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:border-gray-200 transition-all"
                     >
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                         <div className="flex items-start gap-3 flex-1">
                           <div className="w-10 h-10 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0 mt-0.5">
                             {tool.name.charAt(0)}
@@ -157,7 +157,7 @@ export default async function StackPage({
                           <div>
                             <h3 className="text-gray-900 font-semibold">{tool.name}</h3>
                             <p className="text-gray-500 text-sm mt-1">{tool.description}</p>
-                            <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                            <div className="flex items-center gap-3 sm:gap-4 mt-2 text-xs text-gray-400 flex-wrap">
                               <span>{tool.pricing}</span>
                               <span>Rating: {tool.rating}/5</span>
                               {tool.hasFreeTier && (
@@ -170,7 +170,7 @@ export default async function StackPage({
                           href={`/go/${tool.slug}?source=stack`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-full text-sm font-medium transition-colors flex-shrink-0"
+                          className="flex items-center justify-center gap-1.5 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-full text-sm font-medium transition-colors flex-shrink-0 ml-13 sm:ml-0"
                         >
                           Try it
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -185,7 +185,7 @@ export default async function StackPage({
         </div>
 
         {/* CTA */}
-        <div className="mt-12 text-center bg-gradient-to-br from-blue-600 to-violet-600 rounded-2xl p-8">
+        <div className="mt-10 sm:mt-12 text-center bg-gradient-to-br from-blue-600 to-violet-600 rounded-2xl p-6 sm:p-8">
           <h3 className="text-xl font-semibold text-white mb-3">
             Get a stack recommendation tailored to you
           </h3>
