@@ -110,13 +110,23 @@ export function fillReasoningTemplate(template: string, profile: UserProfile, pr
   const pillarScore = profile.pillarScores[pillarKey] ?? 50;
   const gm = profile.grossMarginPct ?? 0;
 
+  const stage = getRevenueStage(profile.revenueMonthly);
+  const stageLabels: Record<string, string> = {
+    pre_revenue: 'pre-revenue', '0_1k': '$0–$1k/mo', '1k_5k': '$1k–$5k/mo',
+    '5k_15k': '$5k–$15k/mo', '15k_50k': '$15k–$50k/mo', '50k_plus': '$50k+/mo',
+  };
+
   return template
     .replace(/\{pillarScore\}/g, String(pillarScore))
     .replace(/\{revenue\}/g, formatRevenue(profile.revenueMonthly))
+    .replace(/\{revenueRange\}/g, stageLabels[stage] || stage)
     .replace(/\{conversionRate\}/g, String(profile.conversionRatePct ?? 0))
     .replace(/\{grossMargin\}/g, String(gm))
     .replace(/\{marginAssessment\}/g, gm > 50 ? 'healthy' : gm < 30 ? 'concerning' : 'moderate')
     .replace(/\{businessType\}/g, formatBusinessType(profile.businessType))
+    .replace(/\{acquisitionScore\}/g, String(profile.pillarScores['acquisition'] ?? 50))
+    .replace(/\{operationsScore\}/g, String(profile.pillarScores['ops'] ?? 50))
+    .replace(/\{churnRate\}/g, String(profile.pillarScores['retention'] ? Math.max(0, 100 - profile.pillarScores['retention']) / 10 : 5))
     .replace(/\{name\}/g, product.name)
     .replace(/\{targetPillar\}/g, primaryPillar);
 }
@@ -184,7 +194,7 @@ export function getPlaybookStepRecommendation(
 export function getResourceRecommendations(
   profile: UserProfile,
   type: 'book' | 'course' | 'template',
-  limit = 3,
+  limit = 5,
 ): ScoredProduct[] {
   return affiliateProducts
     .filter(p => p.type === type && p.isActive && p.placements.includes('resource_shelf'))
