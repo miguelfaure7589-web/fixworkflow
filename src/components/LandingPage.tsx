@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import ScorePreviewCard, { ScoreRing, PillarBars } from './landing/ScorePreviewCard';
 import UserAvatarDropdown from './UserAvatarDropdown';
@@ -55,7 +54,6 @@ const avatars = [
 
 export default function LandingPage() {
   const { data: session } = useSession();
-  const router = useRouter();
   const [scrollY, setScrollY] = useState(0);
   const [visible, setVisible] = useState(false);
   const [hovered, setHovered] = useState<number | null>(null);
@@ -63,15 +61,11 @@ export default function LandingPage() {
   const isAdmin = !!(session?.user as Record<string, unknown> | undefined)?.isAdmin;
 
   useEffect(() => {
-    if (isAdmin) {
-      router.push('/admin');
-      return;
-    }
     setVisible(true);
     const onScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, [isAdmin, router]);
+  }, []);
 
   return (
     <div style={{ fontFamily: 'var(--font-outfit, var(--font-geist-sans)), sans-serif', color: '#1b2434' }}>
@@ -88,15 +82,18 @@ export default function LandingPage() {
           </div>
           <span style={{ fontSize: 17, fontWeight: 800, color: '#1b2434' }}>FixWorkFlow</span>
         </Link>
-        {isAdmin && (
-          <span style={{ fontSize: 9, fontWeight: 800, background: '#7c3aed', color: '#fff', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.5 }}>ADMIN</span>
-        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           <Link href="/pricing" style={{ fontSize: 14, color: '#5a6578', textDecoration: 'none' }}>Pricing</Link>
           <a href="#reviews" style={{ fontSize: 14, color: '#5a6578', textDecoration: 'none' }}>Reviews</a>
           {isLoggedIn ? (
             <>
-              <Link href="/dashboard" style={{ padding: '8px 18px', borderRadius: 9, background: gradient, color: '#fff', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>Dashboard</Link>
+              <Link href="/dashboard" style={{ fontSize: 14, color: '#5a6578', textDecoration: 'none' }}>Dashboard</Link>
+              {isAdmin && (
+                <Link href="/admin" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 14, color: '#7c3aed', textDecoration: 'none', fontWeight: 600 }}>
+                  Admin
+                  <span style={{ fontSize: 9, fontWeight: 800, background: '#7c3aed', color: '#fff', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.5 }}>ADMIN</span>
+                </Link>
+              )}
               <UserAvatarDropdown user={session!.user!} />
             </>
           ) : (

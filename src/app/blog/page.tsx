@@ -4,7 +4,7 @@ import { Zap, ArrowRight, Clock } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Blog | FixWorkFlow",
+  title: "Blog",
   description:
     "Practical tips on workflow automation, productivity systems, and tool stack optimization for freelancers and small teams.",
 };

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 import AiChat from "@/components/AiChat";
@@ -20,10 +20,17 @@ const outfit = Outfit({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#4361ee",
+};
+
 export const metadata: Metadata = {
-  title: "FixWorkFlow — Revenue Health Score for Small Businesses",
+  title: {
+    template: "%s | FixWorkFlow",
+    default: "FixWorkFlow — Revenue Health Score for Small Businesses",
+  },
   description:
-    "Get a free Revenue Health Score based on your real metrics. See which of 5 pillars is holding you back and follow a personalized playbook to fix it.",
+    "Get your free Revenue Health Score. See which of 5 business pillars is costing you money and follow a personalized playbook to fix it in 30 days.",
   keywords: [
     "revenue health score",
     "business diagnostics",
@@ -34,8 +41,25 @@ export const metadata: Metadata = {
     "fix workflow",
   ],
   icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    title: "FixWorkFlow — Your Business is Leaking Money. We'll Show You Where.",
+    description:
+      "Get your free Revenue Health Score based on your real metrics. See which of 5 pillars is holding you back. Follow a step-by-step playbook to fix it.",
+    type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FixWorkFlow — Your Business is Leaking Money. We'll Show You Where.",
+    description:
+      "Get your free Revenue Health Score based on your real metrics. See which of 5 pillars is holding you back. Follow a step-by-step playbook to fix it.",
+    images: ["/og-image.png"],
   },
 };
 

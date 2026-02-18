@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Reviews | FixWorkFlow",
+  title: "Reviews",
   description:
     "See what freelancers, consultants, and small teams say about FixWorkFlow's AI-powered workflow diagnosis.",
 };

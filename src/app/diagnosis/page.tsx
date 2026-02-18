@@ -55,7 +55,7 @@ export default function DiagnosisPage() {
     }
     const user = session.user as Record<string, unknown>;
     if (user.isAdmin) {
-      router.push("/admin");
+      router.push("/dashboard");
       return;
     }
     if (user.diagnosisCompleted && user.onboardingCompleted) {

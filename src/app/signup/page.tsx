@@ -14,11 +14,9 @@ export default function SignupPage() {
     if (!session?.user) return;
 
     const user = session.user as Record<string, unknown>;
-    if (user.isAdmin) {
-      router.push("/admin");
-    } else if (!user.diagnosisCompleted) {
+    if (!user.isAdmin && !user.diagnosisCompleted) {
       router.push("/diagnosis");
-    } else if (!user.onboardingCompleted) {
+    } else if (!user.isAdmin && !user.onboardingCompleted) {
       router.push("/onboarding");
     } else {
       router.push("/dashboard");

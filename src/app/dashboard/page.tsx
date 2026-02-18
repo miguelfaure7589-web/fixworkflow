@@ -2664,6 +2664,12 @@ export default function RevenueDashboard() {
                 Upgrade to Pro
               </Link>
             )}
+            {!!(session?.user as Record<string, unknown> | undefined)?.isAdmin && (
+              <Link href="/admin" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, color: "#7c3aed", textDecoration: "none", fontWeight: 600 }}>
+                Admin
+                <span style={{ fontSize: 9, fontWeight: 800, background: "#7c3aed", color: "#fff", padding: "2px 6px", borderRadius: 4, letterSpacing: 0.5 }}>ADMIN</span>
+              </Link>
+            )}
             {session?.user && <UserAvatarDropdown user={session.user} />}
           </div>
         </div>

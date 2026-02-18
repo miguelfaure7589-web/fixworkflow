@@ -796,6 +796,7 @@ export default function SettingsPage() {
             <span style={{ fontSize: 20, fontWeight: 700, color: "#1b2434" }}>FixWorkFlow</span>
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Link href="/dashboard" style={{ fontSize: 13, color: "#5a6578", textDecoration: "none", fontWeight: 500 }}>Dashboard</Link>
             {!isPremium && (
               <Link
                 href="/pricing"
@@ -813,6 +814,12 @@ export default function SettingsPage() {
                 }}
               >
                 Upgrade to Pro
+              </Link>
+            )}
+            {!!(session.user as Record<string, unknown>)?.isAdmin && (
+              <Link href="/admin" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, color: "#7c3aed", textDecoration: "none", fontWeight: 600 }}>
+                Admin
+                <span style={{ fontSize: 9, fontWeight: 800, background: "#7c3aed", color: "#fff", padding: "2px 6px", borderRadius: 4, letterSpacing: 0.5 }}>ADMIN</span>
               </Link>
             )}
             <UserAvatarDropdown user={session.user} />

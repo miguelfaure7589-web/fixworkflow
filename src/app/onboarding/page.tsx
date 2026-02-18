@@ -78,7 +78,7 @@ export default function OnboardingPage() {
     }
     const user = session.user as Record<string, unknown>;
     if (user.isAdmin) {
-      router.push("/admin");
+      router.push("/dashboard");
       return;
     }
     if (!user.diagnosisCompleted) {

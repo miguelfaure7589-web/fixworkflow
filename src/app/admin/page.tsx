@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Zap, RefreshCw } from "lucide-react";
 import Link from "next/link";
+import UserAvatarDropdown from "@/components/UserAvatarDropdown";
 
 interface Metrics {
   totalUsers: number;
@@ -166,14 +167,20 @@ export default function AdminDashboard() {
   return (
     <div style={{ minHeight: "100vh", background: "#f4f5f8" }}>
       <nav style={{ background: "#fff", borderBottom: "1px solid #e6e9ef" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", gap: 10 }}>
-          <Link href="/dashboard" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #4361ee, #6366f1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Zap style={{ width: 20, height: 20, color: "#fff" }} />
-            </div>
-            <span style={{ fontSize: 20, fontWeight: 700, color: "#1b2434" }}>FixWorkFlow</span>
-          </Link>
-          <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 6px", borderRadius: 4, background: "#6366f1", color: "#fff", letterSpacing: 0.5 }}>ADMIN</span>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #4361ee, #6366f1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Zap style={{ width: 20, height: 20, color: "#fff" }} />
+              </div>
+              <span style={{ fontSize: 20, fontWeight: 700, color: "#1b2434" }}>FixWorkFlow</span>
+            </Link>
+            <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 6px", borderRadius: 4, background: "#6366f1", color: "#fff", letterSpacing: 0.5 }}>ADMIN</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Link href="/dashboard" style={{ fontSize: 13, color: "#5a6578", textDecoration: "none", fontWeight: 500 }}>Dashboard</Link>
+            {session?.user && <UserAvatarDropdown user={session.user} />}
+          </div>
         </div>
       </nav>
 
