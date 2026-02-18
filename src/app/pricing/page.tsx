@@ -2,39 +2,57 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { Check, Zap, ArrowRight } from "lucide-react";
+import { Check, Zap, ArrowRight, ChevronDown } from "lucide-react";
 import Link from "next/link";
+import UserAvatarDropdown from "@/components/UserAvatarDropdown";
 
 const freeFeatures = [
-  "Workflow diagnostic questionnaire",
-  "Workflow health score",
-  "Top 3 recommendations with guidance",
-  "Quick-win action checklist",
-  "Score breakdown by category",
-  "1 top tool suggestion per issue",
-  "Basic tool optimization tips",
-  "3 diagnoses per month",
+  "Revenue Health Score",
+  "5-pillar breakdown",
+  "Top 2 pillar insights",
+  "2 playbook steps",
+  "1 tool recommendation",
+  "Weekly score updates with integrations",
 ];
 
-const premiumFeatures = [
-  "Full 12+ recommendations",
-  "Integration mapping (visual diagram)",
-  "Automation blueprints (step-by-step)",
-  "Stack cost analysis",
-  "Unlimited saved reports",
-  "Monthly re-diagnosis with change tracking",
-  "Priority AI responses",
-  "Exclusive partner discounts",
-  "Workspace optimization tips",
-  "Email support",
+const proFeatures = [
+  "Everything in Free",
+  "AI Business Summary",
+  "Full 5-step playbooks",
+  "All tool recommendations with reasoning",
+  "Deep reasoning on every insight",
+  "Score projections",
+  "Progress tracking over time",
+  "All resource recommendations (courses, templates)",
+  "Priority support",
+];
+
+const faqs = [
+  {
+    q: "Can I cancel anytime?",
+    a: "Yes. Cancel anytime from Settings. You keep Pro access until the end of your billing period.",
+  },
+  {
+    q: "What payment methods do you accept?",
+    a: "All major credit cards via Stripe.",
+  },
+  {
+    q: "Is there a free trial?",
+    a: "The Free plan is unlimited — use it as long as you want. Upgrade when you need deeper insights.",
+  },
+  {
+    q: "Can I switch plans?",
+    a: "Upgrade or downgrade anytime from Settings.",
+  },
 ];
 
 export default function PricingPage() {
   const { data: session } = useSession();
-  // @ts-ignore
-  const isPremium = session?.user?.isPremium;
+  const isPremium = !!(session?.user as Record<string, unknown> | undefined)?.isPremium;
+  const isLoggedIn = !!session?.user;
+  const isAdmin = !!(session?.user as Record<string, unknown> | undefined)?.isAdmin;
   const [loading, setLoading] = useState(false);
-  const [portalLoading, setPortalLoading] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   async function handleUpgrade() {
     setLoading(true);
@@ -47,117 +65,145 @@ export default function PricingPage() {
     }
   }
 
-  async function handleManageBilling() {
-    setPortalLoading(true);
-    try {
-      const res = await fetch("/api/stripe/portal", { method: "POST" });
-      const data = await res.json();
-      if (data?.url) window.location.href = data.url;
-    } catch {
-      setPortalLoading(false);
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div style={{ minHeight: "100vh", background: "#fafafa", fontFamily: "var(--font-outfit, var(--font-geist-sans)), sans-serif" }}>
       {/* Nav */}
-      <nav className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
+      <nav style={{ background: "#fff", borderBottom: "1px solid #e6e9ef" }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #4361ee, #6366f1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Zap style={{ width: 20, height: 20, color: "#fff" }} />
             </div>
-            <span className="text-xl font-bold text-gray-900">FixWorkFlow</span>
+            <span style={{ fontSize: 20, fontWeight: 700, color: "#1b2434" }}>FixWorkFlow</span>
           </Link>
-          <Link
-            href="/signup"
-            className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
-          >
-            Start Free Diagnosis
-          </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            {isLoggedIn ? (
+              <>
+                <Link href="/dashboard" style={{ fontSize: 13, color: "#5a6578", textDecoration: "none", fontWeight: 500 }}>Dashboard</Link>
+                {isAdmin && (
+                  <Link href="/admin" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, color: "#7c3aed", textDecoration: "none", fontWeight: 600 }}>
+                    Admin
+                    <span style={{ fontSize: 9, fontWeight: 800, background: "#7c3aed", color: "#fff", padding: "2px 6px", borderRadius: 4, letterSpacing: 0.5 }}>ADMIN</span>
+                  </Link>
+                )}
+                <UserAvatarDropdown user={session.user!} />
+              </>
+            ) : (
+              <Link
+                href="/signup"
+                style={{ padding: "8px 20px", borderRadius: 9, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none" }}
+              >
+                Get Your Score
+              </Link>
+            )}
+          </div>
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Simple, transparent pricing</h1>
-          <p className="text-gray-500 text-lg">
-            Start free. Upgrade when you need the full picture.
+      <div style={{ maxWidth: 880, margin: "0 auto", padding: "64px 24px" }}>
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <h1 style={{ fontSize: 38, fontWeight: 900, color: "#1b2434", margin: "0 0 12px", letterSpacing: -0.5 }}>
+            Simple pricing. Powerful results.
+          </h1>
+          <p style={{ fontSize: 17, color: "#5a6578", margin: 0 }}>
+            Start free. Upgrade when you want the full picture.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        {/* Plan Cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
           {/* Free Plan */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
-            <h2 className="text-xl font-semibold text-gray-900 mb-1">Free</h2>
-            <p className="text-gray-400 text-sm mb-6">Get started with a basic diagnosis</p>
-            <div className="mb-6">
-              <span className="text-4xl font-bold text-gray-900">$0</span>
-              <span className="text-gray-400">/forever</span>
+          <div style={{ background: "#fff", border: "1px solid #e6e9ef", borderRadius: 16, padding: 32 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1b2434", margin: "0 0 4px" }}>Free</h2>
+            <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 24px" }}>Everything you need to get started</p>
+            <div style={{ marginBottom: 24 }}>
+              <span style={{ fontSize: 40, fontWeight: 800, color: "#1b2434" }}>$0</span>
+              <span style={{ fontSize: 14, color: "#8d95a3" }}> /forever</span>
             </div>
-            <Link
-              href="/signup"
-              className="block w-full text-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-medium transition-colors mb-8"
-            >
-              Start Free Diagnosis
-            </Link>
-            <ul className="space-y-3">
-              {freeFeatures.map((feature) => (
-                <li key={feature} className="flex items-start gap-3 text-sm text-gray-600">
-                  <Check className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                  {feature}
+            {isLoggedIn && !isPremium ? (
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "center",
+                padding: "12px 24px", borderRadius: 10,
+                background: "#f4f5f8", color: "#8d95a3",
+                fontSize: 14, fontWeight: 600, marginBottom: 32,
+              }}>
+                Current Plan
+              </div>
+            ) : !isLoggedIn ? (
+              <Link
+                href="/signup"
+                style={{
+                  display: "block", textAlign: "center",
+                  padding: "12px 24px", borderRadius: 10,
+                  background: "#f4f5f8", color: "#1b2434",
+                  fontSize: 14, fontWeight: 600, textDecoration: "none", marginBottom: 32,
+                  transition: "background 0.15s",
+                }}
+              >
+                Get Started
+              </Link>
+            ) : (
+              <div style={{ marginBottom: 32 }} />
+            )}
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+              {freeFeatures.map((f) => (
+                <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, color: "#3d4654" }}>
+                  <Check style={{ width: 16, height: 16, color: "#8d95a3", flexShrink: 0, marginTop: 2 }} />
+                  {f}
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Premium Plan */}
-          <div className="bg-white border-2 border-blue-200 rounded-2xl p-8 relative shadow-sm">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-blue-600 to-violet-600 text-white text-xs font-semibold rounded-full">
+          {/* Pro Plan */}
+          <div style={{ background: "#fff", border: "2px solid #4361ee", borderRadius: 16, padding: 32, position: "relative" }}>
+            <div style={{
+              position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)",
+              padding: "4px 14px", borderRadius: 20,
+              background: "linear-gradient(135deg, #4361ee, #6366f1)",
+              color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: 0.5,
+            }}>
               MOST POPULAR
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-1">Premium</h2>
-            <p className="text-gray-400 text-sm mb-6">Full workflow transformation</p>
-            <div className="mb-2">
-              <span className="text-4xl font-bold text-gray-900">$9.99</span>
-              <span className="text-gray-400">/month</span>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1b2434", margin: "0 0 4px" }}>Pro</h2>
+            <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 24px" }}>The full revenue intelligence suite</p>
+            <div style={{ marginBottom: 24 }}>
+              <span style={{ fontSize: 40, fontWeight: 800, color: "#1b2434" }}>$19.99</span>
+              <span style={{ fontSize: 14, color: "#8d95a3" }}> /month</span>
             </div>
-            <p className="text-sm text-gray-400 mb-4">or $79/year (save 34%)</p>
             {isPremium ? (
-              <>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-xs font-medium text-emerald-600 mb-6">
-                  <Check className="w-3 h-3" />
-                  You&apos;re Premium
-                </div>
-                <button
-                  onClick={handleManageBilling}
-                  disabled={portalLoading}
-                  className="w-full text-center px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-medium transition-colors mb-8 disabled:opacity-50"
-                >
-                  {portalLoading ? "Loading..." : "Manage Billing"}
-                </button>
-              </>
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                padding: "12px 24px", borderRadius: 10,
+                background: "rgba(16,185,129,0.08)", color: "#10b981",
+                fontSize: 14, fontWeight: 600, marginBottom: 32,
+              }}>
+                <Check style={{ width: 14, height: 14 }} />
+                Current Plan
+              </div>
             ) : (
-              <>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-xs font-medium text-emerald-600 mb-6">
-                  <Zap className="w-3 h-3" />
-                  7-day free trial — no credit card required
-                </div>
-                <button
-                  onClick={handleUpgrade}
-                  disabled={loading}
-                  className="w-full text-center px-6 py-3 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white rounded-full font-medium transition-all mb-8 flex items-center justify-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-50"
-                >
-                  {loading ? "Redirecting..." : "Start Free Trial"}
-                  {!loading && <ArrowRight className="w-4 h-4" />}
-                </button>
-              </>
+              <button
+                onClick={handleUpgrade}
+                disabled={loading}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  width: "100%", padding: "12px 24px", borderRadius: 10, border: "none",
+                  background: "linear-gradient(135deg, #4361ee, #6366f1)",
+                  color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer",
+                  marginBottom: 32, opacity: loading ? 0.6 : 1,
+                  transition: "opacity 0.15s",
+                }}
+              >
+                {loading ? "Redirecting..." : "Upgrade to Pro"}
+                {!loading && <ArrowRight style={{ width: 16, height: 16 }} />}
+              </button>
             )}
-            <ul className="space-y-3">
-              {premiumFeatures.map((feature) => (
-                <li key={feature} className="flex items-start gap-3 text-sm text-gray-600">
-                  <Check className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                  {feature}
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+              {proFeatures.map((f) => (
+                <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, color: "#3d4654" }}>
+                  <Check style={{ width: 16, height: 16, color: "#4361ee", flexShrink: 0, marginTop: 2 }} />
+                  {f}
                 </li>
               ))}
             </ul>
@@ -165,39 +211,57 @@ export default function PricingPage() {
         </div>
 
         {/* FAQ */}
-        <div className="mt-16 max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">
+        <div style={{ maxWidth: 640, margin: "64px auto 0" }}>
+          <h2 style={{ fontSize: 24, fontWeight: 800, color: "#1b2434", textAlign: "center", margin: "0 0 32px" }}>
             Frequently asked questions
           </h2>
-          <div className="space-y-6">
-            {[
-              {
-                q: "Is the free diagnosis really free?",
-                a: "Yes, completely. You get a real workflow diagnosis with your top 3 personalized recommendations. No credit card required.",
-              },
-              {
-                q: "What do I get with Premium?",
-                a: "Your full 12+ recommendation report, visual integration maps, step-by-step automation blueprints, monthly re-diagnosis to track progress, and exclusive discounts on recommended tools.",
-              },
-              {
-                q: "How does the 7-day free trial work?",
-                a: "Start your Premium trial instantly — no credit card needed. You get full access to all Premium features for 7 days. If you love it, choose a monthly or yearly plan to continue. If not, you simply go back to the free tier.",
-              },
-              {
-                q: "Can I cancel anytime?",
-                a: "Yes. Cancel anytime from your dashboard. You keep access until the end of your billing period.",
-              },
-              {
-                q: "Do you earn commissions on tool recommendations?",
-                a: "Yes, we may earn affiliate commissions when you sign up for recommended tools through our links. This doesn't cost you anything extra, and our recommendations are based on your diagnostic results, not commission rates.",
-              },
-            ].map((faq) => (
-              <div key={faq.q} className="border-b border-gray-100 pb-6">
-                <h3 className="text-gray-900 font-medium mb-2">{faq.q}</h3>
-                <p className="text-gray-500 text-sm">{faq.a}</p>
+          <div>
+            {faqs.map((faq, i) => (
+              <div key={faq.q} style={{ borderBottom: "1px solid #e6e9ef" }}>
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    width: "100%", padding: "16px 0", border: "none", background: "none",
+                    cursor: "pointer", textAlign: "left", fontFamily: "inherit",
+                  }}
+                >
+                  <span style={{ fontSize: 15, fontWeight: 600, color: "#1b2434" }}>{faq.q}</span>
+                  <ChevronDown
+                    style={{
+                      width: 18, height: 18, color: "#8d95a3", flexShrink: 0,
+                      transform: openFaq === i ? "rotate(180deg)" : "rotate(0)",
+                      transition: "transform 0.2s",
+                    }}
+                  />
+                </button>
+                {openFaq === i && (
+                  <p style={{ fontSize: 14, color: "#5a6578", margin: "0 0 16px", lineHeight: 1.6 }}>
+                    {faq.a}
+                  </p>
+                )}
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Bottom CTA */}
+        <div style={{ textAlign: "center", marginTop: 64 }}>
+          <p style={{ fontSize: 17, color: "#5a6578", margin: "0 0 20px" }}>
+            Start with the free plan and upgrade when you are ready.
+          </p>
+          <Link
+            href="/signup"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "12px 28px", borderRadius: 10,
+              background: "linear-gradient(135deg, #4361ee, #6366f1)",
+              color: "#fff", fontSize: 15, fontWeight: 600, textDecoration: "none",
+            }}
+          >
+            Get Your Free Score
+            <ArrowRight style={{ width: 16, height: 16 }} />
+          </Link>
         </div>
       </div>
     </div>
