@@ -514,6 +514,12 @@ export default function SettingsPage() {
   const [profileMsg, setProfileMsg] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [authProvider, setAuthProvider] = useState<string | null>(null);
+  const [hasPassword, setHasPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordMsg, setPasswordMsg] = useState("");
 
   // Subscription
   const isPremium = !!(session?.user as Record<string, unknown> | undefined)?.isPremium;
@@ -582,6 +588,7 @@ export default function SettingsPage() {
         setBusinessType(bt);
         setPhone(ph);
         setAuthProvider(prov);
+        setHasPassword(!!data.hasPassword);
         setOrigProfile({ name: n, email: e, businessName: bn, businessType: bt, phone: ph });
 
         if (data.notificationPrefs) setNotifPrefs({ ...DEFAULT_NOTIF, ...data.notificationPrefs });
@@ -945,6 +952,108 @@ export default function SettingsPage() {
                   You signed in with <strong style={{ textTransform: "capitalize" }}>{authProvider}</strong>. Password is
                   managed by {authProvider}.
                 </p>
+              ) : hasPassword ? (
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    setPasswordMsg("");
+                    if (newPassword.length < 8) {
+                      setPasswordMsg("New password must be at least 8 characters");
+                      return;
+                    }
+                    if (newPassword !== confirmNewPassword) {
+                      setPasswordMsg("Passwords do not match");
+                      return;
+                    }
+                    setPasswordSaving(true);
+                    try {
+                      const res = await fetch("/api/settings/password", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ currentPassword, newPassword }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) {
+                        setPasswordMsg(data.error || "Failed to update password");
+                      } else {
+                        setPasswordMsg("Password updated successfully");
+                        setCurrentPassword("");
+                        setNewPassword("");
+                        setConfirmNewPassword("");
+                      }
+                    } catch {
+                      setPasswordMsg("Failed to update password");
+                    }
+                    setPasswordSaving(false);
+                  }}
+                >
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: "#5a6578", display: "block", marginBottom: 4 }}>
+                        Current password
+                      </label>
+                      <input
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        required
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: "#5a6578", display: "block", marginBottom: 4 }}>
+                        New password
+                      </label>
+                      <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                        minLength={8}
+                        placeholder="At least 8 characters"
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: "#5a6578", display: "block", marginBottom: 4 }}>
+                        Confirm new password
+                      </label>
+                      <input
+                        type="password"
+                        value={confirmNewPassword}
+                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                        required
+                        minLength={8}
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 4 }}>
+                      <button
+                        type="submit"
+                        disabled={passwordSaving}
+                        style={{
+                          padding: "8px 20px",
+                          borderRadius: 8,
+                          border: "none",
+                          background: gradientBg,
+                          color: "#fff",
+                          fontSize: 13,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          fontFamily: "inherit",
+                          opacity: passwordSaving ? 0.6 : 1,
+                        }}
+                      >
+                        {passwordSaving ? "Saving..." : "Update Password"}
+                      </button>
+                      {passwordMsg && (
+                        <span style={{ fontSize: 12, color: passwordMsg === "Password updated successfully" ? "#10b981" : "#ef4444" }}>
+                          {passwordMsg}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </form>
               ) : (
                 <p style={{ fontSize: 13, color: "#5a6578", margin: 0 }}>
                   Password management is not available for your auth method.

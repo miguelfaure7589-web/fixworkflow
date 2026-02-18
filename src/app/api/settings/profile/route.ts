@@ -17,6 +17,7 @@ export async function GET() {
       name: true,
       email: true,
       phone: true,
+      password: true,
       isPremium: true,
       stripeCustomerId: true,
       stripeSubscriptionId: true,
@@ -46,6 +47,7 @@ export async function GET() {
     notificationPrefs: user.notificationPrefs,
     privacyPrefs: user.privacyPrefs,
     authProvider: user.accounts[0]?.provider || null,
+    hasPassword: !!user.password,
     businessProfile: user.businessProfiles[0] || null,
   });
 }
