@@ -91,7 +91,7 @@ function clearDraft() {
 // ── Component ──
 
 function OnboardingForm() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get("edit") === "true";
@@ -253,6 +253,9 @@ function OnboardingForm() {
 
       clearDraft();
 
+      // Force session refresh so the JWT reflects onboardingCompleted = true
+      await update();
+
       // Small delay so user sees all loading steps
       await new Promise((r) => setTimeout(r, 1200));
       router.push("/dashboard");
@@ -260,7 +263,7 @@ function OnboardingForm() {
       console.error("Onboarding error:", err);
       setSubmitting(false);
     }
-  }, [businessType, revenueRange, grossMargin, conversionRate, traffic, usesPersonalCredit, router]);
+  }, [businessType, revenueRange, grossMargin, conversionRate, traffic, usesPersonalCredit, router, update]);
 
   // ── Loading states ──
 

@@ -72,7 +72,7 @@ function clearDraft() {
 // ── Component ──
 
 function DiagnosisForm() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get("edit") === "true";
@@ -209,6 +209,9 @@ function DiagnosisForm() {
 
       clearDraft();
 
+      // Force session refresh so the JWT reflects diagnosisCompleted = true
+      await update();
+
       if (isEditMode) {
         router.push("/dashboard");
       } else {
@@ -218,7 +221,7 @@ function DiagnosisForm() {
       console.error("Diagnosis error:", err);
       setSubmitting(false);
     }
-  }, [frictionAreas, toolPain, primaryGoal, freeText, router, isEditMode]);
+  }, [frictionAreas, toolPain, primaryGoal, freeText, router, isEditMode, update]);
 
   // ── Loading ──
 

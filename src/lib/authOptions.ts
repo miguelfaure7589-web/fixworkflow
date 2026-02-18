@@ -53,7 +53,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, trigger }) {
       // On initial sign-in, populate token with user fields
       if (user) {
         token.id = user.id;
@@ -75,12 +75,13 @@ export const authOptions: NextAuthOptions = {
         token.refreshedAt = Date.now();
       }
 
-      // Re-fetch from DB every 5 minutes to keep token fresh
-      if (
-        token.id &&
-        (!token.refreshedAt ||
-          Date.now() - (token.refreshedAt as number) > 5 * 60 * 1000)
-      ) {
+      // Re-fetch from DB when client calls update() or every 5 minutes
+      const needsRefresh =
+        trigger === "update" ||
+        !token.refreshedAt ||
+        Date.now() - (token.refreshedAt as number) > 5 * 60 * 1000;
+
+      if (token.id && !user && needsRefresh) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
           select: {
