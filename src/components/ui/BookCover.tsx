@@ -9,7 +9,7 @@ interface BookCoverProps {
   height?: number;
 }
 
-export default function BookCover({ isbn, fallbackEmoji, width = 52, height = 72 }: BookCoverProps) {
+export default function BookCover({ isbn, fallbackEmoji, title, width = 52, height = 72 }: BookCoverProps & { title?: string }) {
   const [errored, setErrored] = useState(false);
 
   if (errored) {
@@ -28,7 +28,7 @@ export default function BookCover({ isbn, fallbackEmoji, width = 52, height = 72
   return (
     <img
       src={`https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`}
-      alt=""
+      alt={title || "Book cover"}
       onError={() => setErrored(true)}
       style={{
         width, height, borderRadius: 6,

@@ -13,7 +13,7 @@ export function faviconUrl(domain: string, size = 64) {
   return `https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`;
 }
 
-export default function LogoImg({ src, fallbackEmoji, size = 36, radius = 9 }: LogoImgProps) {
+export default function LogoImg({ src, fallbackEmoji, alt, size = 36, radius = 9 }: LogoImgProps & { alt?: string }) {
   const [errored, setErrored] = useState(false);
 
   if (errored) {
@@ -32,7 +32,7 @@ export default function LogoImg({ src, fallbackEmoji, size = 36, radius = 9 }: L
   return (
     <img
       src={src}
-      alt=""
+      alt={alt || "Logo"}
       onError={() => setErrored(true)}
       style={{
         width: size, height: size, borderRadius: radius,

@@ -25,6 +25,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://fixworkflow.com"),
+  alternates: { canonical: "/" },
   title: {
     template: "%s | FixWorkFlow",
     default: "FixWorkFlow — Revenue Health Score for Small Businesses",

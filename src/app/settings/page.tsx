@@ -1117,7 +1117,7 @@ export default function SettingsPage() {
                             {/* Provider icon */}
                             <img
                               src={`https://www.google.com/s2/favicons?domain=${catalog?.icon || intg.provider}&sz=64`}
-                              alt=""
+                              alt={`${catalog?.name || intg.provider} logo`}
                               style={{ width: 40, height: 40, borderRadius: 10, background: "#f4f5f8" }}
                             />
                             <div style={{ flex: 1 }}>
@@ -1200,7 +1200,7 @@ export default function SettingsPage() {
                           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                             <img
                               src={`https://www.google.com/s2/favicons?domain=${provider.icon}&sz=64`}
-                              alt=""
+                              alt={`${provider.name} logo`}
                               style={{ width: 40, height: 40, borderRadius: 10, background: "#f4f5f8" }}
                             />
                             <span style={{ fontSize: 16, fontWeight: 700, color: "#1b2434" }}>{provider.name}</span>
@@ -1729,7 +1729,7 @@ export default function SettingsPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
                 <img
                   src={`https://www.google.com/s2/favicons?domain=${provider.icon}&sz=64`}
-                  alt=""
+                  alt={`${provider.name} logo`}
                   style={{ width: 40, height: 40, borderRadius: 10, background: "#f4f5f8" }}
                 />
                 <h3 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: 0 }}>

@@ -547,7 +547,7 @@ export default function OnboardingPage() {
                   <div className="flex items-center gap-3">
                     <img
                       src={`https://www.google.com/s2/favicons?domain=${svc.icon}&sz=64`}
-                      alt=""
+                      alt={`${svc.name} logo`}
                       className="w-8 h-8 rounded-lg bg-white"
                     />
                     <div>

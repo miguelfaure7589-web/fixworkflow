@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Blog",
   description:
     "Practical tips on workflow automation, productivity systems, and tool stack optimization for freelancers and small teams.",
+  alternates: { canonical: "/blog" },
 };
 
 const categories = Array.from(new Set(blogPosts.map((p) => p.category)));
