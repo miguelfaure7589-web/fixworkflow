@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ShoppingBag,
   Code,
@@ -14,12 +14,12 @@ import {
   Loader2,
   Shield,
   BarChart3,
-  Target,
-  TrendingUp,
   Zap,
 } from "lucide-react";
 
 // ── Constants ──
+
+const DRAFT_KEY = "fixworkflow_onboarding_draft";
 
 const BUSINESS_TYPES = [
   { value: "ecommerce", label: "E-commerce", description: "Online store, marketplace, or physical products sold online", icon: ShoppingBag },
@@ -52,11 +52,49 @@ const LOADING_STEPS = [
   "Matching playbooks to your profile",
 ];
 
+// ── Helpers ──
+
+interface OnboardingDraft {
+  step: number;
+  businessType: string;
+  revenueRange: string;
+  grossMargin: string;
+  conversionRate: string;
+  traffic: string;
+  usesPersonalCredit: string;
+}
+
+function saveDraft(draft: OnboardingDraft) {
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  } catch {}
+}
+
+function loadDraft(): OnboardingDraft | null {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed.step !== "number") return null;
+    return parsed as OnboardingDraft;
+  } catch {
+    return null;
+  }
+}
+
+function clearDraft() {
+  try {
+    localStorage.removeItem(DRAFT_KEY);
+  } catch {}
+}
+
 // ── Component ──
 
-export default function OnboardingPage() {
+function OnboardingForm() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isEditMode = searchParams.get("edit") === "true";
 
   const [step, setStep] = useState(1);
   const [businessType, setBusinessType] = useState("");
@@ -68,8 +106,13 @@ export default function OnboardingPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
+  const [validationError, setValidationError] = useState("");
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const [integrationConnecting, setIntegrationConnecting] = useState(false);
 
-  // Auth + redirect guard
+  const restoredRef = useRef(false);
+
+  // Auth + redirect guard — skip redirects in edit mode
   useEffect(() => {
     if (status === "loading") return;
     if (!session?.user) {
@@ -81,14 +124,64 @@ export default function OnboardingPage() {
       router.push("/dashboard");
       return;
     }
-    if (!user.diagnosisCompleted) {
-      router.push("/diagnosis");
-      return;
+    if (!isEditMode) {
+      if (!user.diagnosisCompleted) {
+        router.push("/diagnosis");
+        return;
+      }
+      if (user.onboardingCompleted) {
+        router.push("/dashboard");
+      }
     }
-    if (user.onboardingCompleted) {
-      router.push("/dashboard");
+  }, [session, status, router, isEditMode]);
+
+  // Load saved draft (localStorage) or existing answers (edit mode)
+  useEffect(() => {
+    if (restoredRef.current) return;
+    if (status === "loading") return;
+    if (!session?.user) return;
+
+    restoredRef.current = true;
+
+    if (isEditMode) {
+      // In edit mode, load existing onboarding data from server
+      fetch("/api/onboarding")
+        .then((r) => r.json())
+        .then((json) => {
+          if (json.ok && json.data) {
+            const d = json.data;
+            if (d.businessType) setBusinessType(d.businessType);
+            if (d.revenueRange) setRevenueRange(d.revenueRange);
+            if (d.grossMarginPct != null) setGrossMargin(String(d.grossMarginPct));
+            if (d.conversionRatePct != null) setConversionRate(String(d.conversionRatePct));
+            if (d.trafficMonthly != null) setTraffic(String(d.trafficMonthly));
+            if (d.usesPersonalCredit) setUsesPersonalCredit(d.usesPersonalCredit);
+          }
+          setDraftLoaded(true);
+        })
+        .catch(() => setDraftLoaded(true));
+    } else {
+      // Check localStorage for abandoned draft
+      const draft = loadDraft();
+      if (draft) {
+        setStep(draft.step);
+        setBusinessType(draft.businessType || "");
+        setRevenueRange(draft.revenueRange || "");
+        setGrossMargin(draft.grossMargin || "");
+        setConversionRate(draft.conversionRate || "");
+        setTraffic(draft.traffic || "");
+        setUsesPersonalCredit(draft.usesPersonalCredit || "");
+      }
+      setDraftLoaded(true);
     }
-  }, [session, status, router]);
+  }, [status, session, isEditMode]);
+
+  // Save draft to localStorage on every change
+  useEffect(() => {
+    if (!draftLoaded) return;
+    if (isEditMode) return;
+    saveDraft({ step, businessType, revenueRange, grossMargin, conversionRate, traffic, usesPersonalCredit });
+  }, [step, businessType, revenueRange, grossMargin, conversionRate, traffic, usesPersonalCredit, draftLoaded, isEditMode]);
 
   // Animate loading steps
   useEffect(() => {
@@ -102,17 +195,25 @@ export default function OnboardingPage() {
     return () => clearInterval(interval);
   }, [submitting]);
 
-  const handleBusinessTypeSelect = useCallback((value: string) => {
-    setBusinessType(value);
-    setTimeout(() => setStep(2), 350);
+  const goToStep = useCallback((newStep: number) => {
+    setValidationError("");
+    setStep(newStep);
   }, []);
+
+  const handleBusinessTypeSelect = useCallback((value: string) => {
+    setValidationError("");
+    setBusinessType(value);
+    setTimeout(() => goToStep(2), 350);
+  }, [goToStep]);
 
   const handleRevenueSelect = useCallback((value: string) => {
+    setValidationError("");
     setRevenueRange(value);
-    setTimeout(() => setStep(3), 350);
-  }, []);
+    setTimeout(() => goToStep(3), 350);
+  }, [goToStep]);
 
   const handleCreditSelect = useCallback((value: string) => {
+    setValidationError("");
     setUsesPersonalCredit(value);
   }, []);
 
@@ -150,6 +251,8 @@ export default function OnboardingPage() {
         throw new Error((json?.error as string) || `Request failed (${res.status})`);
       }
 
+      clearDraft();
+
       // Small delay so user sees all loading steps
       await new Promise((r) => setTimeout(r, 1200));
       router.push("/dashboard");
@@ -181,7 +284,9 @@ export default function OnboardingPage() {
               <BarChart3 className="w-9 h-9 text-white" />
             </div>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Building your Revenue Health Score</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">
+            {isEditMode ? "Updating your Revenue Health Score" : "Building your Revenue Health Score"}
+          </h2>
           <div className="space-y-3 text-left">
             {LOADING_STEPS.map((label, i) => (
               <div key={label} className="flex items-center gap-3">
@@ -206,8 +311,6 @@ export default function OnboardingPage() {
   const filledCount = [grossMargin, conversionRate, traffic].filter((v) => v !== "").length;
   const accuracy = ACCURACY_LEVELS[filledCount];
 
-  const [integrationConnecting, setIntegrationConnecting] = useState(false);
-
   const progress = (step / 5) * 100;
 
   return (
@@ -216,7 +319,7 @@ export default function OnboardingPage() {
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex justify-between text-sm text-gray-400 mb-2">
-            <span>Business Profile Setup</span>
+            <span>{isEditMode ? "Edit Business Profile" : "Business Profile Setup"}</span>
             <span>Step {step} of 5</span>
           </div>
           <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -309,8 +412,8 @@ export default function OnboardingPage() {
 
             {/* Back button */}
             <button
-              onClick={() => setStep(1)}
-              className="flex items-center gap-1.5 mt-6 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              onClick={() => goToStep(1)}
+              className="flex items-center gap-1.5 mt-6 text-[13px] text-[#5a6578] hover:text-gray-900 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
               Back
@@ -406,13 +509,13 @@ export default function OnboardingPage() {
             {/* Buttons */}
             <div className="flex gap-3">
               <button
-                onClick={() => setStep(4)}
+                onClick={() => goToStep(4)}
                 className="flex-1 px-6 py-3 rounded-full border-2 border-gray-200 text-gray-600 font-medium hover:border-gray-300 hover:bg-gray-50 transition-all duration-150"
               >
                 Skip for now
               </button>
               <button
-                onClick={() => setStep(4)}
+                onClick={() => goToStep(4)}
                 className="flex-1 px-6 py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-800 hover:-translate-y-px hover:shadow-md transition-all duration-150"
               >
                 Continue
@@ -421,8 +524,8 @@ export default function OnboardingPage() {
 
             {/* Back button */}
             <button
-              onClick={() => setStep(2)}
-              className="flex items-center gap-1.5 mt-6 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              onClick={() => goToStep(2)}
+              className="flex items-center gap-1.5 mt-6 text-[13px] text-[#5a6578] hover:text-gray-900 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
               Back
@@ -471,17 +574,26 @@ export default function OnboardingPage() {
               })}
             </div>
 
+            {validationError && (
+              <p className="mb-4 text-sm text-red-500">{validationError}</p>
+            )}
+
             {/* Buttons */}
             <div className="flex gap-3">
               <button
-                onClick={() => setStep(5)}
+                onClick={() => goToStep(5)}
                 className="flex-1 px-6 py-3 rounded-full border-2 border-gray-200 text-gray-600 font-medium hover:border-gray-300 hover:bg-gray-50 transition-all duration-150"
               >
                 Skip
               </button>
               <button
-                onClick={() => setStep(5)}
-                disabled={!usesPersonalCredit}
+                onClick={() => {
+                  if (!usesPersonalCredit) {
+                    setValidationError("Please select an option or click Skip.");
+                    return;
+                  }
+                  goToStep(5);
+                }}
                 className={`flex-1 px-6 py-3 rounded-full font-semibold transition-all duration-150 ${
                   usesPersonalCredit
                     ? "bg-gray-900 text-white hover:bg-gray-800 hover:-translate-y-px hover:shadow-md"
@@ -494,8 +606,8 @@ export default function OnboardingPage() {
 
             {/* Back button */}
             <button
-              onClick={() => setStep(3)}
-              className="flex items-center gap-1.5 mt-6 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              onClick={() => goToStep(3)}
+              className="flex items-center gap-1.5 mt-6 text-[13px] text-[#5a6578] hover:text-gray-900 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
               Back
@@ -575,14 +687,14 @@ export default function OnboardingPage() {
                 onClick={() => handleSubmit(!!grossMargin || !!conversionRate || !!traffic)}
                 className="flex-1 px-6 py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-800 hover:-translate-y-px hover:shadow-md transition-all duration-150"
               >
-                Build My Score
+                {isEditMode ? "Save & Recalculate" : "Build My Score"}
               </button>
             </div>
 
             {/* Back button */}
             <button
-              onClick={() => setStep(4)}
-              className="flex items-center gap-1.5 mt-6 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              onClick={() => goToStep(4)}
+              className="flex items-center gap-1.5 mt-6 text-[13px] text-[#5a6578] hover:text-gray-900 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
               Back
@@ -597,5 +709,19 @@ export default function OnboardingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+          <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+        </div>
+      }
+    >
+      <OnboardingForm />
+    </Suspense>
   );
 }

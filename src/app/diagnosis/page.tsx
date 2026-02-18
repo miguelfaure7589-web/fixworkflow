@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Outfit } from "next/font/google";
-import { Loader2, Shield, CheckCircle2 } from "lucide-react";
+import { Loader2, Shield, CheckCircle2, ChevronLeft } from "lucide-react";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
 // ── Constants ──
+
+const DRAFT_KEY = "fixworkflow_diagnosis_draft";
 
 const FRICTION_OPTIONS = [
   { value: "revenue", label: "Revenue & Sales", description: "Getting leads, closing deals, or growing income" },
@@ -33,11 +35,47 @@ const GOAL_OPTIONS = [
   { value: "scale_up", label: "Scale the business", description: "Hire, systematize, and grow" },
 ];
 
+// ── Helpers ──
+
+interface DiagnosisDraft {
+  step: number;
+  frictionAreas: string[];
+  toolPain: string;
+  primaryGoal: string;
+  freeText: string;
+}
+
+function saveDraft(draft: DiagnosisDraft) {
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  } catch {}
+}
+
+function loadDraft(): DiagnosisDraft | null {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed.step !== "number") return null;
+    return parsed as DiagnosisDraft;
+  } catch {
+    return null;
+  }
+}
+
+function clearDraft() {
+  try {
+    localStorage.removeItem(DRAFT_KEY);
+  } catch {}
+}
+
 // ── Component ──
 
-export default function DiagnosisPage() {
+function DiagnosisForm() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isEditMode = searchParams.get("edit") === "true";
 
   const [step, setStep] = useState(1);
   const [frictionAreas, setFrictionAreas] = useState<string[]>([]);
@@ -45,8 +83,13 @@ export default function DiagnosisPage() {
   const [primaryGoal, setPrimaryGoal] = useState("");
   const [freeText, setFreeText] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [validationError, setValidationError] = useState("");
+  const [draftLoaded, setDraftLoaded] = useState(false);
 
-  // Route guard
+  // Track whether we've loaded saved data to avoid overwriting with defaults
+  const restoredRef = useRef(false);
+
+  // Route guard — skip redirects in edit mode
   useEffect(() => {
     if (status === "loading") return;
     if (!session?.user) {
@@ -58,28 +101,92 @@ export default function DiagnosisPage() {
       router.push("/dashboard");
       return;
     }
-    if (user.diagnosisCompleted && user.onboardingCompleted) {
-      router.push("/dashboard");
-    } else if (user.diagnosisCompleted) {
-      router.push("/onboarding");
+    if (!isEditMode) {
+      if (user.diagnosisCompleted && user.onboardingCompleted) {
+        router.push("/dashboard");
+      } else if (user.diagnosisCompleted) {
+        router.push("/onboarding");
+      }
     }
-  }, [session, status, router]);
+  }, [session, status, router, isEditMode]);
+
+  // Load saved draft (localStorage) or existing answers (edit mode)
+  useEffect(() => {
+    if (restoredRef.current) return;
+    if (status === "loading") return;
+    if (!session?.user) return;
+
+    restoredRef.current = true;
+
+    if (isEditMode) {
+      // In edit mode, load existing answers from server
+      fetch("/api/diagnosis")
+        .then((r) => r.json())
+        .then((json) => {
+          if (json.ok && json.data) {
+            const d = json.data;
+            if (Array.isArray(d.frictionAreas) && d.frictionAreas.length > 0) {
+              setFrictionAreas(d.frictionAreas);
+            }
+            if (d.toolPain) setToolPain(d.toolPain);
+            if (d.primaryGoal) setPrimaryGoal(d.primaryGoal);
+            if (d.freeTextChallenge) setFreeText(d.freeTextChallenge);
+          }
+          setDraftLoaded(true);
+        })
+        .catch(() => setDraftLoaded(true));
+    } else {
+      // Check localStorage for abandoned draft
+      const draft = loadDraft();
+      if (draft) {
+        setStep(draft.step);
+        setFrictionAreas(draft.frictionAreas || []);
+        setToolPain(draft.toolPain || "");
+        setPrimaryGoal(draft.primaryGoal || "");
+        setFreeText(draft.freeText || "");
+      }
+      setDraftLoaded(true);
+    }
+  }, [status, session, isEditMode]);
+
+  // Save draft to localStorage on every change
+  useEffect(() => {
+    if (!draftLoaded) return;
+    if (isEditMode) return; // Don't save drafts in edit mode
+    saveDraft({ step, frictionAreas, toolPain, primaryGoal, freeText });
+  }, [step, frictionAreas, toolPain, primaryGoal, freeText, draftLoaded, isEditMode]);
+
+  const goToStep = useCallback((newStep: number) => {
+    setValidationError("");
+    setStep(newStep);
+  }, []);
 
   const toggleFriction = useCallback((value: string) => {
+    setValidationError("");
     setFrictionAreas((prev) =>
       prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
     );
   }, []);
 
   const handleToolPainSelect = useCallback((value: string) => {
+    setValidationError("");
     setToolPain(value);
-    setTimeout(() => setStep(3), 350);
-  }, []);
+    setTimeout(() => goToStep(3), 350);
+  }, [goToStep]);
 
   const handleGoalSelect = useCallback((value: string) => {
+    setValidationError("");
     setPrimaryGoal(value);
-    setTimeout(() => setStep(4), 350);
-  }, []);
+    setTimeout(() => goToStep(4), 350);
+  }, [goToStep]);
+
+  const handleContinueStep1 = useCallback(() => {
+    if (frictionAreas.length === 0) {
+      setValidationError("Please select at least one friction area.");
+      return;
+    }
+    goToStep(2);
+  }, [frictionAreas, goToStep]);
 
   const handleSubmit = useCallback(async (skip: boolean) => {
     setSubmitting(true);
@@ -100,12 +207,18 @@ export default function DiagnosisPage() {
         throw new Error((data as Record<string, string>).error || `Request failed (${res.status})`);
       }
 
-      router.push("/onboarding");
+      clearDraft();
+
+      if (isEditMode) {
+        router.push("/dashboard");
+      } else {
+        router.push("/onboarding");
+      }
     } catch (err) {
       console.error("Diagnosis error:", err);
       setSubmitting(false);
     }
-  }, [frictionAreas, toolPain, primaryGoal, freeText, router]);
+  }, [frictionAreas, toolPain, primaryGoal, freeText, router, isEditMode]);
 
   // ── Loading ──
 
@@ -125,7 +238,7 @@ export default function DiagnosisPage() {
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex justify-between text-sm text-gray-400 mb-2">
-            <span>Quick Diagnosis</span>
+            <span>{isEditMode ? "Edit Diagnosis" : "Quick Diagnosis"}</span>
             <span>Step {step} of 4</span>
           </div>
           <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
@@ -185,9 +298,12 @@ export default function DiagnosisPage() {
               })}
             </div>
 
+            {validationError && (
+              <p className="mt-3 text-sm text-red-500">{validationError}</p>
+            )}
+
             <button
-              onClick={() => setStep(2)}
-              disabled={frictionAreas.length === 0}
+              onClick={handleContinueStep1}
               className={`w-full mt-6 px-6 py-3 rounded-[10px] font-semibold text-white transition-all duration-150 ${
                 frictionAreas.length > 0
                   ? "bg-[#4361ee] hover:bg-[#3a56d4] hover:-translate-y-px hover:shadow-md"
@@ -234,6 +350,14 @@ export default function DiagnosisPage() {
                 );
               })}
             </div>
+
+            <button
+              onClick={() => goToStep(1)}
+              className="flex items-center gap-1.5 mt-6 text-[13px] text-[#5a6578] hover:text-gray-900 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back
+            </button>
           </div>
         )}
 
@@ -272,6 +396,14 @@ export default function DiagnosisPage() {
                 );
               })}
             </div>
+
+            <button
+              onClick={() => goToStep(2)}
+              className="flex items-center gap-1.5 mt-6 text-[13px] text-[#5a6578] hover:text-gray-900 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back
+            </button>
           </div>
         )}
 
@@ -314,9 +446,17 @@ export default function DiagnosisPage() {
                 className="flex-1 px-6 py-3 rounded-[10px] bg-[#4361ee] text-white font-semibold hover:bg-[#3a56d4] hover:-translate-y-px hover:shadow-md transition-all duration-150 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                Continue &rarr;
+                {isEditMode ? "Save Changes" : "Continue \u2192"}
               </button>
             </div>
+
+            <button
+              onClick={() => goToStep(3)}
+              className="flex items-center gap-1.5 mt-6 text-[13px] text-[#5a6578] hover:text-gray-900 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back
+            </button>
           </div>
         )}
 
@@ -327,5 +467,19 @@ export default function DiagnosisPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DiagnosisPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#f4f5f8] flex items-center justify-center">
+          <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+        </div>
+      }
+    >
+      <DiagnosisForm />
+    </Suspense>
   );
 }

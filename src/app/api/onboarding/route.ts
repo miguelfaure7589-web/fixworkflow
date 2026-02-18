@@ -7,6 +7,58 @@ import type { RevenueInputs, BusinessTypeName } from "@/lib/revenue-health";
 
 export const runtime = "nodejs";
 
+const REVENUE_RANGE_FROM_MIDPOINT: Record<number, string> = {
+  0: "pre_revenue",
+  500: "0_1k",
+  3000: "1k_5k",
+  10000: "5k_15k",
+  30000: "15k_50k",
+  75000: "50k_plus",
+};
+
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = (session.user as Record<string, unknown>).id as string;
+
+    const profile = await prisma.revenueProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      return NextResponse.json({ ok: true, data: null });
+    }
+
+    // Reverse-map revenueMonthly back to range label
+    const revenueRange = profile.revenueMonthly != null
+      ? REVENUE_RANGE_FROM_MIDPOINT[profile.revenueMonthly] ?? null
+      : null;
+
+    return NextResponse.json({
+      ok: true,
+      data: {
+        businessType: profile.businessType,
+        revenueRange,
+        grossMarginPct: profile.grossMarginPct,
+        conversionRatePct: profile.conversionRatePct,
+        trafficMonthly: profile.trafficMonthly,
+        usesPersonalCredit: profile.usesPersonalCredit,
+      },
+    });
+  } catch (err: unknown) {
+    console.error("ONBOARDING_GET_ERROR:", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Unknown server error" },
+      { status: 500 },
+    );
+  }
+}
+
 const VALID_BUSINESS_TYPES = new Set<string>([
   "ecommerce", "saas", "service_agency", "creator", "local_business",
 ]);

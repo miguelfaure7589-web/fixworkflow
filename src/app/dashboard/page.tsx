@@ -742,7 +742,7 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
               Updated {new Date(updatedAt).toLocaleDateString()} {new Date(updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </p>
           )}
-          <div className="flex items-center gap-3 mt-2">
+          <div className="flex items-center gap-3 mt-2 flex-wrap">
             <button
               onClick={handleEditProfile}
               className="text-xs text-blue-500 hover:text-blue-700"
@@ -763,6 +763,20 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
               )}
               {recalculating ? "Recalculating..." : "Recalculate Score"}
             </button>
+            <span className="text-gray-300">|</span>
+            <Link
+              href="/diagnosis?edit=true"
+              className="text-xs text-gray-400 hover:text-blue-500"
+            >
+              Edit Diagnosis
+            </Link>
+            <span className="text-gray-300">|</span>
+            <Link
+              href="/onboarding?edit=true"
+              className="text-xs text-gray-400 hover:text-blue-500"
+            >
+              Edit Metrics
+            </Link>
           </div>
           {/* Missing data nudge — compact, dismissible */}
           {healthData.missingData.length > 0 && !dismissedMissing && (
