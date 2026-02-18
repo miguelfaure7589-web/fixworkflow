@@ -64,6 +64,7 @@ export const authOptions: NextAuthOptions = {
             isPremium: true,
             onboardingCompleted: true,
             diagnosisCompleted: true,
+            phone: true,
           },
         });
         if (dbUser) {
@@ -71,6 +72,7 @@ export const authOptions: NextAuthOptions = {
           token.isPremium = dbUser.isPremium;
           token.onboardingCompleted = dbUser.onboardingCompleted;
           token.diagnosisCompleted = dbUser.diagnosisCompleted;
+          token.phone = dbUser.phone;
         }
         token.refreshedAt = Date.now();
       }
@@ -89,6 +91,7 @@ export const authOptions: NextAuthOptions = {
             isPremium: true,
             onboardingCompleted: true,
             diagnosisCompleted: true,
+            phone: true,
           },
         });
         if (dbUser) {
@@ -96,6 +99,7 @@ export const authOptions: NextAuthOptions = {
           token.isPremium = dbUser.isPremium;
           token.onboardingCompleted = dbUser.onboardingCompleted;
           token.diagnosisCompleted = dbUser.diagnosisCompleted;
+          token.phone = dbUser.phone;
         }
         token.refreshedAt = Date.now();
       }
@@ -109,6 +113,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).isPremium = token.isPremium;
         (session.user as any).onboardingCompleted = token.onboardingCompleted;
         (session.user as any).diagnosisCompleted = token.diagnosisCompleted;
+        (session.user as any).phone = token.phone;
       }
       return session;
     },

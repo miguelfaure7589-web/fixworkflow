@@ -24,8 +24,6 @@ function LoginForm() {
     const user = session.user as Record<string, unknown>;
     if (!user.isAdmin && !user.diagnosisCompleted) {
       router.push("/diagnosis");
-    } else if (!user.isAdmin && !user.onboardingCompleted) {
-      router.push("/onboarding");
     } else {
       router.push("/dashboard");
     }

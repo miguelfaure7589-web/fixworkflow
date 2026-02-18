@@ -12,6 +12,7 @@ export default function SignupPage() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,8 +24,6 @@ export default function SignupPage() {
     const user = session.user as Record<string, unknown>;
     if (!user.isAdmin && !user.diagnosisCompleted) {
       router.push("/diagnosis");
-    } else if (!user.isAdmin && !user.onboardingCompleted) {
-      router.push("/onboarding");
     } else {
       router.push("/dashboard");
     }
@@ -39,7 +38,7 @@ export default function SignupPage() {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, phone, password }),
     });
 
     const data = await res.json();
@@ -118,6 +117,20 @@ export default function SignupPage() {
                 required
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 placeholder="you@example.com"
+              />
+            </div>
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number
+              </label>
+              <input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                placeholder="(555) 123-4567"
               />
             </div>
             <div>

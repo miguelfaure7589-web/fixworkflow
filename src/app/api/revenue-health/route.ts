@@ -88,10 +88,6 @@ export async function GET() {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!(session.user as Record<string, unknown>).isPremium) {
-    return Response.json({ error: "Premium required" }, { status: 402 });
-  }
-
   const userId = (session.user as Record<string, unknown>).id as string;
 
   const profile = await prisma.revenueProfile.findUnique({

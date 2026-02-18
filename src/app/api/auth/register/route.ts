@@ -8,6 +8,7 @@ import { sendWelcomeEmail } from "@/lib/email";
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.email("Invalid email"),
+  phone: z.string().min(7, "Phone number is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 
-  const { name, email, password } = result.data;
+  const { name, email, phone, password } = result.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
   const hash = await bcrypt.hash(password, 12);
 
   await prisma.user.create({
-    data: { name, email, password: hash },
+    data: { name, email, phone, password: hash },
   });
 
   // Send welcome email (fire-and-forget)

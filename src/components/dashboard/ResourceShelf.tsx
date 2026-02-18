@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Link from 'next/link';
 import type { ScoredProduct } from '@/lib/recommendations';
 import LogoImg, { faviconUrl } from '@/components/ui/LogoImg';
 import BookCover from '@/components/ui/BookCover';
+import { useCreditReferral } from './CreditReferralContext';
 
 interface Props {
   books: ScoredProduct[];
@@ -22,9 +24,9 @@ const tabs = [
 ];
 
 const ctaLabel: Record<string, string> = {
-  book: 'View on Amazon ↗',
-  course: 'Start Course ↗',
-  template: 'Get Free Template ↗',
+  book: 'View on Amazon \u2197',
+  course: 'Start Course \u2197',
+  template: 'Get Free Template \u2197',
 };
 
 function formatBizType(bt: string): string {
@@ -64,6 +66,176 @@ function ResourceCover({ item }: { item: ScoredProduct }) {
   );
 }
 
+/** Pinned credit card inside the resource shelf — shares state with the featured CreditRepairCard */
+function ShelfCreditCard() {
+  const cr = useCreditReferral();
+
+  if (cr.hidden && !cr.submitted) return null;
+
+  if (cr.submitted) {
+    return (
+      <div
+        style={{
+          flex: '0 0 290px', padding: 18, borderRadius: 12,
+          background: '#fafbfd', border: '1px solid rgba(16,185,129,0.25)',
+          display: 'flex', flexDirection: 'column',
+        }}
+      >
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%',
+            background: 'rgba(16,185,129,0.1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M20 6L9 17l-5-5" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#1b2434' }}>You&apos;re all set!</span>
+        </div>
+        <p style={{ fontSize: 12, color: '#5a6578', lineHeight: 1.6, margin: 0, flex: 1 }}>
+          A credit specialist will reach out within 24 hours
+          {cr.submittedPhone ? ` at ${cr.submittedPhone}` : ''}. No cost, no obligation.
+        </p>
+        <Link
+          href="/settings"
+          style={{ marginTop: 10, fontSize: 11, color: '#4361ee', textDecoration: 'underline' }}
+        >
+          Update my contact info
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        flex: '0 0 290px', padding: 18, borderRadius: 12,
+        background: '#fafbfd', border: '1px solid rgba(67,97,238,0.2)',
+        display: 'flex', flexDirection: 'column',
+        transition: 'border-color 0.2s',
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#4361ee'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(67,97,238,0.2)'; }}
+    >
+      {/* Icon + title */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
+        <div style={{
+          width: 48, height: 48, borderRadius: 10,
+          background: 'linear-gradient(135deg, #4361ee, #6366f1)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="white" fillOpacity="0.9" />
+          </svg>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#1b2434' }}>Your Credit May Be Costing Your Business</span>
+          </div>
+          <span style={{ fontSize: 9, fontWeight: 600, padding: '1px 5px', borderRadius: 3, background: 'rgba(67,97,238,0.08)', color: '#4361ee', display: 'inline-block', marginTop: 4 }}>
+            Financial Health
+          </span>
+        </div>
+      </div>
+
+      {/* Free badge row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, fontSize: 12 }}>
+        <span style={{ fontWeight: 600, color: '#10b981' }}>Free</span>
+        <span style={{ color: '#d0d5dd' }}>&middot;</span>
+        <span style={{ color: '#8d95a3' }}>No obligation</span>
+      </div>
+
+      {/* Body */}
+      <p style={{ fontSize: 12, color: '#5a6578', lineHeight: 1.6, margin: 0, flex: 1 }}>
+        A credit specialist can review your profile and find ways to lower your rates and separate personal from business credit.
+      </p>
+
+      {cr.apiError && (
+        <div style={{
+          marginTop: 8, padding: '6px 10px', borderRadius: 6,
+          background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)',
+          fontSize: 11, color: '#ef4444',
+        }}>
+          {cr.apiError}
+        </div>
+      )}
+
+      {cr.needsPhone ? (
+        /* Inline phone capture */
+        <div style={{ marginTop: 12 }}>
+          <p style={{ fontSize: 11, color: '#5a6578', marginBottom: 6 }}>
+            We need your phone number so a specialist can reach you.
+          </p>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <input
+              type="tel"
+              value={cr.phoneInput}
+              onChange={(e) => cr.setPhoneInput(e.target.value)}
+              placeholder="(555) 123-4567"
+              style={{
+                flex: 1, padding: '8px 10px', borderRadius: 7,
+                border: `1px solid ${cr.phoneError ? '#ef4444' : '#e6e9ef'}`,
+                fontSize: 12, color: '#1b2434', outline: 'none',
+                minWidth: 0,
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = '#4361ee'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = cr.phoneError ? '#ef4444' : '#e6e9ef'; }}
+            />
+            <button
+              onClick={cr.handlePhoneSubmit}
+              disabled={cr.submitting}
+              style={{
+                padding: '8px 14px', borderRadius: 7,
+                background: cr.submitting ? '#8d95a3' : '#4361ee',
+                color: '#fff', fontSize: 11, fontWeight: 700,
+                border: 'none', cursor: cr.submitting ? 'default' : 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {cr.submitting ? '...' : 'Submit'}
+            </button>
+          </div>
+          {cr.phoneError && (
+            <span style={{ fontSize: 10, color: '#ef4444', marginTop: 3, display: 'block' }}>{cr.phoneError}</span>
+          )}
+        </div>
+      ) : (
+        /* Primary + dismiss */
+        <div style={{ marginTop: 12 }}>
+          <button
+            onClick={cr.handlePrimaryClick}
+            disabled={cr.submitting}
+            style={{
+              padding: '8px 14px', borderRadius: 8,
+              background: cr.submitting ? '#8d95a3' : '#4361ee',
+              color: '#fff', fontSize: 12, fontWeight: 700,
+              border: 'none', cursor: cr.submitting ? 'default' : 'pointer',
+              alignSelf: 'flex-start',
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={(e) => { if (!cr.submitting) e.currentTarget.style.background = '#3451de'; }}
+            onMouseLeave={(e) => { if (!cr.submitting) e.currentTarget.style.background = '#4361ee'; }}
+          >
+            {cr.submitting ? 'Submitting...' : 'Yes, Have a Specialist Reach Out \u2192'}
+          </button>
+          <div style={{ marginTop: 8 }}>
+            <button
+              onClick={cr.handleDismiss}
+              style={{
+                fontSize: 11, color: '#8d95a3', background: 'none',
+                border: 'none', cursor: 'pointer', padding: 0,
+              }}
+            >
+              Not right now
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ResourceShelf({ books, courses, templates, isPremium, businessType, revenueRange, usesPersonalCredit }: Props) {
   const [activeTab, setActiveTab] = useState<'book' | 'course' | 'template'>('book');
 
@@ -79,6 +251,7 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
   const dataMap = { book: books, course: courses, template: templates };
   const items = dataMap[activeTab];
   const isLocked = !isPremium && activeTab !== 'book';
+  const showCreditCard = activeTab === 'book' && (usesPersonalCredit === 'yes' || usesPersonalCredit === 'sometimes');
 
   return (
     <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e6e9ef', padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
@@ -132,60 +305,7 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
       ) : (
         <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
           {/* Pinned credit card for Books tab */}
-          {activeTab === 'book' && (usesPersonalCredit === 'yes' || usesPersonalCredit === 'sometimes') && (
-            <div
-              style={{
-                flex: '0 0 290px', padding: 18, borderRadius: 12,
-                background: '#fafbfd', border: '1px solid rgba(67,97,238,0.2)',
-                display: 'flex', flexDirection: 'column',
-                transition: 'border-color 0.2s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#4361ee'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(67,97,238,0.2)'; }}
-            >
-              <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
-                <div style={{
-                  width: 48, height: 48, borderRadius: 10,
-                  background: 'linear-gradient(135deg, #4361ee, #6366f1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="white" fillOpacity="0.9" />
-                  </svg>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#1b2434' }}>Free Credit Assessment</span>
-                    <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>Recommended</span>
-                  </div>
-                  <span style={{ fontSize: 9, fontWeight: 600, padding: '1px 5px', borderRadius: 3, background: 'rgba(67,97,238,0.08)', color: '#4361ee', display: 'inline-block', marginTop: 4 }}>
-                    Financial Health
-                  </span>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, fontSize: 12 }}>
-                <span style={{ fontWeight: 600, color: '#10b981' }}>Free</span>
-                <span style={{ color: '#d0d5dd' }}>&middot;</span>
-                <span style={{ color: '#8d95a3' }}>No obligation</span>
-              </div>
-              <p style={{ fontSize: 12, color: '#5a6578', lineHeight: 1.6, margin: 0, flex: 1 }}>
-                You&apos;re using personal credit for business expenses. A specialist can review your credit profile and identify ways to save on interest while building stronger business credit.
-              </p>
-              <button
-                onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                style={{
-                  marginTop: 12, padding: '8px 14px', borderRadius: 8,
-                  background: '#4361ee', color: '#fff', fontSize: 12, fontWeight: 700,
-                  border: 'none', cursor: 'pointer', alignSelf: 'flex-start',
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#3451de')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = '#4361ee')}
-              >
-                Get Assessment ↗
-              </button>
-            </div>
-          )}
+          {showCreditCard && <ShelfCreditCard />}
           {items.map(item => (
             <div
               key={item.id}
@@ -238,11 +358,11 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
                 onMouseEnter={(e) => (e.currentTarget.style.background = '#3451de')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = '#4361ee')}
               >
-                {ctaLabel[item.type] || 'View ↗'}
+                {ctaLabel[item.type] || 'View \u2197'}
               </button>
             </div>
           ))}
-          {items.length === 0 && (
+          {items.length === 0 && !showCreditCard && (
             <div style={{ width: '100%', textAlign: 'center', padding: '20px', fontSize: 13, color: '#8d95a3' }}>
               No {activeTab}s matched for your profile yet.
             </div>

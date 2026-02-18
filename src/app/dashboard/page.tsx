@@ -66,6 +66,7 @@ import {
 import RecommendedTools from "@/components/dashboard/RecommendedTools";
 import ResourceShelf from "@/components/dashboard/ResourceShelf";
 import CreditRepairCard from "@/components/dashboard/CreditRepairCard";
+import { CreditReferralProvider } from "@/components/dashboard/CreditReferralContext";
 import LogoImg, { faviconUrl } from "@/components/ui/LogoImg";
 import {
   getToolRecommendations,
@@ -773,7 +774,7 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
             </Link>
             <span className="text-gray-300 hidden sm:inline">|</span>
             <Link
-              href="/onboarding?edit=true"
+              href="/diagnosis?edit=true"
               className="text-[11px] sm:text-xs text-gray-400 hover:text-blue-500"
             >
               Edit Metrics
@@ -813,15 +814,7 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
             Primary Risk
           </h2>
           <p className="text-sm font-semibold text-gray-800 leading-relaxed">{healthData.primaryRisk}</p>
-          {isPremium ? (
-            <WhyToggle text={generateRiskReasoning(healthData.pillars as Record<string, { score: number; reasons: string[]; levers: string[] }>, savedBusinessType || "service_agency")} />
-          ) : (
-            <LockedOverlay label="Deep risk analysis" compact>
-              <div style={{ padding: "8px 0" }}>
-                <p style={{ fontSize: 11, color: "#8d95a3", lineHeight: 1.6 }}>Your risk analysis with weighted pillar impact and estimated score improvement potential based on your business type...</p>
-              </div>
-            </LockedOverlay>
-          )}
+          <WhyToggle text={generateRiskReasoning(healthData.pillars as Record<string, { score: number; reasons: string[]; levers: string[] }>, savedBusinessType || "service_agency")} />
           {(() => {
             const weakest = Object.entries(healthData.pillars)
               .sort(([, a], [, b]) => (a as PillarData).score - (b as PillarData).score)[0];
@@ -845,18 +838,10 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
             Fastest Lever
           </h2>
           <p className="text-sm font-semibold text-gray-800 leading-relaxed">{healthData.fastestLever}</p>
-          {isPremium ? (
-            (() => {
-              const lr = generateLeverReasoning(healthData.pillars as Record<string, { score: number; reasons: string[]; levers: string[] }>, savedBusinessType || "service_agency");
-              return <WhyToggle text={lr.text} potential={lr.potential} />;
-            })()
-          ) : (
-            <LockedOverlay label="See the math" compact>
-              <div style={{ padding: "8px 0" }}>
-                <p style={{ fontSize: 11, color: "#8d95a3", lineHeight: 1.6 }}>Detailed revenue math breakdown showing your traffic, conversion, and AOV calculations with projected improvements...</p>
-              </div>
-            </LockedOverlay>
-          )}
+          {(() => {
+            const lr = generateLeverReasoning(healthData.pillars as Record<string, { score: number; reasons: string[]; levers: string[] }>, savedBusinessType || "service_agency");
+            return <WhyToggle text={lr.text} potential={lr.potential} />;
+          })()}
           {(() => {
             const pillars = healthData.pillars;
             // Try to compute a concrete impact number from acquisition pillar
@@ -889,8 +874,8 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
           {(() => {
             const entries = Object.entries(healthData.pillars);
             const sorted = [...entries].sort(([, a], [, b]) => (a as PillarData).score - (b as PillarData).score);
-            const lowestName = sorted[0]?.[0];
-            const highestName = sorted[sorted.length - 1]?.[0];
+            const weakest1 = sorted[0]?.[0];
+            const weakest2 = sorted[1]?.[0];
             return entries.map(([name, pillar], idx) => (
               <PillarBar
                 key={name}
@@ -900,7 +885,7 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
                 businessType={savedBusinessType || "service_agency"}
                 missingData={healthData.missingData}
                 isPro={isPremium}
-                isTopOrBottom={name === lowestName || name === highestName}
+                isTopOrBottom={name === weakest1 || name === weakest2}
                 onEditProfile={handleEditProfile}
               />
             ));
@@ -2009,16 +1994,6 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh }: { isPremium: 
                         </div>
                       )}
 
-                      {!isPremium && (
-                        <div className="bg-gradient-to-b from-violet-50/50 to-violet-50/30 border border-violet-100 rounded-xl p-5 text-center">
-                          <Lock className="w-5 h-5 text-violet-400 mx-auto mb-2" />
-                          <p className="text-sm font-medium text-gray-900 mb-1">Personalized 7-Day Plan</p>
-                          <p className="text-xs text-gray-500 mb-3">Get AI-generated daily actions, KPI targets, and risk warnings tailored to your business.</p>
-                          <Link href="/pricing" className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white rounded-full text-xs font-medium hover:bg-gray-800 transition-colors">
-                            Upgrade to Premium <ArrowRight className="w-3 h-3" />
-                          </Link>
-                        </div>
-                      )}
 
                       {/* Bottom note */}
                       <p className="text-[11px] text-gray-400 text-center pt-2">
@@ -2480,7 +2455,6 @@ function RecommendationsSection({ isPremium, hasScore }: { isPremium: boolean; h
   const [templates, setTemplates] = useState<ScoredProduct[]>([]);
   const [businessType, setBusinessType] = useState("");
   const [revenueRange, setRevenueRange] = useState("");
-  const [revenueFormatted, setRevenueFormatted] = useState("");
   const [usesPersonalCredit, setUsesPersonalCredit] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const { data: recSession } = useSession();
@@ -2499,7 +2473,6 @@ function RecommendationsSection({ isPremium, hasScore }: { isPremium: boolean; h
       setBusinessType(bt);
       const revLabel = rev >= 50000 ? "$50k+" : rev >= 15000 ? "$15k\u2013$50k" : rev >= 5000 ? "$5k\u2013$15k" : rev >= 1000 ? "$1k\u2013$5k" : rev > 0 ? "$0\u2013$1k" : "Pre-revenue";
       setRevenueRange(revLabel);
-      setRevenueFormatted(revLabel);
       setUsesPersonalCredit(profile.usesPersonalCredit ?? null);
       const pillarScores: Record<string, number> = {};
       for (const [key, val] of Object.entries(pillars)) {
@@ -2525,15 +2498,13 @@ function RecommendationsSection({ isPremium, hasScore }: { isPremium: boolean; h
   if (!hasScore || !loaded) return null;
 
   return (
-    <>
+    <CreditReferralProvider
+      userName={recSession?.user?.name || ""}
+      userEmail={recSession?.user?.email || ""}
+      userPhone={(recSession?.user as Record<string, unknown> | undefined)?.phone as string || ""}
+    >
       {/* Credit repair card — featured placement above tool stack */}
-      <CreditRepairCard
-        usesPersonalCredit={usesPersonalCredit}
-        businessType={businessType}
-        revenueFormatted={revenueFormatted}
-        userEmail={recSession?.user?.email || ""}
-        userName={recSession?.user?.name || ""}
-      />
+      <CreditRepairCard usesPersonalCredit={usesPersonalCredit} />
       {tools.length > 0 && <RecommendedTools tools={tools} isPremium={isPremium} />}
       {(books.length > 0 || courses.length > 0 || templates.length > 0) && (
         <ResourceShelf
@@ -2546,7 +2517,7 @@ function RecommendationsSection({ isPremium, hasScore }: { isPremium: boolean; h
           usesPersonalCredit={usesPersonalCredit}
         />
       )}
-    </>
+    </CreditReferralProvider>
   );
 }
 
@@ -2563,6 +2534,7 @@ export default function RevenueDashboard() {
   const [missingKeys, setMissingKeys] = useState<string[]>([]);
   const [scoreRefreshKey, setScoreRefreshKey] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [phoneBannerDismissed, setPhoneBannerDismissed] = useState(false);
   const [integrations, setIntegrations] = useState<{ id: string; provider: string; status: string; lastSyncAt: string | null; lastSyncStatus: string | null; lastSyncError: string | null }[]>([]);
   const [metricSources, setMetricSources] = useState<Record<string, string>>({});
   const [pillarHistory, setPillarHistory] = useState<Record<string, { prev: number; current: number }>>({});
@@ -2632,10 +2604,6 @@ export default function RevenueDashboard() {
       // Redirect through the funnel if not completed
       if (!user.diagnosisCompleted) {
         router.push("/diagnosis");
-        return;
-      }
-      if (!user.onboardingCompleted) {
-        router.push("/onboarding");
         return;
       }
     }
@@ -2782,6 +2750,26 @@ export default function RevenueDashboard() {
       <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-10 space-y-6 sm:space-y-8">
         {/* AI Business Summary — top of dashboard */}
         <AiBusinessSummary isPremium={isPremium} />
+
+        {/* Missing phone number prompt */}
+        {!phoneBannerDismissed && session?.user && !(session.user as Record<string, unknown>).phone && (
+          <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-sm">
+            <Info className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <span className="text-amber-800 flex-1">
+              Add your phone number so our partners can reach you.{" "}
+              <Link href="/settings" className="text-indigo-600 font-medium hover:underline">
+                Update in Settings
+              </Link>
+            </span>
+            <button
+              onClick={() => setPhoneBannerDismissed(true)}
+              className="text-amber-400 hover:text-amber-600 p-0.5"
+              aria-label="Dismiss"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* Integration Sync Status Bar */}
         {integrations.length > 0 && (
