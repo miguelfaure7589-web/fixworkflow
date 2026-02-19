@@ -25,11 +25,12 @@ interface SendEmailOpts {
 }
 
 async function sendEmail({ to, subject, html }: SendEmailOpts) {
+  console.log(`[EMAIL] Sending "${subject}" to ${to} | RESEND_API_KEY set: ${!!process.env.RESEND_API_KEY}`);
   const client = getResend();
 
   if (client) {
     try {
-      const { error } = await client.emails.send({
+      const { data, error } = await client.emails.send({
         from: FROM,
         to,
         subject,
@@ -37,6 +38,8 @@ async function sendEmail({ to, subject, html }: SendEmailOpts) {
       });
       if (error) {
         console.error("[EMAIL] Resend error:", error);
+      } else {
+        console.log("[EMAIL] Sent successfully, id:", data?.id);
       }
     } catch (err) {
       console.error("[EMAIL] Failed to send:", err);
@@ -97,6 +100,7 @@ function button(text: string, url: string): string {
 
 // a. Welcome email — sent after signup
 export async function sendWelcomeEmail(to: string, name?: string | null) {
+  console.log("[EMAIL] sendWelcomeEmail called for:", to, "name:", name);
   const greeting = name ? `Hi ${name},` : "Hi there,";
   const html = layout(`
     <h1 style="margin:0 0 16px;font-size:24px;color:#1b2434;">Welcome to FixWorkFlow</h1>

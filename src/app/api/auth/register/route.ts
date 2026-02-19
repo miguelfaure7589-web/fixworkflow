@@ -46,6 +46,7 @@ export async function POST(req: Request) {
   });
 
   // Send welcome email (fire-and-forget)
+  console.log("[REGISTER] User created, triggering welcome email for:", email);
   sendWelcomeEmail(email, name).catch((err) =>
     console.error("[EMAIL] Welcome email failed:", err),
   );

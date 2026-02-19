@@ -45,6 +45,7 @@ export const authOptions: NextAuthOptions = {
   events: {
     // Send welcome email when a user is created via OAuth (Google)
     async createUser({ user }) {
+      console.log("[OAUTH] New user created, triggering welcome email for:", user.email);
       if (user.email) {
         sendWelcomeEmail(user.email, user.name).catch((err) =>
           console.error("[EMAIL] OAuth welcome email failed:", err),
