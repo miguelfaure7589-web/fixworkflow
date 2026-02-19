@@ -100,6 +100,7 @@ export default function LandingPage() {
         {!isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
             <Link href="/pricing" style={{ fontSize: 14, color: '#5a6578', textDecoration: 'none' }}>Pricing</Link>
+            <Link href="/blog" style={{ fontSize: 14, color: '#5a6578', textDecoration: 'none' }}>Blog</Link>
             <a href="#reviews" style={{ fontSize: 14, color: '#5a6578', textDecoration: 'none' }}>Reviews</a>
             {isLoggedIn ? (
               <>
@@ -133,6 +134,7 @@ export default function LandingPage() {
       {isMobile && menuOpen && (
         <div style={{ position: 'fixed', top: 60, left: 0, right: 0, bottom: 0, zIndex: 99, background: '#fff', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 4, overflowY: 'auto' }}>
           <Link href="/pricing" onClick={() => setMenuOpen(false)} style={{ display: 'block', padding: '14px 12px', fontSize: 16, color: '#1b2434', textDecoration: 'none', borderRadius: 10, fontWeight: 500 }}>Pricing</Link>
+          <Link href="/blog" onClick={() => setMenuOpen(false)} style={{ display: 'block', padding: '14px 12px', fontSize: 16, color: '#1b2434', textDecoration: 'none', borderRadius: 10, fontWeight: 500 }}>Blog</Link>
           <a href="#reviews" onClick={() => setMenuOpen(false)} style={{ display: 'block', padding: '14px 12px', fontSize: 16, color: '#1b2434', textDecoration: 'none', borderRadius: 10, fontWeight: 500 }}>Reviews</a>
           {isLoggedIn ? (
             <>
