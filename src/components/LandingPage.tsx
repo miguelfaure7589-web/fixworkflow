@@ -371,10 +371,11 @@ export default function LandingPage() {
           </div>
           <span style={{ fontSize: 14, fontWeight: 700, color: '#8d95a3' }}>FixWorkFlow</span>
         </div>
-        <div style={{ display: 'flex', gap: 24 }}>
-          <Link href="/privacy" style={{ fontSize: 13, color: '#8d95a3', textDecoration: 'none' }}>Privacy</Link>
+        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
           <Link href="/terms" style={{ fontSize: 13, color: '#8d95a3', textDecoration: 'none' }}>Terms</Link>
-          <Link href="/contact" style={{ fontSize: 13, color: '#8d95a3', textDecoration: 'none' }}>Contact</Link>
+          <Link href="/privacy" style={{ fontSize: 13, color: '#8d95a3', textDecoration: 'none' }}>Privacy</Link>
+          <Link href="/refund-policy" style={{ fontSize: 13, color: '#8d95a3', textDecoration: 'none' }}>Refund Policy</Link>
+          <a href="mailto:support@fixworkflow.com" style={{ fontSize: 13, color: '#8d95a3', textDecoration: 'none' }}>Contact</a>
         </div>
         <span style={{ fontSize: 12, color: '#b4bac5' }}>© 2026 FixWorkFlow</span>
       </footer>
