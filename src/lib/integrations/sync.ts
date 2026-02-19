@@ -274,7 +274,9 @@ export async function syncIntegration(integrationId: string): Promise<SyncResult
             }),
           );
 
+          console.log("[EMAIL] Triggering weekly-score-update for:", user.email, "score:", result.score);
           shouldSendEmail(integration.userId, "scoreUpdates").then((ok) => {
+            console.log("[EMAIL] scoreUpdates pref check for weekly sync:", ok);
             if (ok) {
               sendWeeklyScoreUpdateEmail(
                 user.email!,
@@ -282,7 +284,7 @@ export async function syncIntegration(integrationId: string): Promise<SyncResult
                 previousScore,
                 pillarChanges,
               ).catch((err) =>
-                console.error("[EMAIL] Weekly score email failed:", err),
+                console.error("[EMAIL ERROR] Weekly score email failed:", err),
               );
             }
           });

@@ -179,7 +179,9 @@ export async function POST(req: Request) {
       const recommendation =
         result.recommendedNextSteps?.[0]?.title ||
         "Check your dashboard for personalized recommendations.";
+      console.log("[EMAIL] Triggering score-ready email for:", user.email, "score:", result.score);
       shouldSendEmail(userId, "scoreUpdates").then((ok) => {
+        console.log("[EMAIL] scoreUpdates pref check for diagnosis:", ok);
         if (ok) {
           sendScoreReadyEmail(
             user.email!,
@@ -187,7 +189,7 @@ export async function POST(req: Request) {
             weakestPillar,
             recommendation,
           ).catch((err) =>
-            console.error("[EMAIL] Score email failed:", err),
+            console.error("[EMAIL ERROR] Score email failed:", err),
           );
         }
       });

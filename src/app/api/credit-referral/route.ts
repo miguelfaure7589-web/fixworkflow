@@ -75,14 +75,38 @@ export async function POST(req: Request) {
       data: { userId, name, email, phone, bestTimeToCall, notes },
     });
 
+    // Fetch user's latest score + business type for the admin notification
+    let userScore: number | null = null;
+    let businessType: string | null = null;
+    try {
+      const [latestSnapshot, profile] = await Promise.all([
+        prisma.revenueScoreSnapshot.findFirst({
+          where: { userId },
+          orderBy: { createdAt: "desc" },
+          select: { score: true },
+        }),
+        prisma.revenueProfile.findUnique({
+          where: { userId },
+          select: { businessType: true },
+        }),
+      ]);
+      userScore = latestSnapshot?.score ?? null;
+      businessType = profile?.businessType ?? null;
+    } catch (e) {
+      console.error("[EMAIL] Failed to fetch score/businessType for admin notification:", e);
+    }
+
     // Send confirmation email to user (fire-and-forget, transactional — always send)
-    sendCreditReferralConfirmationEmail(email, phone).catch((err) =>
-      console.error("[EMAIL] Credit referral confirmation failed:", err),
+    console.log("[EMAIL] Triggering credit-referral-confirmation for:", email);
+    sendCreditReferralConfirmationEmail(email, phone, name).catch((err) =>
+      console.error("[EMAIL ERROR] Credit referral confirmation failed:", err),
     );
 
     // Notify admin (fire-and-forget)
-    sendAdminCreditReferralNotification({ name, email, phone, bestTimeToCall, notes }).catch(
-      (err) => console.error("[EMAIL] Admin referral notification failed:", err),
+    const adminEmail = process.env.ADMIN_EMAIL || "fixworkflows@gmail.com";
+    console.log("[EMAIL] Triggering admin-credit-referral-notification to:", adminEmail);
+    sendAdminCreditReferralNotification({ name, email, phone, bestTimeToCall, notes, score: userScore, businessType }).catch(
+      (err) => console.error("[EMAIL ERROR] Admin referral notification failed:", err),
     );
 
     return NextResponse.json({ ok: true, referral }, { status: 201 });

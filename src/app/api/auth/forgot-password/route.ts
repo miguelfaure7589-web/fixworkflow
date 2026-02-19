@@ -50,6 +50,7 @@ export async function POST(req: Request) {
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const resetUrl = `${baseUrl}/reset-password?token=${rawToken}&email=${encodeURIComponent(email)}`;
 
+  console.log("[EMAIL] Triggering password-reset email for:", email);
   await sendPasswordResetEmail(email, resetUrl);
 
   return genericResponse;

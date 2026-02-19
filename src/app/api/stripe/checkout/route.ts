@@ -10,7 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20",
 });
 
-export async function POST() {
+export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
@@ -26,16 +26,31 @@ export async function POST() {
     return Response.json({ error: "User not found" }, { status: 404 });
   }
 
+  // Determine plan (default to monthly)
+  let plan = "monthly";
+  try {
+    const body = await req.json().catch(() => null);
+    if (body?.plan === "yearly") plan = "yearly";
+  } catch { /* empty body is fine — defaults to monthly */ }
+
+  const priceId =
+    plan === "yearly"
+      ? process.env.STRIPE_PREMIUM_YEARLY_PRICE_ID!
+      : (process.env.STRIPE_PREMIUM_MONTHLY_PRICE_ID || process.env.STRIPE_PRICE_ID)!;
+
+  const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "https://fixworkflow.com";
+
   // Reuse existing Stripe customer if available
   const checkoutParams: Stripe.Checkout.SessionCreateParams = {
     mode: "subscription",
     line_items: [
-      { price: process.env.STRIPE_PRICE_ID!, quantity: 1 },
+      { price: priceId, quantity: 1 },
     ],
-    success_url: `${process.env.NEXTAUTH_URL}/dashboard?upgraded=1`,
-    cancel_url: `${process.env.NEXTAUTH_URL}/pricing?canceled=1`,
+    success_url: `${baseUrl}/dashboard?upgraded=1`,
+    cancel_url: `${baseUrl}/pricing?canceled=1`,
     metadata: {
       userId: user.id,
+      plan,
     },
   };
 

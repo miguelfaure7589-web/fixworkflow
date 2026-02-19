@@ -198,14 +198,16 @@ export async function POST(req: Request) {
       const weakestPillar = result.primaryRisk || "revenue";
       const recommendation =
         result.recommendedNextSteps?.[0]?.title || "Check your dashboard for personalized recommendations.";
+      console.log("[EMAIL] Triggering score-ready email for:", updatedUser.email, "score:", result.score);
       shouldSendEmail(userId, "scoreUpdates").then((ok) => {
+        console.log("[EMAIL] scoreUpdates pref check for onboarding:", ok);
         if (ok) {
           sendScoreReadyEmail(
             updatedUser.email!,
             result.score,
             weakestPillar,
             recommendation,
-          ).catch((err) => console.error("[EMAIL] Score ready email failed:", err));
+          ).catch((err) => console.error("[EMAIL ERROR] Score ready email failed:", err));
         }
       });
     }
