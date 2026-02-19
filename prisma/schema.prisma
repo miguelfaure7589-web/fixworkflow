@@ -50,6 +50,7 @@ model User {
 
   integrations            Integration[]
   metricHistory           MetricHistory[]
+  weeklyLogs              WeeklyLog[]
 }
 
 model Account {
@@ -459,6 +460,27 @@ model CreditReferral {
   updatedAt      DateTime @updatedAt
 
   user           User     @relation(fields: [userId], references: [id])
+}
+
+// ─── Weekly Revenue Tracker ───
+
+model WeeklyLog {
+  id        String   @id @default(cuid())
+  userId    String
+  weekOf    DateTime
+  revenue   Float
+  orders    Int?
+  expenses  Float?
+  aov       Float?
+  profit    Float?
+  margin    Float?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekOf])
 }
 
 // ─── Integration Framework ───

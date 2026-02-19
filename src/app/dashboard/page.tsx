@@ -67,6 +67,7 @@ import RecommendedTools from "@/components/dashboard/RecommendedTools";
 import ResourceShelf from "@/components/dashboard/ResourceShelf";
 import CreditRepairCard from "@/components/dashboard/CreditRepairCard";
 import { CreditReferralProvider } from "@/components/dashboard/CreditReferralContext";
+import RevenueTracker from "@/components/dashboard/RevenueTracker";
 import LogoImg, { faviconUrl } from "@/components/ui/LogoImg";
 import {
   getToolRecommendations,
@@ -2544,6 +2545,8 @@ export default function RevenueDashboard() {
   const [whyData, setWhyData] = useState<WhyData | null>(null);
   const [whyLoading, setWhyLoading] = useState(false);
   const [whyError, setWhyError] = useState<string | null>(null);
+  const [trackerReminderDismissed, setTrackerReminderDismissed] = useState(false);
+  const [showTrackerReminder, setShowTrackerReminder] = useState(false);
 
   // Handle post-Stripe-checkout upgrade: refresh JWT so isPremium updates
   useEffect(() => {
@@ -2666,6 +2669,29 @@ export default function RevenueDashboard() {
       if (d.pillarHistory) setPillarHistory(d.pillarHistory);
     }).catch(() => toast("Failed to load integration status.", "error"));
   }, [session, status, isPremium, router, toast]);
+
+  // Weekly tracker reminder: show if Pro user hasn't logged this week by Thursday
+  useEffect(() => {
+    if (!isPremium) return;
+    const now = new Date();
+    const dayOfWeek = now.getUTCDay(); // 0=Sun, 4=Thu
+    if (dayOfWeek < 4 && dayOfWeek !== 0) return; // Only show Thu-Sun
+    fetch("/api/tracker/history")
+      .then((r) => r.ok ? r.json() : null)
+      .then((json) => {
+        if (!json?.logs?.length) { setShowTrackerReminder(true); return; }
+        const d = new Date();
+        d.setUTCHours(0, 0, 0, 0);
+        const day = d.getUTCDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        d.setUTCDate(d.getUTCDate() + diff);
+        const mondayStr = d.toISOString().slice(0, 10);
+        const hasThisWeek = json.logs.some((l: { weekOf: string }) => l.weekOf.slice(0, 10) === mondayStr);
+        if (!hasThisWeek) setShowTrackerReminder(true);
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPremium]);
 
   if (status === "loading" || loading) {
     return null; // Next.js loading.tsx skeleton handles this
@@ -2798,6 +2824,26 @@ export default function RevenueDashboard() {
           </div>
         )}
 
+        {/* Weekly tracker reminder */}
+        {showTrackerReminder && !trackerReminderDismissed && isPremium && (
+          <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl text-sm">
+            <span className="text-blue-600 flex-shrink-0">📊</span>
+            <span className="text-blue-800 flex-1">
+              You haven&apos;t logged this week&apos;s numbers yet.{" "}
+              <a href="#revenue-tracker" className="text-indigo-600 font-medium hover:underline">
+                Log Now ↓
+              </a>
+            </span>
+            <button
+              onClick={() => setTrackerReminderDismissed(true)}
+              className="text-blue-400 hover:text-blue-600 p-0.5"
+              aria-label="Dismiss"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* Integration Sync Status Bar */}
         {integrations.length > 0 && (
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 bg-white border border-gray-100 rounded-xl shadow-sm text-xs sm:text-sm">
@@ -2834,6 +2880,11 @@ export default function RevenueDashboard() {
 
         {/* Revenue Health Score Section */}
         <RevenueHealthSection isPremium={isPremium} onScoreChange={setHasScore} onMissingData={setMissingKeys} key={scoreRefreshKey} />
+
+        {/* Revenue Tracker (Pro) */}
+        <div id="revenue-tracker">
+          <RevenueTracker isPremium={isPremium} onScoreRefresh={() => setScoreRefreshKey((k) => k + 1)} />
+        </div>
 
         {/* Execution Playbooks (3-Phase Tracker) */}
         <PlaybooksSection isPremium={isPremium} hasScore={hasScore} onScoreRefresh={() => setScoreRefreshKey((k) => k + 1)} />
