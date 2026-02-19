@@ -7,6 +7,7 @@ import type { NextAuthOptions } from "next-auth";
 import { sendWelcomeEmail } from "@/lib/email";
 
 export const authOptions: NextAuthOptions = {
+  debug: true,
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
@@ -54,6 +55,11 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      console.log("[NEXTAUTH] signIn callback:", { email: user?.email, provider: account?.provider, type: account?.type, error: (account as Record<string, unknown>)?.error });
+      console.log("[NEXTAUTH] signIn profile:", JSON.stringify(profile, null, 2)?.slice(0, 500));
+      return true;
+    },
     async jwt({ token, user, trigger }) {
       // On initial sign-in, populate token with user fields
       if (user) {
