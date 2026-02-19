@@ -11,7 +11,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import UserAvatarDropdown from "@/components/UserAvatarDropdown";
 import {
@@ -2524,8 +2524,9 @@ function RecommendationsSection({ isPremium, hasScore }: { isPremium: boolean; h
 // ── Main Dashboard ──
 
 export default function RevenueDashboard() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [dashData, setDashData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -2543,6 +2544,32 @@ export default function RevenueDashboard() {
   const [whyData, setWhyData] = useState<WhyData | null>(null);
   const [whyLoading, setWhyLoading] = useState(false);
   const [whyError, setWhyError] = useState<string | null>(null);
+
+  // Handle post-Stripe-checkout upgrade: refresh JWT so isPremium updates
+  useEffect(() => {
+    if (searchParams.get("upgraded") !== "1") return;
+    // Strip the query param from the URL
+    window.history.replaceState({}, "", "/dashboard");
+
+    // Poll for up to 8 seconds — webhook may not have fired yet
+    let attempts = 0;
+    const poll = async () => {
+      await update(); // Force JWT refresh from DB
+      attempts++;
+      const user = session?.user as Record<string, unknown> | undefined;
+      if (user?.isPremium) {
+        toast("Welcome to FixWorkFlow Pro!", "success");
+        return;
+      }
+      if (attempts < 8) {
+        setTimeout(poll, 1000);
+      } else {
+        toast("Payment received! Your Pro access may take a moment to activate. Refresh the page if needed.", "success");
+      }
+    };
+    poll();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const openWhy = useCallback(async (item: WhyItem) => {
     setWhySelected(item);

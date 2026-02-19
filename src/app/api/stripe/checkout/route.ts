@@ -32,7 +32,7 @@ export async function POST() {
     line_items: [
       { price: process.env.STRIPE_PRICE_ID!, quantity: 1 },
     ],
-    success_url: `${process.env.NEXTAUTH_URL}/pricing?success=1`,
+    success_url: `${process.env.NEXTAUTH_URL}/dashboard?upgraded=1`,
     cancel_url: `${process.env.NEXTAUTH_URL}/pricing?canceled=1`,
     metadata: {
       userId: user.id,

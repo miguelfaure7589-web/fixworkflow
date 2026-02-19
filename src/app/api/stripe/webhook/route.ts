@@ -9,10 +9,15 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 export async function POST(req: Request) {
+  console.log("[STRIPE WEBHOOK] Received event");
+
   const sig = req.headers.get("stripe-signature");
   const body = await req.text();
 
-  if (!sig) return new Response("Missing stripe-signature", { status: 400 });
+  if (!sig) {
+    console.log("[STRIPE WEBHOOK] Missing stripe-signature header");
+    return new Response("Missing stripe-signature", { status: 400 });
+  }
 
   let event: Stripe.Event;
   try {
@@ -22,16 +27,20 @@ export async function POST(req: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (err: any) {
+    console.error("[STRIPE WEBHOOK] Signature verification failed:", err.message);
     return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
+
+  console.log("[STRIPE WEBHOOK] Event type:", event.type);
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as any;
 
     const userId = session.metadata?.userId;
+    console.log("[STRIPE WEBHOOK] checkout.session.completed — userId:", userId, "customer:", session.customer, "subscription:", session.subscription);
 
     if (!userId) {
-      console.log("No userId in metadata");
+      console.log("[STRIPE WEBHOOK] No userId in metadata — cannot upgrade");
       return new Response("Missing userId", { status: 400 });
     }
 
@@ -45,6 +54,7 @@ export async function POST(req: Request) {
         cancellationDate: null,
       },
     });
+    console.log("[STRIPE WEBHOOK] User upgraded to premium:", userId);
   }
 
   if (event.type === "customer.subscription.updated") {

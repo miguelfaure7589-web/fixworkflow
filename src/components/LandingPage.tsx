@@ -326,19 +326,40 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section style={{ background: 'linear-gradient(180deg, #fafbfd, #f0f2f8)', borderTop: '1px solid #e6e9ef', padding: `${isMobile ? 48 : 80}px ${px}px`, textAlign: 'center' }}>
-        <div style={{ maxWidth: 560, margin: '0 auto' }}>
-          <h2 style={{ fontSize: isMobile ? 26 : 36, fontWeight: 900, letterSpacing: -0.8, margin: '0 0 12px' }}>
-            Your business is leaving money on the table.
+      {/* ABOUT */}
+      <section style={{ background: '#fafbfd', borderTop: '1px solid #e6e9ef', padding: `${isMobile ? 60 : 80}px ${px}px` }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <h2 style={{ fontSize: isMobile ? 24 : 32, fontWeight: 900, letterSpacing: -0.8, margin: '0 0 12px', textAlign: 'center' }}>
+            About FixWorkFlow
           </h2>
-          <p style={{ fontSize: isMobile ? 14 : 16, color: '#5a6578', margin: '0 0 28px' }}>
-            Find out how much in 3 minutes — and get the playbook to fix it.
+          <p style={{ fontSize: isMobile ? 14 : 15, color: '#8d95a3', textAlign: 'center', margin: '0 0 40px', maxWidth: 600, marginLeft: 'auto', marginRight: 'auto' }}>
+            Built for business owners who are tired of guessing.
           </p>
-          <Link href="/signup" style={{ display: 'inline-block', padding: isMobile ? '15px 28px' : '17px 36px', borderRadius: 13, background: gradient, color: '#fff', fontSize: isMobile ? 15 : 17, fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 24px rgba(67,97,238,0.3)' }}>
-            Get Your Free Score →
-          </Link>
-          <p style={{ fontSize: 12, color: '#b4bac5', marginTop: 14 }}>Join 850+ business owners · No credit card · 3 minute setup</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div style={{ borderLeft: '4px solid #4361ee', paddingLeft: isMobile ? 16 : 24, paddingTop: 2, paddingBottom: 2 }}>
+              <div style={{ fontSize: isMobile ? 16 : 18, fontWeight: 700, color: '#1b2434', marginBottom: 8 }}>What is FixWorkFlow?</div>
+              <p style={{ fontSize: isMobile ? 14 : 15, color: '#5a6578', lineHeight: 1.7, margin: 0 }}>
+                FixWorkFlow is a revenue diagnostics platform for small businesses. We score five core pillars of your business — Revenue, Profitability, Retention, Acquisition, and Operations — to pinpoint exactly where you&apos;re losing money. Then we give you a step-by-step playbook to fix it.
+              </p>
+            </div>
+            <div style={{ borderLeft: '4px solid #4361ee', paddingLeft: isMobile ? 16 : 24, paddingTop: 2, paddingBottom: 2 }}>
+              <div style={{ fontSize: isMobile ? 16 : 18, fontWeight: 700, color: '#1b2434', marginBottom: 8 }}>Who is it for?</div>
+              <p style={{ fontSize: isMobile ? 14 : 15, color: '#5a6578', lineHeight: 1.7, margin: 0 }}>
+                Freelancers, agency owners, e-commerce sellers, coaches, and any small business owner doing $5K–$100K/month who knows something is off but can&apos;t figure out what. If you&apos;ve ever Googled &ldquo;how to grow my business&rdquo; and gotten useless generic advice, this is for you.
+              </p>
+            </div>
+            <div style={{ borderLeft: '4px solid #4361ee', paddingLeft: isMobile ? 16 : 24, paddingTop: 2, paddingBottom: 2 }}>
+              <div style={{ fontSize: isMobile ? 16 : 18, fontWeight: 700, color: '#1b2434', marginBottom: 8 }}>Why it works</div>
+              <p style={{ fontSize: isMobile ? 14 : 15, color: '#5a6578', lineHeight: 1.7, margin: 0 }}>
+                We don&apos;t give cookie-cutter advice. Your Revenue Health Score is calculated from your real numbers — your margins, your conversion rate, your churn. Every recommendation is matched to your weakest pillar, your business type, and your revenue stage. That&apos;s why our users see results in weeks, not months.
+              </p>
+            </div>
+          </div>
+          <div style={{ textAlign: 'center', marginTop: 40 }}>
+            <Link href="/signup" style={{ display: 'inline-block', padding: isMobile ? '14px 28px' : '16px 32px', borderRadius: 12, background: gradient, color: '#fff', fontSize: isMobile ? 15 : 16, fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 20px rgba(67,97,238,0.25)' }}>
+              Get Your Free Score →
+            </Link>
+          </div>
         </div>
       </section>
 
