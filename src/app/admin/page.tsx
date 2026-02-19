@@ -123,6 +123,7 @@ export default function AdminDashboard() {
   const [affRange, setAffRange] = useState("all");
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [integrationHealth, setIntegrationHealth] = useState<IntegrationHealth | null>(null);
+  const [feedbackItems, setFeedbackItems] = useState<{ id: string; userEmail: string | null; userName: string | null; type: string; message: string; pageUrl: string | null; status: string; createdAt: string }[]>([]);
   const [syncRunning, setSyncRunning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -132,18 +133,20 @@ export default function AdminDashboard() {
 
   const fetchAll = useCallback(async (rf: string, ar: string) => {
     try {
-      const [m, r, a, u, ih] = await Promise.all([
+      const [m, r, a, u, ih, fb] = await Promise.all([
         fetch("/api/admin/metrics").then(x => x.ok ? x.json() : null),
         fetch("/api/admin/referrals" + (rf !== "all" ? "?status=" + rf : "")).then(x => x.ok ? x.json() : null),
         fetch("/api/admin/affiliate-analytics?range=" + ar).then(x => x.ok ? x.json() : null),
         fetch("/api/admin/users?limit=20").then(x => x.ok ? x.json() : null),
         fetch("/api/admin/integrations").then(x => x.ok ? x.json() : null),
+        fetch("/api/admin/feedback").then(x => x.ok ? x.json() : null),
       ]);
       if (m) setMetrics(m);
       if (r) setReferrals(r.referrals || []);
       if (a) setAffData(a);
       if (u) setUsers(u.users || []);
       if (ih) setIntegrationHealth(ih);
+      if (fb) setFeedbackItems(fb.feedback || []);
     } catch { /* silent */ }
     setLoading(false);
     setRefreshing(false);
@@ -161,6 +164,11 @@ export default function AdminDashboard() {
   const handleStatusChange = useCallback(async (id: string, ns: string) => {
     const res = await fetch("/api/admin/referrals/" + id, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: ns }) });
     if (res.ok) setReferrals(prev => prev.map(r => r.id === id ? { ...r, status: ns } : r));
+  }, []);
+
+  const handleFeedbackStatus = useCallback(async (id: string, ns: string) => {
+    const res = await fetch("/api/admin/feedback", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status: ns }) });
+    if (res.ok) setFeedbackItems(prev => prev.map(f => f.id === id ? { ...f, status: ns } : f));
   }, []);
 
   if (status === "loading" || loading) {
@@ -448,6 +456,41 @@ export default function AdminDashboard() {
               <div style={{ fontSize: 13, color: "#8d95a3" }}>Affiliate click tracking will appear here once users start clicking recommendations.</div>
             </div>
           )}
+        </div>
+
+        {/* FEEDBACK */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: "#1b2434" }}>Feedback</span>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 10, background: "rgba(67,97,238,0.08)", color: "#4361ee" }}>{feedbackItems.length}</span>
+          </div>
+          <div style={{ ...card, padding: 0, overflow: "hidden" }}>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
+                <thead><tr style={{ background: "#fafbfd", borderBottom: "1px solid #e6e9ef" }}>
+                  {["Date", "User", "Type", "Message", "Status"].map(h => <th key={h} style={th}>{h}</th>)}
+                </tr></thead>
+                <tbody>
+                  {feedbackItems.map(f => (
+                    <tr key={f.id} style={{ borderBottom: "1px solid #f0f2f6" }}>
+                      <td style={{ ...td, whiteSpace: "nowrap", fontSize: 12 }}>{fmtDate(f.createdAt)}</td>
+                      <td style={td}><a href={"mailto:" + (f.userEmail || "")} style={{ color: "#4361ee", textDecoration: "none" }}>{f.userEmail || "\u2014"}</a></td>
+                      <td style={td}><span style={{ fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 5, background: f.type === "bug" ? "rgba(239,68,68,0.08)" : f.type === "feature" ? "rgba(67,97,238,0.08)" : "#f4f5f8", color: f.type === "bug" ? "#ef4444" : f.type === "feature" ? "#4361ee" : "#8d95a3" }}>{f.type}</span></td>
+                      <td style={{ ...td, maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={f.message}>{f.message.length > 80 ? f.message.slice(0, 80) + "\u2026" : f.message}</td>
+                      <td style={td}>
+                        <select value={f.status} onChange={e => handleFeedbackStatus(f.id, e.target.value)} style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid " + (f.status === "new" ? "#fcd34d" : f.status === "reviewed" ? "rgba(67,97,238,0.15)" : "rgba(16,185,129,0.15)"), fontSize: 12, fontWeight: 600, cursor: "pointer", background: f.status === "new" ? "#fef3c7" : f.status === "reviewed" ? "rgba(67,97,238,0.07)" : "rgba(16,185,129,0.07)", color: f.status === "new" ? "#92400e" : f.status === "reviewed" ? "#4361ee" : "#10b981" }}>
+                          <option value="new">New</option>
+                          <option value="reviewed">Reviewed</option>
+                          <option value="resolved">Resolved</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                  {feedbackItems.length === 0 && <tr><td colSpan={5} style={{ padding: "32px 16px", textAlign: "center", color: "#8d95a3", fontSize: 13 }}>No feedback yet.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         {/* USERS */}

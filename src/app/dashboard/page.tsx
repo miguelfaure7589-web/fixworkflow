@@ -77,6 +77,7 @@ import {
   type ScoredProduct,
 } from "@/lib/recommendations";
 import { useToast } from "@/components/Toast";
+import FeedbackModal from "@/components/FeedbackModal";
 
 // ── Revenue Health Score Types ──
 
@@ -2536,6 +2537,7 @@ export default function RevenueDashboard() {
   const [missingKeys, setMissingKeys] = useState<string[]>([]);
   const [scoreRefreshKey, setScoreRefreshKey] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [phoneBannerDismissed, setPhoneBannerDismissed] = useState(false);
   const [integrations, setIntegrations] = useState<{ id: string; provider: string; status: string; lastSyncAt: string | null; lastSyncStatus: string | null; lastSyncError: string | null }[]>([]);
   const [metricSources, setMetricSources] = useState<Record<string, string>>({});
@@ -2746,6 +2748,12 @@ export default function RevenueDashboard() {
                 Upgrade to Pro
               </Link>
             )}
+            <button
+              onClick={() => setFeedbackOpen(true)}
+              style={{ fontSize: 13, color: "#5a6578", background: "none", border: "none", cursor: "pointer", fontWeight: 500, fontFamily: "inherit" }}
+            >
+              Feedback
+            </button>
             {!!(session?.user as Record<string, unknown> | undefined)?.isAdmin && (
               <Link href="/admin" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, color: "#7c3aed", textDecoration: "none", fontWeight: 600 }}>
                 Admin
@@ -2772,6 +2780,9 @@ export default function RevenueDashboard() {
             <Link href="/settings" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50">
               Settings
             </Link>
+            <button onClick={() => { setFeedbackOpen(true); setMenuOpen(false); }} className="block w-full text-left px-3 py-3.5 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50" style={{ fontFamily: "inherit", background: "none", border: "none", cursor: "pointer" }}>
+              Feedback
+            </button>
             {!isPremium && (
               <Link href="/pricing" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50">
                 Upgrade to Pro
@@ -2788,6 +2799,13 @@ export default function RevenueDashboard() {
           </div>
         </div>
       )}
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        open={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+        onSuccess={() => toast("Thanks! We read every submission.", "success")}
+      />
 
       {/* Why Drawer */}
       <WhyDrawer

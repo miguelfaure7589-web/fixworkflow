@@ -51,6 +51,7 @@ model User {
   integrations            Integration[]
   metricHistory           MetricHistory[]
   weeklyLogs              WeeklyLog[]
+  feedback                Feedback[]
 }
 
 model Account {
@@ -537,4 +538,18 @@ model MetricHistory {
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, pillar, weekOf])
+}
+
+// ─── User Feedback ───
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // bug, feature, general
+  message   String
+  pageUrl   String?
+  status    String   @default("new") // new, reviewed, resolved
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
