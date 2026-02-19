@@ -83,7 +83,9 @@ export async function DELETE(
 
     return Response.json({ ok: true });
   } catch (err: unknown) {
-    console.error("[TRACKER DELETE]", err);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    console.error("[TRACKER DELETE] ERROR:", err);
+    console.error("[TRACKER DELETE] Stack:", err instanceof Error ? err.stack : "no stack");
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return Response.json({ error: message }, { status: 500 });
   }
 }

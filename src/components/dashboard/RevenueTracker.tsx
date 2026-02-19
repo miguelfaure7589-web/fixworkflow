@@ -322,10 +322,18 @@ export default function RevenueTracker({
         const json = await res.json();
         setLogs(json.logs ?? []);
         setMonthly(json.monthly ?? null);
+      } else {
+        const json = await res.json().catch(() => ({}));
+        console.error("[RevenueTracker] history error:", res.status, json);
+        if (res.status !== 402) {
+          toast(json.error || "Failed to load history", "error");
+        }
       }
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error("[RevenueTracker] fetch error:", err);
+    }
     setLoading(false);
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     if (isPremium) fetchHistory();

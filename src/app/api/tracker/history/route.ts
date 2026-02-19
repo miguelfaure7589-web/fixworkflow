@@ -79,6 +79,7 @@ export async function GET() {
     });
   } catch (err: unknown) {
     console.error("[TRACKER HISTORY]", err);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return Response.json({ error: message }, { status: 500 });
   }
 }

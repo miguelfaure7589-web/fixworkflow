@@ -160,7 +160,9 @@ export async function POST(req: Request) {
       result,
     });
   } catch (err: unknown) {
-    console.error("[TRACKER LOG]", err);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    console.error("[TRACKER LOG] ERROR:", err);
+    console.error("[TRACKER LOG] Stack:", err instanceof Error ? err.stack : "no stack");
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return Response.json({ error: message }, { status: 500 });
   }
 }
