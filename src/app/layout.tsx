@@ -25,6 +25,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  verification: {
+    google: "googleefed4deaad0ba2bf.html",
+  },
   metadataBase: new URL("https://fixworkflow.com"),
   alternates: { canonical: "/" },
   title: {
