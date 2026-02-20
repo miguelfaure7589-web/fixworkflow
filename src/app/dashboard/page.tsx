@@ -42,6 +42,7 @@ import {
   BookOpen,
   Play,
   Plug,
+  RefreshCw,
 } from "lucide-react";
 import { dispatchChatPrefill } from "@/lib/prompts/chatContext";
 import { CATEGORY_PROMPT_MAP } from "@/lib/prompts/rationale";
@@ -2550,6 +2551,8 @@ export default function RevenueDashboard() {
   const [whyError, setWhyError] = useState<string | null>(null);
   const [trackerReminderDismissed, setTrackerReminderDismissed] = useState(false);
   const [showTrackerReminder, setShowTrackerReminder] = useState(false);
+  const [adminSyncing, setAdminSyncing] = useState(false);
+  const [adminLastSync, setAdminLastSync] = useState<string | null>(null);
 
   // Handle post-Stripe-checkout upgrade: refresh JWT so isPremium updates
   useEffect(() => {
@@ -2695,6 +2698,30 @@ export default function RevenueDashboard() {
       .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPremium]);
+
+  // Admin auto-sync: update score from real platform data (throttled to 1hr)
+  useEffect(() => {
+    const user = session?.user as Record<string, unknown> | undefined;
+    if (!user?.isAdmin) return;
+    const lastSync = localStorage.getItem("adminLastSync");
+    if (lastSync && Date.now() - Number(lastSync) < 60 * 60 * 1000) {
+      setAdminLastSync(new Date(Number(lastSync)).toISOString());
+      return;
+    }
+    fetch("/api/admin/auto-sync-score", { method: "POST" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.ok && !d.throttled) {
+          localStorage.setItem("adminLastSync", String(Date.now()));
+          setAdminLastSync(d.lastSync);
+          setScoreRefreshKey((k) => k + 1);
+        } else if (d.ok && d.throttled) {
+          setAdminLastSync(d.lastSync);
+        }
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
 
   if (status === "loading" || loading) {
     return null; // Next.js loading.tsx skeleton handles this
@@ -2882,6 +2909,46 @@ export default function RevenueDashboard() {
             Browse Integrations &rarr;
           </Link>
         </div>
+
+        {/* Admin: Sync My Score card */}
+        {!!(session?.user as Record<string, unknown> | undefined)?.isAdmin && (
+          <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e6e9ef", padding: "14px 20px", display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{ width: 36, height: 36, minWidth: 36, borderRadius: 8, background: "rgba(16,185,129,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <RefreshCw size={18} color="#10b981" style={adminSyncing ? { animation: "spin 1s linear infinite" } : undefined} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#1b2434" }}>Admin Score Auto-Sync</span>
+              <span style={{ fontSize: 11, color: "#8d95a3", marginLeft: 8 }}>
+                {adminLastSync ? `Last synced ${new Date(adminLastSync).toLocaleTimeString()}` : "Not synced yet"}
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                setAdminSyncing(true);
+                fetch("/api/admin/auto-sync-score?force=true", { method: "POST" })
+                  .then((r) => r.json())
+                  .then((d) => {
+                    if (d.ok) {
+                      localStorage.setItem("adminLastSync", String(Date.now()));
+                      setAdminLastSync(d.lastSync);
+                      setScoreRefreshKey((k) => k + 1);
+                    }
+                  })
+                  .catch(() => {})
+                  .finally(() => setAdminSyncing(false));
+              }}
+              disabled={adminSyncing}
+              style={{
+                padding: "7px 16px", borderRadius: 8, border: "1px solid #10b981",
+                background: "transparent", color: "#10b981", fontSize: 12, fontWeight: 600,
+                cursor: adminSyncing ? "not-allowed" : "pointer", fontFamily: "inherit",
+                opacity: adminSyncing ? 0.6 : 1, whiteSpace: "nowrap",
+              }}
+            >
+              {adminSyncing ? "Syncing..." : "Sync My Score"}
+            </button>
+          </div>
+        )}
 
         {/* Revenue Health Score Section */}
         <RevenueHealthSection isPremium={isPremium} onScoreChange={setHasScore} onMissingData={setMissingKeys} key={scoreRefreshKey} />
