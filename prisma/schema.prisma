@@ -540,6 +540,24 @@ model MetricHistory {
   @@unique([userId, pillar, weekOf])
 }
 
+// ─── Admin Metrics History ───
+
+model AdminMetricsHistory {
+  id                       String   @id @default(cuid())
+  date                     DateTime @default(now())
+  totalUsers               Int
+  completedOnboarding      Int
+  proSubscribers           Int
+  creditReferrals          Int
+  affiliateClicks          Int
+  funnelSignedUp           Int
+  funnelStartedDiagnosis   Int
+  funnelCompletedOnboarding Int
+  funnelActiveDashboard    Int
+
+  @@unique([date])
+}
+
 // ─── User Feedback ───
 
 model Feedback {

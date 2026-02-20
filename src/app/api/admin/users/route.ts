@@ -17,8 +17,19 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const limit = Math.min(Number(searchParams.get("limit")) || 20, 100);
+    const search = searchParams.get("search")?.trim() || "";
+
+    const where = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: "insensitive" as const } },
+            { email: { contains: search, mode: "insensitive" as const } },
+          ],
+        }
+      : {};
 
     const users = await prisma.user.findMany({
+      where,
       take: limit,
       orderBy: { id: "desc" },
       select: {
@@ -72,5 +83,101 @@ export async function GET(req: Request) {
       { error: err instanceof Error ? err.message : "Server error" },
       { status: 500 },
     );
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!(session.user as Record<string, unknown>).isAdmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    const body = await req.json();
+    const { id, name, email, businessType, score, funnelStage, usesPersonalCredit } = body as {
+      id: string;
+      name?: string;
+      email?: string;
+      businessType?: string;
+      score?: number | null;
+      funnelStage?: string;
+      usesPersonalCredit?: string;
+    };
+
+    if (!id) return NextResponse.json({ error: "Missing user id" }, { status: 400 });
+
+    // Update core user fields
+    const userUpdate: Record<string, unknown> = {};
+    if (name !== undefined) userUpdate.name = name;
+    if (email !== undefined) userUpdate.email = email;
+    if (funnelStage !== undefined) {
+      if (funnelStage === "pro") userUpdate.isPremium = true;
+      if (funnelStage === "onboarded") { userUpdate.onboardingCompleted = true; userUpdate.diagnosisCompleted = true; }
+      if (funnelStage === "diagnosis_done") userUpdate.diagnosisCompleted = true;
+    }
+
+    if (Object.keys(userUpdate).length > 0) {
+      await prisma.user.update({ where: { id }, data: userUpdate });
+    }
+
+    // Update revenue profile fields
+    if (businessType !== undefined || usesPersonalCredit !== undefined) {
+      const profileData: Record<string, unknown> = {};
+      if (businessType !== undefined) profileData.businessType = businessType;
+      if (usesPersonalCredit !== undefined) profileData.usesPersonalCredit = usesPersonalCredit;
+
+      await prisma.revenueProfile.upsert({
+        where: { userId: id },
+        update: profileData,
+        create: { userId: id, ...profileData },
+      });
+    }
+
+    // Update score via new snapshot
+    if (score !== undefined && score !== null) {
+      await prisma.revenueScoreSnapshot.create({
+        data: {
+          userId: id,
+          score,
+          pillarRevenue: 0,
+          pillarProfitability: 0,
+          pillarRetention: 0,
+          pillarAcquisition: 0,
+          pillarOps: 0,
+          pillarsJson: "{}",
+          primaryRisk: "manual_edit",
+          fastestLever: "manual_edit",
+          nextStepsJson: "[]",
+          missingDataJson: "[]",
+        },
+      });
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (err: unknown) {
+    console.error("ADMIN_USER_PATCH_ERROR:", err);
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Server error" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!(session.user as Record<string, unknown>).isAdmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    if (!id) return NextResponse.json({ error: "Missing user id" }, { status: 400 });
+
+    // Prevent deleting yourself
+    const adminId = (session.user as Record<string, unknown>).id as string;
+    if (id === adminId) return NextResponse.json({ error: "Cannot delete yourself" }, { status: 400 });
+
+    await prisma.user.delete({ where: { id } });
+
+    return NextResponse.json({ ok: true });
+  } catch (err: unknown) {
+    console.error("ADMIN_USER_DELETE_ERROR:", err);
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Server error" }, { status: 500 });
   }
 }
