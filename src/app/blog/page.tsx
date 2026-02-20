@@ -6,11 +6,11 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Blog",
   description:
-    "Practical tips on workflow automation, productivity systems, and tool stack optimization for freelancers and small teams.",
+    "Practical advice on revenue health, business metrics, and growth strategies for small business owners.",
   alternates: { canonical: "/blog" },
 };
 
-const categories = Array.from(new Set(blogPosts.map((p) => p.category)));
+const categories = ["Revenue", "Profitability", "Retention", "Acquisition", "Tools"];
 
 export default function BlogPage() {
   const [featured, ...rest] = blogPosts;
@@ -53,8 +53,8 @@ export default function BlogPage() {
             The FixWorkFlow Blog
           </h1>
           <p className="text-base sm:text-lg text-gray-500 max-w-2xl mx-auto">
-            Practical advice on workflow optimization, automation, and
-            productivity for freelancers and small teams.
+            Practical advice on revenue health, business metrics, and
+            growth strategies for small business owners.
           </p>
         </div>
       </section>
