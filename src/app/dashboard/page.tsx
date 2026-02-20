@@ -41,6 +41,7 @@ import {
   Lightbulb,
   BookOpen,
   Play,
+  Plug,
 } from "lucide-react";
 import { dispatchChatPrefill } from "@/lib/prompts/chatContext";
 import { CATEGORY_PROMPT_MAP } from "@/lib/prompts/rationale";
@@ -2862,39 +2863,25 @@ export default function RevenueDashboard() {
           </div>
         )}
 
-        {/* Integration Sync Status Bar */}
-        {integrations.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 bg-white border border-gray-100 rounded-xl shadow-sm text-xs sm:text-sm">
-            {integrations.map((intg) => {
-              const providerName = intg.provider === "shopify" ? "Shopify" : intg.provider === "stripe-data" ? "Stripe" : intg.provider;
-              const isSynced = intg.lastSyncStatus === "success" && intg.lastSyncAt;
-              const isFailed = intg.lastSyncStatus === "failed";
-              const dotColor = isSynced ? "#10b981" : isFailed ? "#f59e0b" : "#4361ee";
-
-              return (
-                <div key={intg.id} className="flex items-center gap-2">
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: dotColor, display: "inline-block" }} />
-                  {isSynced && (
-                    <span className="text-gray-600">
-                      Data synced from <strong className="text-gray-800">{providerName}</strong> &middot; Last updated {new Date(intg.lastSyncAt!).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
-                    </span>
-                  )}
-                  {isFailed && (
-                    <span className="text-amber-600">
-                      {providerName} sync failed &middot; Using last known data
-                      {intg.lastSyncAt && <> from {new Date(intg.lastSyncAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</>}
-                    </span>
-                  )}
-                  {!isSynced && !isFailed && (
-                    <span className="text-blue-600">
-                      Connecting to {providerName}... first sync will run shortly.
-                    </span>
-                  )}
-                </div>
-              );
-            })}
+        {/* Connected Integrations CTA Card */}
+        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e6e9ef", padding: "18px 20px", display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ width: 40, height: 40, minWidth: 40, borderRadius: 10, background: "rgba(67,97,238,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Plug size={20} color="#4361ee" />
           </div>
-        )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#1b2434" }}>Connected Integrations</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: "#8d95a3" }}>0 of 15 tools connected</span>
+            </div>
+            <div style={{ height: 4, borderRadius: 2, background: "#f0f0f0", marginBottom: 6 }}>
+              <div style={{ height: 4, borderRadius: 2, background: "#4361ee", width: "0%" }} />
+            </div>
+            <span style={{ fontSize: 12, color: "#8d95a3" }}>Connect your business tools for a more accurate Revenue Health Score</span>
+          </div>
+          <Link href="/dashboard/integrations" style={{ padding: "8px 16px", borderRadius: 8, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
+            Browse Integrations &rarr;
+          </Link>
+        </div>
 
         {/* Revenue Health Score Section */}
         <RevenueHealthSection isPremium={isPremium} onScoreChange={setHasScore} onMissingData={setMissingKeys} key={scoreRefreshKey} />
