@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import ScorePreviewCard, { ScoreRing, PillarBars } from './landing/ScorePreviewCard';
 import UserAvatarDropdown from './UserAvatarDropdown';
 import { useIsMobile, useIsTablet } from '@/hooks/useMediaQuery';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, TrendingDown, DollarSign, UserMinus, MousePointerClick, Clock, HelpCircle } from 'lucide-react';
 
 const gradient = 'linear-gradient(135deg, #4361ee, #6366f1)';
 const tint = (hex: string, a: number) => {
@@ -15,12 +15,12 @@ const tint = (hex: string, a: number) => {
 };
 
 const painPoints = [
-  { emoji: '📉', title: 'Revenue is flat or unpredictable', desc: "You're busy but income doesn't grow. No system to identify your highest-leverage revenue stream." },
-  { emoji: '💸', title: 'Margins are shrinking', desc: 'Revenue looks fine but you keep less each month. Costs creep up without visibility.' },
-  { emoji: '🚪', title: "Customers don't stick around", desc: 'Always chasing new customers because existing ones quietly leave. Acquisition costs climb.' },
-  { emoji: '👻', title: 'Traffic but no conversions', desc: "People visit but don't buy. Can't tell if it's the offer, the funnel, or the pricing." },
-  { emoji: '🔥', title: 'Operations eating your time', desc: "You're the bottleneck. Manual processes, no delegation, everything runs through you." },
-  { emoji: '🎯', title: 'No idea what to fix first', desc: "You know something's wrong but you're guessing. Generic advice doesn't fit your situation." },
+  { icon: TrendingDown, title: 'Revenue is flat or unpredictable', desc: "You're busy but income doesn't grow. No system to identify your highest-leverage revenue stream." },
+  { icon: DollarSign, title: 'Margins are shrinking', desc: 'Revenue looks fine but you keep less each month. Costs creep up without visibility.' },
+  { icon: UserMinus, title: "Customers don't stick around", desc: 'Always chasing new customers because existing ones quietly leave. Acquisition costs climb.' },
+  { icon: MousePointerClick, title: 'Traffic but no conversions', desc: "People visit but don't buy. Can't tell if it's the offer, the funnel, or the pricing." },
+  { icon: Clock, title: 'Operations eating your time', desc: "You're the bottleneck. Manual processes, no delegation, everything runs through you." },
+  { icon: HelpCircle, title: 'No idea what to fix first', desc: "You know something's wrong but you're guessing. Generic advice doesn't fit your situation." },
 ];
 
 const howSteps = [
@@ -207,7 +207,7 @@ export default function LandingPage() {
                   transition: 'transform 0.2s, box-shadow 0.2s',
                   transform: hovered === i ? 'translateY(-2px)' : 'none',
                   boxShadow: hovered === i ? '0 8px 24px rgba(0,0,0,0.05)' : 'none' }}>
-                <div style={{ fontSize: 26, marginBottom: 10 }}>{p.emoji}</div>
+                <p.icon size={26} color="#4361ee" strokeWidth={1.8} style={{ marginBottom: 10 }} />
                 <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>{p.title}</div>
                 <div style={{ fontSize: 13, color: '#5a6578', lineHeight: 1.6 }}>{p.desc}</div>
               </div>
