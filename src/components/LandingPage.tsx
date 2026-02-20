@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import ScorePreviewCard, { ScoreRing, PillarBars } from './landing/ScorePreviewCard';
 import UserAvatarDropdown from './UserAvatarDropdown';
 import { useIsMobile, useIsTablet } from '@/hooks/useMediaQuery';
-import { Menu, X, TrendingDown, DollarSign, UserMinus, MousePointerClick, Clock, HelpCircle } from 'lucide-react';
+import { Menu, X, TrendingDown, DollarSign, UserMinus, MousePointerClick, Clock, HelpCircle, AlertTriangle, TrendingUp, Check, Star } from 'lucide-react';
 
 const gradient = 'linear-gradient(135deg, #4361ee, #6366f1)';
 const tint = (hex: string, a: number) => {
@@ -35,7 +35,7 @@ const reviewData = [
     result: 'Conversion up 1.8% in 3 weeks' },
   { name: 'Sarah K.', role: 'Agency Owner 4-person team', type: 'Agency', initials: 'SK', color: '#8b5cf6',
     quote: 'The score was a wake-up call — 42 out of 100. My Operations pillar was dragging everything down. The playbook gave me specific steps to delegate. Six weeks later we went from $8k to $13.5k/mo and I work fewer hours.',
-    result: '$8k → $13.5k/mo in 6 weeks' },
+    result: '$8k to $13.5k/mo in 6 weeks' },
   { name: 'David R.', role: 'E-commerce Store Owner', type: 'E-commerce', initials: 'DR', color: '#10b981',
     quote: "Every business tool gives the same generic advice. This one actually used MY numbers — my margins, my conversion rate, my AOV — and showed me I was bleeding $3,200/mo in margin leaks I didn't know about.",
     result: 'Found $3,200/mo in margin leaks' },
@@ -175,7 +175,7 @@ export default function LandingPage() {
               Get a Revenue Health Score based on your real metrics. See which of 5 pillars is holding you back. Follow a step-by-step playbook to fix it.
             </p>
             <Link href="/signup" style={{ display: 'inline-block', padding: isMobile ? '14px 28px' : '16px 32px', borderRadius: 12, background: gradient, color: '#fff', fontSize: isMobile ? 15 : 16, fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 20px rgba(67,97,238,0.25)' }}>
-              Get Your Free Score →
+              Get Your Free Score
             </Link>
             <p style={{ fontSize: 12, color: '#b4bac5', marginTop: 12 }}>Takes 3 minutes · Personalized playbook · No credit card</p>
             <div style={{ paddingTop: 24, borderTop: '1px solid #f0f2f6', marginTop: 32, display: 'flex', alignItems: 'center', gap: 12, justifyContent: isMobile ? 'center' : 'flex-start', flexWrap: 'wrap' }}>
@@ -184,7 +184,6 @@ export default function LandingPage() {
                   <div key={i} style={{ width: 28, height: 28, borderRadius: '50%', background: a.color, border: '2px solid #fff', marginLeft: i > 0 ? -8 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#fff' }}>{a.initials}</div>
                 ))}
               </div>
-              <div style={{ display: 'flex', gap: 2 }}>{[...Array(5)].map((_, i) => <span key={i} style={{ color: '#facc15', fontSize: 14 }}>★</span>)}</div>
               <span style={{ fontSize: 12, color: '#8d95a3' }}>Trusted by 850+ businesses</span>
             </div>
           </div>
@@ -222,7 +221,7 @@ export default function LandingPage() {
             Your Revenue Health Score pinpoints exactly which area is costing you the most.
           </p>
           <Link href="/signup" style={{ display: 'inline-block', marginTop: 16, padding: '14px 28px', borderRadius: 11, background: gradient, color: '#fff', fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
-            Find Your Score →
+            Find Your Score
           </Link>
         </div>
       </section>
@@ -238,8 +237,8 @@ export default function LandingPage() {
                 <ScoreRing size={isMobile ? 90 : 110} score={66} />
               </div>
               <PillarBars barHeight={4} />
-              <div style={{ marginTop: 14, padding: '8px 10px', borderRadius: 8, background: 'rgba(239,68,68,0.05)', fontSize: 12, color: '#ef4444' }}>
-                ⚠ Primary risk: Operations (45)
+              <div style={{ marginTop: 14, padding: '8px 10px', borderRadius: 8, background: 'rgba(239,68,68,0.05)', fontSize: 12, color: '#ef4444', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <AlertTriangle style={{ width: 13, height: 13, flexShrink: 0 }} /> Primary risk: Operations (45)
               </div>
             </div>
             <div style={{ flex: 1, borderLeft: isMobile ? 'none' : '1px solid #e6e9ef', borderTop: isMobile ? '1px solid #e6e9ef' : 'none', paddingLeft: isMobile ? 0 : 28, paddingTop: isMobile ? 20 : 0 }}>
@@ -253,7 +252,7 @@ export default function LandingPage() {
                 {playbookSteps.map((s, i) => (
                   <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                     <div style={{ width: 20, height: 20, borderRadius: 6, background: s.done ? '#10b981' : '#f0f2f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      {s.done && <span style={{ color: '#fff', fontSize: 11, fontWeight: 700 }}>✓</span>}
+                      {s.done && <Check style={{ width: 12, height: 12, color: '#fff', strokeWidth: 3 }} />}
                     </div>
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 600, color: s.done ? '#8d95a3' : '#1b2434', textDecoration: s.done ? 'line-through' : 'none' }}>{s.label}</div>
@@ -262,8 +261,8 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-              <div style={{ marginTop: 14, padding: '8px 10px', borderRadius: 8, background: 'rgba(67,97,238,0.05)', fontSize: 12, color: '#4361ee' }}>
-                ↗ Expected: $1,200–3,100/mo additional revenue
+              <div style={{ marginTop: 14, padding: '8px 10px', borderRadius: 8, background: 'rgba(67,97,238,0.05)', fontSize: 12, color: '#4361ee', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <TrendingUp style={{ width: 13, height: 13, flexShrink: 0 }} /> Expected: $1,200–3,100/mo additional revenue
               </div>
             </div>
           </div>
@@ -302,7 +301,7 @@ export default function LandingPage() {
               {realStats.totalReviews > 0 && (
                 <div>
                   <div style={{ fontSize: isMobile ? 22 : 26, fontWeight: 900, letterSpacing: -0.5 }}>
-                    {realStats.avgRating}/5<span style={{ color: '#facc15' }}> ★</span>
+                    {realStats.avgRating}/5
                   </div>
                   <div style={{ fontSize: 11, color: '#8d95a3', marginTop: 2 }}>Average rating ({realStats.totalReviews} reviews)</div>
                 </div>
@@ -320,13 +319,13 @@ export default function LandingPage() {
             {reviewData.map((r) => (
               <div key={r.initials} style={{ flex: 1, background: '#fafbfd', borderRadius: 14, border: '1px solid #e6e9ef', padding: isMobile ? 18 : 22, textAlign: 'left' }}>
                 <div style={{ display: 'flex', gap: 2, marginBottom: 12 }}>
-                  {[...Array(5)].map((_, i) => <span key={i} style={{ color: '#facc15', fontSize: 13 }}>★</span>)}
+                  {[...Array(5)].map((_, i) => <Star key={i} style={{ width: 13, height: 13, fill: '#facc15', color: '#facc15' }} />)}
                 </div>
                 <p style={{ fontSize: 13, color: '#5a6578', lineHeight: 1.7, margin: '0 0 14px' }}>
                   &ldquo;{r.quote}&rdquo;
                 </p>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 6, background: 'rgba(16,185,129,0.06)', fontSize: 12, fontWeight: 600, color: '#10b981', marginBottom: 14 }}>
-                  ↗ {r.result}
+                  <TrendingUp style={{ width: 12, height: 12 }} /> {r.result}
                 </div>
                 <div style={{ borderTop: '1px solid #e6e9ef', paddingTop: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 32, height: 32, borderRadius: 8, background: r.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff' }}>{r.initials}</div>
@@ -373,7 +372,7 @@ export default function LandingPage() {
           </div>
           <div style={{ textAlign: 'center', marginTop: 40 }}>
             <Link href="/signup" style={{ display: 'inline-block', padding: isMobile ? '14px 28px' : '16px 32px', borderRadius: 12, background: gradient, color: '#fff', fontSize: isMobile ? 15 : 16, fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 20px rgba(67,97,238,0.25)' }}>
-              Get Your Free Score →
+              Get Your Free Score
             </Link>
           </div>
         </div>

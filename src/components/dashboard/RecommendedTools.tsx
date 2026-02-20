@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
+import { ExternalLink, TrendingUp } from 'lucide-react';
 import type { ScoredProduct } from '@/lib/recommendations';
 import LogoImg, { faviconUrl } from '@/components/ui/LogoImg';
 
@@ -54,7 +55,7 @@ function ToolCard({ tool, onClickTool }: { tool: ScoredProduct; onClickTool: (t:
       {/* Potential impact */}
       {tool.filledPotential && (
         <div style={{ marginTop: 10, padding: '8px 10px', borderRadius: 8, background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.12)', fontSize: 11, fontWeight: 600, color: '#10b981' }}>
-          ↗ {tool.filledPotential}
+          <TrendingUp style={{ width: 12, height: 12, display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />{tool.filledPotential}
         </div>
       )}
 
@@ -70,7 +71,7 @@ function ToolCard({ tool, onClickTool }: { tool: ScoredProduct; onClickTool: (t:
         onMouseEnter={(e) => (e.currentTarget.style.background = '#3451de')}
         onMouseLeave={(e) => (e.currentTarget.style.background = '#4361ee')}
       >
-        Try {tool.name} ↗
+        Try {tool.name} <ExternalLink style={{ width: 11, height: 11, display: 'inline', marginLeft: 3 }} />
       </button>
     </div>
   );
@@ -143,7 +144,7 @@ export default function RecommendedTools({ tools, isPremium }: Props) {
                   fontSize: 12, fontWeight: 700, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
                 }}
               >
-                Try {compactTool.name} ↗
+                Try {compactTool.name} <ExternalLink style={{ width: 11, height: 11, display: 'inline', marginLeft: 3 }} />
               </button>
             </div>
           )}

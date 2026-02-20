@@ -284,8 +284,8 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
               onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,158,11,0.18)")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(245,158,11,0.10)")}
             >
-              <span style={{ fontSize: 8 }}>&#9679;</span> Estimated
-              <span style={{ fontSize: 8, transition: "transform 0.15s", display: "inline-block", transform: estimatedOpen ? "rotate(180deg)" : "rotate(0)" }}>&#9660;</span>
+              Estimated
+              <ChevronDown style={{ width: 10, height: 10, transition: "transform 0.15s", transform: estimatedOpen ? "rotate(180deg)" : "rotate(0)" }} />
             </button>
           ) : (
             <span style={{
@@ -294,7 +294,7 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
               background: "rgba(245,158,11,0.10)", border: "1px solid rgba(245,158,11,0.25)",
               fontSize: 10, fontWeight: 700, color: "#d97706",
             }}>
-              <span style={{ fontSize: 8 }}>&#9679;</span> Estimated
+              Estimated
             </span>
           )
         )}
@@ -362,7 +362,7 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
                 onMouseEnter={(e) => (e.currentTarget.style.background = "#d97706")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "#f59e0b")}
               >
-                Add Real Data &#8594;
+                Add Real Data <ArrowRight style={{ width: 12, height: 12, display: "inline" }} />
               </button>
             )}
           </div>
@@ -1799,9 +1799,9 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh }: { isPremium: 
                                   width: 20, height: 20, borderRadius: 5,
                                   border: "2px solid rgba(124,58,237,0.10)",
                                   display: "flex", alignItems: "center", justifyContent: "center",
-                                  fontSize: 8, flexShrink: 0,
+                                  flexShrink: 0,
                                 }}>
-                                  🔒
+                                  <Lock style={{ width: 10, height: 10, color: "#7c3aed" }} />
                                 </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                   <p style={{ fontSize: 13, fontWeight: 600, color: "#5a6578", filter: "blur(2px)", userSelect: "none" }}>{s.title}</p>
@@ -1865,7 +1865,7 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh }: { isPremium: 
                                     >
                                       <Wrench style={{ width: 12, height: 12 }} />
                                       Recommended: {rec.name}
-                                      <span style={{ fontSize: 8, transform: isToolOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s", display: "inline-block" }}>▼</span>
+                                      <ChevronDown style={{ width: 10, height: 10, transform: isToolOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
                                     </button>
                                     {isToolOpen && (
                                       <div style={{
@@ -1891,7 +1891,7 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh }: { isPremium: 
                                           onClick={() => handleAffClick(rec)}
                                           style={{ padding: "6px 12px", borderRadius: 7, background: "#4361ee", color: "#fff", fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer" }}
                                         >
-                                          Try {rec.name} ↗
+                                          Try {rec.name} <ExternalLink style={{ width: 11, height: 11, display: "inline", marginLeft: 3 }} />
                                         </button>
                                       </div>
                                     )}
@@ -2138,7 +2138,7 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh }: { isPremium: 
                           <div className="px-3 py-2 bg-violet-50/50 rounded-lg border border-violet-100">
                             <p className="text-xs text-violet-700">
                               <span className="font-semibold">{pb.title}</span>
-                              {" → "}
+                              {" "}<ArrowRight className="w-3 h-3 inline" />{" "}
                               {Math.abs(afterScore.score - (beforeScore?.score ?? 0))} of {Math.abs(afterScore.score - (beforeScore?.score ?? 0))} points explained
                             </p>
                           </div>
@@ -2240,9 +2240,9 @@ function AiBusinessSummary({ isPremium }: { isPremium: boolean }) {
           width: 28, height: 28, borderRadius: 7,
           background: "linear-gradient(135deg, #6366f1, #4361ee)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          color: "white", fontSize: 14,
+          color: "white",
         }}>
-          ✦
+          <Sparkles style={{ width: 16, height: 16 }} />
         </div>
         <span style={{ fontSize: 13, fontWeight: 700, color: "#1b2434" }}>Your Business at a Glance</span>
         {isPremium && summary && !loading && (
@@ -2495,9 +2495,9 @@ function BottomUpgradeBanner() {
               width: 20, height: 20, borderRadius: 6,
               background: "rgba(16,185,129,0.12)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 12, color: "#10b981", flexShrink: 0,
+              flexShrink: 0,
             }}>
-              &#10003;
+              <CheckCircle2 style={{ width: 14, height: 14, color: "#10b981" }} />
             </span>
             <span style={{ fontSize: 13, color: "#1b2434", fontWeight: 500, textAlign: "left" }}>{b}</span>
           </div>
@@ -2952,11 +2952,11 @@ export default function RevenueDashboard() {
         {/* Weekly tracker reminder */}
         {showTrackerReminder && !trackerReminderDismissed && isPremium && (
           <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl text-sm">
-            <span className="text-blue-600 flex-shrink-0">📊</span>
+            <Activity className="w-4 h-4 text-blue-600 flex-shrink-0" />
             <span className="text-blue-800 flex-1">
               You haven&apos;t logged this week&apos;s numbers yet.{" "}
               <a href="#revenue-tracker" className="text-indigo-600 font-medium hover:underline">
-                Log Now ↓
+                Log Now
               </a>
             </span>
             <button

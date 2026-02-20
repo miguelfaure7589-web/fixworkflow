@@ -421,7 +421,7 @@ export default function RevenueTracker({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 15 }}>📊</span>
+          <BarChart3 style={{ width: 15, height: 15, color: "#8d95a3" }} />
           <span style={{ fontSize: 12, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em" }}>
             Revenue Tracker
           </span>
@@ -466,7 +466,7 @@ export default function RevenueTracker({
                   boxShadow: "0 4px 16px rgba(67,97,238,0.25)",
                 }}
               >
-                Upgrade to Pro →
+                Upgrade to Pro
               </Link>
             </div>
           ) : (
@@ -577,7 +577,7 @@ export default function RevenueTracker({
                     }}
                   >
                     {submitting && <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} />}
-                    Log Week →
+                    Log Week
                   </button>
                 </div>
 
@@ -698,9 +698,9 @@ export default function RevenueTracker({
                                 </td>
                                 <td style={{ padding: "11px 12px" }}>
                                   {vsTarget === "above" ? (
-                                    <Pill bg="rgba(16,185,129,0.08)" color="#10b981">↑ Above</Pill>
+                                    <Pill bg="rgba(16,185,129,0.08)" color="#10b981">Above</Pill>
                                   ) : vsTarget === "below" ? (
-                                    <Pill bg="rgba(239,68,68,0.08)" color="#ef4444">↓ Below</Pill>
+                                    <Pill bg="rgba(239,68,68,0.08)" color="#ef4444">Below</Pill>
                                   ) : (
                                     <span style={{ color: "#b4bac5", fontSize: 12 }}>—</span>
                                   )}
@@ -783,7 +783,7 @@ export default function RevenueTracker({
                         />
                         <SummaryCard
                           label="Trend"
-                          value={monthly.trend === "up" ? "↑ Up" : monthly.trend === "down" ? "↓ Down" : "—"}
+                          value={monthly.trend === "up" ? "Up" : monthly.trend === "down" ? "Down" : "—"}
                           sub={monthly.trend ? "vs last month" : "Need more data"}
                           valueColor={monthly.trend === "up" ? "#10b981" : monthly.trend === "down" ? "#ef4444" : "#8d95a3"}
                         />
@@ -798,7 +798,7 @@ export default function RevenueTracker({
                 <span style={{ fontSize: 12, color: "#8d95a3" }}>
                   Want this to fill automatically?{" "}
                   <Link href="/settings" style={{ color: "#4361ee", fontWeight: 600, textDecoration: "none" }}>
-                    Connect Shopify or Stripe in Settings →
+                    Connect Shopify or Stripe in Settings
                   </Link>
                 </span>
               </div>

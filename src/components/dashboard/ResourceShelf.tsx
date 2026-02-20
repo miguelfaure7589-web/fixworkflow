@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
+import { Lock, Star } from 'lucide-react';
 import type { ScoredProduct } from '@/lib/recommendations';
 import LogoImg, { faviconUrl } from '@/components/ui/LogoImg';
 import BookCover from '@/components/ui/BookCover';
@@ -291,7 +292,7 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
       {/* Content */}
       {isLocked ? (
         <div style={{ textAlign: 'center', padding: '32px 20px' }}>
-          <div style={{ fontSize: 28, marginBottom: 8 }}>🔒</div>
+          <div style={{ marginBottom: 8 }}><Lock style={{ width: 28, height: 28, color: '#8b5cf6' }} /></div>
           <div style={{ fontSize: 14, fontWeight: 600, color: '#1b2434', marginBottom: 4 }}>
             {activeTab === 'course' ? 'Courses' : 'Templates'} are a Pro feature
           </div>
@@ -339,7 +340,7 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
               {/* Price + Rating */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, fontSize: 12, flexWrap: 'wrap' }}>
                 <span style={{ fontWeight: 600, color: item.price === 'Free' || item.hasFreeTier ? '#10b981' : '#1b2434' }}>{item.price}</span>
-                {item.rating && <><span style={{ color: '#d0d5dd' }}>&middot;</span><span style={{ color: '#facc15' }}>★</span> <span style={{ color: '#8d95a3' }}>{item.rating}</span></>}
+                {item.rating && <><span style={{ color: '#d0d5dd' }}>&middot;</span><Star style={{ width: 12, height: 12, fill: '#facc15', color: '#facc15', display: 'inline', verticalAlign: 'middle' }} /> <span style={{ color: '#8d95a3' }}>{item.rating}</span></>}
                 {item.reviewCount && <><span style={{ color: '#d0d5dd' }}>&middot;</span><span style={{ color: '#8d95a3' }}>{item.reviewCount}</span></>}
               </div>
 

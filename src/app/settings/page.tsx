@@ -5,7 +5,11 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import UserAvatarDropdown from "@/components/UserAvatarDropdown";
-import { Zap, Loader2, ChevronDown, Menu, X } from "lucide-react";
+import {
+  Zap, Loader2, ChevronDown, Menu, X, User, Link2, CreditCard,
+  Bell, Shield, HelpCircle, FileText, DollarSign, BarChart3,
+  BookOpen, Handshake, ArrowRight,
+} from "lucide-react";
 import { useToast } from "@/components/Toast";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 
@@ -42,13 +46,13 @@ const DEFAULT_PRIVACY: PrivacyPrefs = {
 // ── Sections ──
 
 const SECTIONS = [
-  { id: "account", icon: "\u{1F464}", label: "Account" },
-  { id: "integrations", icon: "\u{1F517}", label: "Integrations" },
-  { id: "billing", icon: "\u{1F4B3}", label: "Subscription & Billing" },
-  { id: "notifications", icon: "\u{1F514}", label: "Notifications" },
-  { id: "privacy", icon: "\u{1F512}", label: "Privacy & Data" },
-  { id: "faq", icon: "\u2753", label: "FAQ & Help" },
-  { id: "legal", icon: "\u{1F4C4}", label: "Legal" },
+  { id: "account", icon: User, label: "Account" },
+  { id: "integrations", icon: Link2, label: "Integrations" },
+  { id: "billing", icon: CreditCard, label: "Subscription & Billing" },
+  { id: "notifications", icon: Bell, label: "Notifications" },
+  { id: "privacy", icon: Shield, label: "Privacy & Data" },
+  { id: "faq", icon: HelpCircle, label: "FAQ & Help" },
+  { id: "legal", icon: FileText, label: "Legal" },
 ];
 
 // ── Full integrations catalog (15 integrations, 4 categories) ──
@@ -64,7 +68,7 @@ const PILLAR_BADGE_COLORS: Record<string, { bg: string; text: string }> = {
 const INTEGRATION_CATEGORIES = [
   {
     name: "Revenue & Payments",
-    emoji: "\ud83d\udcb0",
+    icon: DollarSign,
     items: [
       { name: "Shopify", brandColor: "#96BF48", description: "Sync orders, revenue, repeat customers, and average order value.", pillars: ["Revenue", "Retention", "Acquisition"] },
       { name: "Stripe", brandColor: "#635BFF", description: "Sync payment data, MRR, churn rate, and revenue trends.", pillars: ["Revenue", "Profitability"] },
@@ -75,7 +79,7 @@ const INTEGRATION_CATEGORIES = [
   },
   {
     name: "Marketing & Acquisition",
-    emoji: "\ud83d\udcca",
+    icon: BarChart3,
     items: [
       { name: "Google Analytics", brandColor: "#F9AB00", description: "Sync website traffic, conversion rates, and acquisition channels.", pillars: ["Acquisition", "Revenue"] },
       { name: "Meta Ads", brandColor: "#0668E1", description: "Sync ad spend, impressions, conversions, and cost per acquisition.", pillars: ["Acquisition"] },
@@ -85,7 +89,7 @@ const INTEGRATION_CATEGORIES = [
   },
   {
     name: "Accounting & Finance",
-    emoji: "\ud83d\udcd2",
+    icon: BookOpen,
     items: [
       { name: "QuickBooks", brandColor: "#2CA01C", description: "Sync accounting data, profit & loss, margins, expenses, and invoices.", pillars: ["Profitability", "Operations"] },
       { name: "Xero", brandColor: "#13B5EA", description: "Sync financial reports, bank transactions, invoices, and cash flow.", pillars: ["Profitability", "Operations"] },
@@ -94,7 +98,7 @@ const INTEGRATION_CATEGORIES = [
   },
   {
     name: "CRM & Operations",
-    emoji: "\ud83e\udd1d",
+    icon: Handshake,
     items: [
       { name: "HubSpot", brandColor: "#FF7A59", description: "Sync CRM contacts, deal pipeline, customer lifecycle, and leads.", pillars: ["Retention", "Acquisition"] },
       { name: "Calendly", brandColor: "#006BFF", description: "Sync booking data, appointment volume, and no-show rates.", pillars: ["Operations"] },
@@ -853,9 +857,19 @@ function SettingsContent() {
     setDisconnectConfirm(null);
   }, []);
 
+  const isScrollingTo = useRef(false);
+
   const scrollTo = (id: string) => {
     setActive(id);
-    document.getElementById(`section-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    isScrollingTo.current = true;
+    const el = document.getElementById(`section-${id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Allow IntersectionObserver to resume after smooth scroll finishes
+      setTimeout(() => { isScrollingTo.current = false; }, 800);
+    } else {
+      isScrollingTo.current = false;
+    }
   };
 
   // Scroll to tab from URL query param on mount
@@ -865,6 +879,33 @@ function SettingsContent() {
       setTimeout(() => scrollTo(tab), 100);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // IntersectionObserver for scroll-based sidebar highlighting
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+    const sectionEls = SECTIONS.map((s) => document.getElementById(`section-${s.id}`)).filter(Boolean) as HTMLElement[];
+
+    if (sectionEls.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isScrollingTo.current) return;
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const id = entry.target.id.replace("section-", "");
+            setActive(id);
+            break;
+          }
+        }
+      },
+      { rootMargin: "-20% 0px -70% 0px", threshold: 0 }
+    );
+
+    sectionEls.forEach((el) => observer.observe(el));
+    observers.push(observer);
+
+    return () => { observers.forEach((o) => o.disconnect()); };
   }, []);
 
   if (status === "loading" || !session?.user) {
@@ -978,7 +1019,7 @@ function SettingsContent() {
                   flexShrink: 0,
                 }}
               >
-                <span style={{ fontSize: 13 }}>{s.icon}</span>
+                <s.icon style={{ width: 14, height: 14, flexShrink: 0 }} />
                 {s.label}
               </button>
             ))}
@@ -1014,7 +1055,7 @@ function SettingsContent() {
                   if (active !== s.id) (e.currentTarget.style.background = "transparent");
                 }}
               >
-                <span style={{ fontSize: 15 }}>{s.icon}</span>
+                <s.icon style={{ width: 16, height: 16, flexShrink: 0 }} />
                 {s.label}
               </button>
             ))}
@@ -1349,7 +1390,7 @@ function SettingsContent() {
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 16 }}>{cat.emoji}</span>
+                        <cat.icon style={{ width: 16, height: 16, color: "#4361ee" }} />
                         <span style={{ fontSize: 14, fontWeight: 700, color: "#1b2434" }}>{cat.name}</span>
                         <span style={{ fontSize: 11, fontWeight: 600, color: "#8d95a3", background: "#f4f5f8", padding: "2px 7px", borderRadius: 5 }}>
                           {cat.items.length}
@@ -1596,7 +1637,7 @@ function SettingsContent() {
                       opacity: upgradeLoading ? 0.6 : 1,
                     }}
                   >
-                    {upgradeLoading ? "Redirecting..." : "Upgrade to Pro \u2192"}
+                    {upgradeLoading ? "Redirecting..." : "Upgrade to Pro"}
                   </button>
                 </>
               )}
@@ -1992,7 +2033,7 @@ function SettingsContent() {
                     opacity: connecting || (provider.needsStoreDomain && !shopifyStore.trim()) ? 0.6 : 1,
                   }}
                 >
-                  {connecting ? "Connecting..." : `Connect to ${provider.name} \u2192`}
+                  {connecting ? "Connecting..." : `Connect to ${provider.name}`}
                 </button>
               </div>
             </div>

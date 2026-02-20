@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { AlertTriangle, TrendingUp } from 'lucide-react';
 
 const pillars = [
   { name: 'Revenue', score: 60, color: '#4361ee' },
@@ -65,11 +66,11 @@ export default function ScorePreviewCard() {
         <ScoreRing size={96} score={66} animated />
       </div>
       <PillarBars />
-      <div style={{ marginTop: 16, padding: '8px 10px', borderRadius: 8, background: 'rgba(239,68,68,0.05)', fontSize: 12, color: '#ef4444' }}>
-        ⚠ Primary risk: Operations (45/100)
+      <div style={{ marginTop: 16, padding: '8px 10px', borderRadius: 8, background: 'rgba(239,68,68,0.05)', fontSize: 12, color: '#ef4444', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <AlertTriangle style={{ width: 13, height: 13, flexShrink: 0 }} /> Primary risk: Operations (45/100)
       </div>
-      <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, background: 'rgba(16,185,129,0.05)', fontSize: 12, color: '#10b981' }}>
-        ↗ Fastest lever: ~$19,200/mo potential
+      <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, background: 'rgba(16,185,129,0.05)', fontSize: 12, color: '#10b981', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <TrendingUp style={{ width: 13, height: 13, flexShrink: 0 }} /> Fastest lever: ~$19,200/mo potential
       </div>
     </div>
   );
