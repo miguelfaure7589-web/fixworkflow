@@ -11,6 +11,476 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    title: "How to Know If Your Business Is Healthy (A Simple Checklist)",
+    slug: "how-to-know-if-your-business-is-healthy-checklist",
+    excerpt:
+      "A 10-question checklist that tells you whether your business is thriving, surviving, or heading for trouble. Answer honestly and see where you stand.",
+    content: `You go to the doctor for a checkup once a year. You check your credit score periodically. But when was the last time you gave your business a real health check?
+
+## The 10-Question Business Health Check
+
+**1. Is your revenue growing at least 10% year over year?**
+If flat or declining, something is capping your growth. Flat revenue in an inflationary economy means you're actually shrinking in real terms.
+
+**2. Is your net profit margin above 10%?**
+Below 10% means you're one bad month from losing money. Below 5% means one bad week.
+
+**3. Do you have at least 2 months of expenses in cash reserves?**
+If revenue stopped tomorrow, how long could you keep the lights on? Two months is the minimum.
+
+**4. Is your repeat customer rate above 25%?**
+If fewer than 1 in 4 customers come back, you're spending too much on acquisition.
+
+**5. Do you know your customer acquisition cost?**
+If not, you can't know whether your marketing is profitable or burning money.
+
+**6. Do you have more than one significant revenue channel?**
+If 70%+ comes from a single source, you're fragile.
+
+**7. Could you take two weeks off without the business collapsing?**
+If not, you don't have a business \u2014 you have a job you created for yourself.
+
+**8. Are you paying yourself a market-rate salary?**
+A business that only works if the owner works for free isn't viable.
+
+**9. Do you know your top 3 business metrics without looking them up?**
+Owners who know their numbers make better decisions.
+
+**10. Would you invest in this business if you weren't the owner?**
+Look at the revenue, margins, growth trajectory. If the honest answer is no, what would need to change?
+
+## Scoring Yourself
+
+**8-10 yes:** Genuinely healthy. Focus on growth and optimization.
+
+**5-7 yes:** Surviving but vulnerable. One or two areas need attention.
+
+**Below 5 yes:** Significant health issues needing immediate attention. Not a death sentence \u2014 it's a diagnosis.
+
+## Go Deeper Than a Checklist
+
+A Revenue Health Score measures all five pillars \u2014 revenue, profitability, cash flow, retention, and acquisition \u2014 and tells you exactly which one is your weakest link. It's the difference between knowing something feels wrong and knowing exactly what's wrong.`,
+    author: "FixWorkFlow Team",
+    date: "2026-03-05",
+    category: "Revenue",
+    readTime: "6 min read",
+  },
+  {
+    title: "Best Ways to Increase Revenue Without Spending More on Ads",
+    slug: "increase-revenue-without-spending-more-on-ads",
+    excerpt:
+      "Paid ads aren't the only way to grow. Here are proven strategies to increase revenue using what you already have \u2014 your existing customers, your pricing, and your conversion rate.",
+    content: `When most business owners want more revenue, they think "I need to run more ads." But ad costs keep rising while margins keep shrinking. The fastest path to more revenue usually isn't more customers \u2014 it's getting more value from what you already have.
+
+## 1. Raise Your Prices
+
+A 10% price increase with 40% margins means 25% more profit. No extra customers needed. If you haven't raised prices in 12 months, you're giving yourself a pay cut.
+
+## 2. Increase Your Average Order Value
+
+Bundle products together. Offer upsells at checkout. Create a premium tier. A coffee shop asking "would you like a pastry with that?" increases average ticket from $5 to $8 \u2014 60% more revenue per customer with zero additional acquisition cost.
+
+## 3. Reactivate Past Customers
+
+Email everyone who bought 3-6 months ago and hasn't returned. "We miss you \u2014 here's 10% off" will bring back 5-15% of lapsed customers. That's essentially free revenue since you already paid to acquire them.
+
+## 4. Improve Your Conversion Rate
+
+Going from 2% to 3% conversion increases revenue 50% without a single extra visitor. Fix page speed, simplify checkout, add reviews and testimonials, and create clear calls to action.
+
+## 5. Launch a Referral Program
+
+"Give $10, get $10" \u2014 simple mechanics that turn happy customers into a sales channel. Referred customers convert higher, spend more, and retain better than ad-acquired customers.
+
+## 6. Create Recurring Revenue
+
+Subscriptions, retainers, and memberships create predictable monthly revenue. Converting even 10% of revenue to recurring dramatically changes your growth trajectory.
+
+## 7. Sell to Existing Customers More Often
+
+Post-purchase email sequences, loyalty programs, and personalized recommendations drive additional revenue from people who already trust you.
+
+## The Compounding Effect
+
+Stack these: a 10% price increase, 15% improvement in average order value, 10% conversion improvement, and reactivating 5% of past customers. Combined, they can increase revenue 30-50% without a single ad dollar.
+
+Your Revenue Health Score shows which of these levers will have the most impact for your specific business.`,
+    author: "FixWorkFlow Team",
+    date: "2026-03-04",
+    category: "Revenue",
+    readTime: "8 min read",
+  },
+  {
+    title: "How Small Businesses Are Using AI to Grow Revenue in 2026",
+    slug: "small-businesses-using-ai-grow-revenue-2026",
+    excerpt:
+      "AI isn't just for big companies anymore. Here's how real small business owners are using AI tools to save time, make better decisions, and grow revenue.",
+    content: `Two years ago, AI was a novelty for most small business owners. Today, it's becoming as essential as having a website. The businesses adopting AI aren't building custom software \u2014 they're using available tools to do things that used to take hours in minutes.
+
+## AI for Customer Communication
+
+AI tools can draft email responses, create follow-up sequences, write product descriptions, and handle initial customer inquiries through chatbots.
+
+A service business owner who spent two hours every morning on emails now drafts responses in fifteen minutes using AI. That's 30 hours back every month redirected to revenue-generating work.
+
+## AI for Business Intelligence
+
+Instead of staring at spreadsheets, AI tools analyze your business data and surface insights you'd never find manually. Which products are trending? Which customer segments are most profitable? Where is revenue leaking?
+
+FixWorkFlow uses AI to generate personalized business summaries based on your Revenue Health Score. Instead of just a number, it explains what the number means and what specific actions will improve it. That kind of intelligence used to require hiring a consultant.
+
+## AI for Content and Marketing
+
+AI can draft social media posts, write blog articles, create ad copy, and generate product descriptions. The key is using AI as a first draft \u2014 let it handle the 80% and add your own voice for the remaining 20%.
+
+## AI for Financial Forecasting
+
+AI tools analyze revenue patterns and predict future cash flow by factoring in seasonality and trends. An AI tool that says "March revenue will likely be 20% lower" gives you weeks to prepare instead of panicking.
+
+## AI for Pricing Optimization
+
+AI can analyze competitor pricing, demand signals, and your sales data to suggest optimal pricing. Even for service businesses, it can model scenarios like "if I raise prices 10%, how many clients can I lose and still come out ahead?"
+
+## Where to Start
+
+Pick one area where you spend the most time on repetitive work \u2014 usually email or content \u2014 and use AI there first. Get comfortable, see the savings, then expand.
+
+A Revenue Health Score uses AI to give you personalized analysis with specific recommendations based on your actual data. It's AI applied to the most important question: where should I focus next?`,
+    author: "FixWorkFlow Team",
+    date: "2026-03-03",
+    category: "Tools",
+    readTime: "8 min read",
+  },
+  {
+    title: "How to Recession-Proof Your Small Business in 2026",
+    slug: "how-to-recession-proof-small-business-2026",
+    excerpt:
+      "With economic growth slowing and costs rising, smart business owners are preparing now. Here are practical strategies to make your business resilient in uncertain times.",
+    content: `Economic forecasters are projecting slower growth in 2026. Inflation is around 3%. Interest rates remain elevated. The margin for error is thinner than it was two years ago.
+
+The businesses that struggle in downturns aren't the ones with bad products. They're the ones with thin margins, no cash reserves, and too much dependency on conditions staying good.
+
+## Build Cash Reserves Before You Need Them
+
+Businesses with 3-6 months of operating expenses in reserve survive downturns. Businesses without reserves make desperate decisions that make things worse.
+
+Set aside 10% of monthly revenue into a separate account. Start with 5% if that's too much. Reach 3 months of expenses as fast as possible.
+
+## Diversify Your Revenue Streams
+
+If your entire business depends on one product, one client, or one channel \u2014 you're fragile. Look for complementary revenue streams. Can you add a service component? A subscription model? Serve another industry?
+
+You don't need five streams. You need more than one.
+
+## Strengthen Customer Retention
+
+During a downturn, acquiring new customers gets harder and more expensive. The businesses that maintain revenue are the ones with loyal, returning customers.
+
+Invest now in customer experience, follow-up systems, and loyalty programs. Every percentage point of retention improvement matters more during a downturn.
+
+## Cut Fat, Not Muscle
+
+There's a difference between cutting expenses and cutting capabilities. Audit every expense: does this directly contribute to revenue or customer experience? If yes, keep it. If not, cut it.
+
+Most businesses carry 10-15% in unnecessary costs that can be eliminated without any performance impact.
+
+## Lock In Your Best Customers
+
+Offer annual contracts at a slight discount. Create loyalty incentives. Over-deliver on service. Make it easy for them to stay and hard for competitors to poach them.
+
+## Keep Marketing \u2014 but Smarter
+
+The instinct during tough times is to cut marketing first. This is almost always wrong. Businesses that maintain marketing during downturns outperform competitors who go dark.
+
+But shift from expensive paid channels toward owned channels \u2014 email lists, SEO content, social media \u2014 with lower ongoing costs.
+
+## Know Your Numbers
+
+You can't make good decisions in uncertain times without knowing where you stand. A Revenue Health Score shows where your business is strong and where it's vulnerable.`,
+    author: "FixWorkFlow Team",
+    date: "2026-03-02",
+    category: "Revenue",
+    readTime: "9 min read",
+  },
+  {
+    title: "Small Business KPIs: The 7 Numbers You Should Track Monthly",
+    slug: "small-business-kpis-7-numbers-track-monthly",
+    excerpt:
+      "You can't improve what you don't measure. Here are the seven most important numbers every small business owner should check monthly.",
+    content: `Running a business without tracking your numbers is like driving with your dashboard lights off. You don't need to track dozens of metrics. Most small businesses only need seven.
+
+## 1. Monthly Revenue
+
+Don't just look at the total \u2014 look at the trend. Is it growing, flat, or declining compared to the same month last year? A single month is a data point. Three months is a trend.
+
+## 2. Gross Profit Margin
+
+Revenue minus direct costs, divided by revenue. This tells you whether your core business is profitable before overhead. If it's shrinking, your costs are rising faster than your prices.
+
+Healthy range: 50-80% for services, 30-60% for products, 70-90% for digital/SaaS.
+
+## 3. Net Profit Margin
+
+Revenue minus ALL expenses, divided by revenue. The true bottom line. What percentage of every dollar do you actually keep?
+
+Healthy range: 10-25% for most small businesses. Below 5% means one bad month could tip you negative.
+
+## 4. Cash in the Bank
+
+Not profit. Not accounts receivable. Actual cash available right now. Track this on the first of every month.
+
+Target: At least 2 months of operating expenses in reserve.
+
+## 5. Customer Acquisition Cost (CAC)
+
+Total marketing spend divided by new customers acquired. Track by channel if possible \u2014 you might find email costs $15 per customer while Instagram costs $80.
+
+## 6. Repeat Customer Rate
+
+Percentage of customers who buy more than once. High repeat rates mean lower acquisition costs and more predictable revenue.
+
+Healthy range: 25-40% for e-commerce, 40-60% for services, 90%+ for subscriptions.
+
+## 7. Revenue Per Customer
+
+Total revenue divided by total customers. If growing, you're selling more to each customer or attracting higher-value ones. If declining, you might be discounting too heavily.
+
+## Why Seven Is Enough
+
+These seven cover the five critical areas: revenue health, profitability, cash position, retention, and acquisition. A Revenue Health Score tracks all five areas automatically and gives you a single number with specific insights.`,
+    author: "FixWorkFlow Team",
+    date: "2026-03-01",
+    category: "Revenue",
+    readTime: "8 min read",
+  },
+  {
+    title: "How to Price Your Product or Service (Without Losing Customers)",
+    slug: "how-to-price-your-product-or-service",
+    excerpt:
+      "Pricing is the most powerful lever in your business. Here's a practical framework for setting prices that maximize profit without driving customers away.",
+    content: `Most small business owners set their prices once \u2014 usually when they started \u2014 and haven't touched them since. Then they wonder why their margins are thin and growth is slow.
+
+A 10% price increase on a product with 40% margins increases your profit by 25%. No other change has that kind of immediate impact.
+
+## The Three Pricing Mistakes
+
+**Mistake 1: Pricing based only on costs.** Cost-plus pricing guarantees you'll never charge what you're worth. Your costs are a floor, not a ceiling.
+
+**Mistake 2: Pricing based only on competitors.** Matching competitor prices assumes their pricing is correct and your offering is identical. Neither is usually true.
+
+**Mistake 3: Never raising prices.** Costs increase every year. If your prices stay the same, your real margins shrink annually.
+
+## A Framework That Works
+
+**Step 1: Know your floor.** Calculate all costs of delivering your product. Never price anywhere near this number.
+
+**Step 2: Research the range.** Look at competitors and alternatives. This gives you the market range.
+
+**Step 3: Price based on value.** If your service saves a business $5,000/month, charging $500/month is a bargain regardless of your costs.
+
+**Step 4: Test higher than you think.** Set your price 10-20% higher than comfortable. You can always discount down.
+
+## How to Raise Prices Without Losing Customers
+
+**Grandfather existing customers temporarily.** Give 30-90 days notice.
+
+**Add value alongside the increase.** Bundle in something extra so the increase feels justified.
+
+**Raise prices on new customers first.** Test with people who have no reference point for your old prices.
+
+**Communicate the why.** A simple explanation goes a long way.
+
+Studies show a 10% price increase typically results in losing only 2-5% of customers. You net more revenue with slightly fewer \u2014 and better \u2014 customers.
+
+Pricing impacts two pillars of your Revenue Health Score \u2014 Revenue and Profitability. If you've never audited your pricing against actual profitability, your score shows exactly where you stand.`,
+    author: "FixWorkFlow Team",
+    date: "2026-02-28",
+    category: "Profitability",
+    readTime: "8 min read",
+  },
+  {
+    title: "What Is Customer Acquisition Cost (And How to Calculate It)",
+    slug: "what-is-customer-acquisition-cost-how-to-calculate",
+    excerpt:
+      "Customer acquisition cost tells you whether your marketing is working or burning money. Here's how to calculate it, what good looks like, and how to lower yours.",
+    content: `How much does it cost you to get one new customer? Not a rough guess. An actual number.
+
+If you spent $3,000 on marketing last month and got 30 new customers, your customer acquisition cost (CAC) is $100. That number determines whether your business can grow profitably.
+
+## How to Calculate CAC
+
+**CAC = Total Marketing & Sales Costs / Number of New Customers Acquired**
+
+Include everything: ad spend, marketing tools, content creation, sales salaries, agency fees \u2014 all of it. Only count first-time buyers.
+
+## What "Good" Looks Like
+
+Your customer lifetime value (LTV) should be at least 3x your CAC. If a customer spends $300 total over their lifetime, CAC should be under $100.
+
+Rough benchmarks: E-commerce $10-50, service businesses $100-300, SaaS $200-500, local businesses $20-80.
+
+## Five Ways to Lower Your CAC
+
+**1. Improve conversion rate.** Going from 1% to 2% conversion cuts your CAC in half with zero extra ad spend.
+
+**2. Double down on organic channels.** SEO and content marketing have near-zero marginal cost per customer over time.
+
+**3. Build a referral system.** Referred customers cost almost nothing to acquire and convert at higher rates.
+
+**4. Retain more customers.** Higher LTV means you can afford higher CAC while staying profitable.
+
+**5. Kill underperforming channels.** Calculate CAC by channel and shift budget from expensive to efficient ones.
+
+A Revenue Health Score calculates your Acquisition pillar health, including how effectively you're acquiring customers relative to their worth.`,
+    author: "FixWorkFlow Team",
+    date: "2026-02-27",
+    category: "Acquisition",
+    readTime: "7 min read",
+  },
+  {
+    title: "How Much Should I Pay Myself as a Business Owner?",
+    slug: "how-much-should-i-pay-myself-business-owner",
+    excerpt:
+      "Most business owners either pay themselves too much and starve the business, or too little and burn out. Here's how to figure out the right number.",
+    content: `This is one of those questions every business owner asks but nobody talks about openly. How much should you actually be paying yourself?
+
+Pay yourself too much and you starve the business of capital. Pay yourself too little \u2014 or nothing \u2014 and you burn out and make desperate decisions.
+
+## The Profit First Approach
+
+Instead of paying yourself whatever's left after expenses (which is often nothing), allocate percentages of every dollar that comes in.
+
+**Under $250K annual revenue:** 50% operating expenses, 35% owner pay, 10% profit reserve, 5% taxes.
+
+**$250K - $500K:** 40% operating, 35% owner pay, 15% profit, 10% taxes.
+
+**$500K - $1M:** 35% operating, 30% owner pay, 15% profit, 20% taxes.
+
+## The Market Rate Method
+
+Pay yourself what you'd have to pay someone else to do your job. If you're the CEO, head of sales, and chief marketer, a reasonable blended salary might be $70-90K.
+
+## When to Pay Yourself More
+
+Increase your pay when your business has consistent positive cash flow, stable margins, at least two months of reserves, and doesn't need capital for immediate growth.
+
+## When to Pay Yourself Less
+
+Temporarily reduce pay during high-growth phases requiring capital, when margins are declining, when cash is tight, or when preparing for major expenses.
+
+## The Number One Mistake
+
+Thirty percent of small business owners don't take a salary at all. A business that can't afford to pay its most important employee isn't a viable business yet.
+
+Your owner compensation directly affects your Profitability pillar in a Revenue Health Score. A business that only works if the owner works for free isn't a healthy business.`,
+    author: "FixWorkFlow Team",
+    date: "2026-02-26",
+    category: "Profitability",
+    readTime: "7 min read",
+  },
+  {
+    title: "How to Fix Cash Flow Problems in a Small Business",
+    slug: "how-to-fix-cash-flow-problems-small-business",
+    excerpt:
+      "Cash flow kills more businesses than bad products. Here's how to identify cash flow problems early, the most common causes, and practical fixes you can implement this week.",
+    content: `A profitable business can still die. That sounds contradictory, but it happens all the time. The business has plenty of orders, healthy margins, and growing revenue \u2014 but it runs out of cash and can't make payroll, pay suppliers, or cover rent.
+
+Cash flow isn't the same as profit. Profit is what's left on paper after expenses. Cash flow is what's actually in your bank account right now, available to spend.
+
+## Why Cash Flow Problems Happen
+
+**You're paying suppliers before customers pay you.** You buy inventory upfront, but customers pay 30-90 days later. That gap is where cash flow dies.
+
+**Revenue is lumpy.** Some months are great, others are slow. But fixed costs don't care about your slow months.
+
+**You're growing too fast.** More orders mean more inventory, more materials, more labor \u2014 all paid for before the revenue comes in.
+
+**You don't have a buffer.** Operating with zero reserves means any surprise becomes a crisis.
+
+## Seven Fixes You Can Implement This Week
+
+**1. Invoice faster.** Invoice the moment the work is done. Every day you delay is a day you delay getting paid.
+
+**2. Shorten payment terms.** Switch from Net 30 to Net 15. Offer a 2% discount for paying within 10 days.
+
+**3. Build a 2-month operating reserve.** Set aside 5-10% of revenue each month into a separate account.
+
+**4. Negotiate supplier terms.** Ask for Net 30 or Net 45 if you're currently paying on delivery.
+
+**5. Cut subscriptions and recurring costs.** Audit every recurring charge. Cancel anything unused in the last 30 days.
+
+**6. Offer prepayment incentives.** Annual subscriptions at a discount, prepaid packages, or deposits on large orders.
+
+**7. Create recurring revenue.** Subscriptions, retainers, and memberships create predictable monthly cash flow.
+
+Your Revenue Health Score includes a Cash Flow & Operations pillar that measures exactly how healthy your cash position is \u2014 and flags problems before they become emergencies.`,
+    author: "FixWorkFlow Team",
+    date: "2026-02-25",
+    category: "Revenue",
+    readTime: "8 min read",
+  },
+  {
+    title: "Why Is My Business Not Growing? 7 Hidden Reasons",
+    slug: "why-is-my-business-not-growing",
+    excerpt:
+      "Stuck at the same revenue for months? Here are seven reasons your business isn't growing that most owners miss \u2014 and the specific fix for each one.",
+    content: `You're doing the work. You're showing up every day. You might even be busier than ever. But somehow, the revenue number at the end of each month looks the same as it did six months ago.
+
+You're not alone. Revenue plateaus are one of the most common \u2014 and most frustrating \u2014 phases of running a small business. The tricky part is that the reason you're stuck usually isn't obvious. It's rarely one big problem. It's usually a combination of smaller issues that compound into a ceiling you can't seem to break through.
+
+Here are seven hidden reasons your business might not be growing, and what to do about each one.
+
+## 1. You're Underpricing
+
+This is the most common growth blocker and the one owners are most resistant to fixing. You set your prices when you started, probably based on what competitors were charging or what felt "fair." But your costs have gone up, your skills have improved, and your value has increased \u2014 your prices haven't kept pace.
+
+Here's a quick test: if you raised prices 15% tomorrow, would you lose more than 15% of your customers? Almost certainly not. Most businesses lose 5% or fewer customers after a moderate price increase, which means you net more revenue even with slightly fewer sales.
+
+The fix: Raise your prices. Start with new customers. Then gradually move existing customers to the new pricing.
+
+## 2. You're Leaking Customers
+
+New customers are coming in, but just as many are leaving. Your revenue looks flat because you're replacing churned customers rather than adding to your base.
+
+This is a retention problem disguised as a growth problem. You think you need more marketing, but what you actually need is to keep the customers you already have.
+
+The fix: Calculate your repeat customer rate. If it's below 20%, that's your bottleneck \u2014 not acquisition.
+
+## 3. You're Doing Everything Yourself
+
+There's a ceiling to what one person can produce. If you're the one making the product, doing the marketing, handling customer service, managing the books, and posting on social media \u2014 you've hit it.
+
+The fix: Track how you spend your time for one week. Identify tasks that don't require your specific expertise and delegate or automate them.
+
+## 4. You're Dependent on One Channel
+
+If all your customers come from Instagram, or all from word of mouth, or all from one wholesale account \u2014 you don't have a growth engine. You have a single point of failure.
+
+The fix: Build a second acquisition channel. If you're all social media, start an email list. If you're all referrals, invest in SEO or paid ads.
+
+## 5. Your Margins Are Too Thin to Reinvest
+
+Growth costs money. If your margins are so thin that every dollar of revenue is spoken for, there's nothing left to invest in growth.
+
+The fix: Before chasing more revenue, fix your profitability. Cut unnecessary expenses, renegotiate supplier contracts, raise prices, or shift your product mix toward higher-margin offerings.
+
+## 6. You Don't Have a System for Leads
+
+Many small businesses get customers reactively \u2014 someone finds them, reaches out, and buys. There's no proactive system generating leads consistently.
+
+The fix: Build a simple lead generation system. A landing page with a free resource that captures email addresses, followed by a 3-5 email nurture sequence, is enough to create a steady pipeline.
+
+## 7. You're Solving the Wrong Problem
+
+Sometimes the reason you're not growing is that you're focused on fixing something that isn't actually the bottleneck. You might be obsessing over your website design when the real problem is your pricing.
+
+The fix: Diagnose before you prescribe. Look at all five areas of your business \u2014 revenue, profitability, cash flow, retention, and acquisition \u2014 and find the weakest link. A Revenue Health Score does exactly this.`,
+    author: "FixWorkFlow Team",
+    date: "2026-02-24",
+    category: "Revenue",
+    readTime: "9 min read",
+  },
+  {
     title: "Why Your Repeat Customer Rate Matters More Than New Sales",
     slug: "repeat-customer-rate-matters-more-than-new-sales",
     excerpt:
