@@ -70,39 +70,39 @@ const INTEGRATION_CATEGORIES = [
     name: "Revenue & Payments",
     icon: DollarSign,
     items: [
-      { name: "Shopify", brandColor: "#96BF48", description: "Sync orders, revenue, repeat customers, and average order value.", pillars: ["Revenue", "Retention", "Acquisition"] },
-      { name: "Stripe", brandColor: "#635BFF", description: "Sync payment data, MRR, churn rate, and revenue trends.", pillars: ["Revenue", "Profitability"] },
-      { name: "Square", brandColor: "#000000", description: "Sync POS transactions, sales data, and customer purchase history.", pillars: ["Revenue", "Retention"] },
-      { name: "PayPal", brandColor: "#003087", description: "Sync transaction history, payment volume, and revenue data.", pillars: ["Revenue"] },
-      { name: "WooCommerce", brandColor: "#96588A", description: "Sync e-commerce orders, revenue, products, and customer data.", pillars: ["Revenue", "Retention"] },
+      { name: "Shopify", domain: "shopify.com", brandColor: "#96BF48", description: "Sync orders, revenue, repeat customers, and average order value.", pillars: ["Revenue", "Retention", "Acquisition"] },
+      { name: "Stripe", domain: "stripe.com", brandColor: "#635BFF", description: "Sync payment data, MRR, churn rate, and revenue trends.", pillars: ["Revenue", "Profitability"] },
+      { name: "Square", domain: "squareup.com", brandColor: "#000000", description: "Sync POS transactions, sales data, and customer purchase history.", pillars: ["Revenue", "Retention"] },
+      { name: "PayPal", domain: "paypal.com", brandColor: "#003087", description: "Sync transaction history, payment volume, and revenue data.", pillars: ["Revenue"] },
+      { name: "WooCommerce", domain: "woocommerce.com", brandColor: "#96588A", description: "Sync e-commerce orders, revenue, products, and customer data.", pillars: ["Revenue", "Retention"] },
     ],
   },
   {
     name: "Marketing & Acquisition",
     icon: BarChart3,
     items: [
-      { name: "Google Analytics", brandColor: "#F9AB00", description: "Sync website traffic, conversion rates, and acquisition channels.", pillars: ["Acquisition", "Revenue"] },
-      { name: "Meta Ads", brandColor: "#0668E1", description: "Sync ad spend, impressions, conversions, and cost per acquisition.", pillars: ["Acquisition"] },
-      { name: "Google Ads", brandColor: "#4285F4", description: "Sync ad campaigns, spend, clicks, conversions, and ROAS.", pillars: ["Acquisition"] },
-      { name: "Mailchimp", brandColor: "#FFE01B", description: "Sync email performance, list growth, open rates, and campaign revenue.", pillars: ["Acquisition", "Retention"] },
+      { name: "Google Analytics", domain: "analytics.google.com", brandColor: "#F9AB00", description: "Sync website traffic, conversion rates, and acquisition channels.", pillars: ["Acquisition", "Revenue"] },
+      { name: "Meta Ads", domain: "meta.com", brandColor: "#0668E1", description: "Sync ad spend, impressions, conversions, and cost per acquisition.", pillars: ["Acquisition"] },
+      { name: "Google Ads", domain: "ads.google.com", brandColor: "#4285F4", description: "Sync ad campaigns, spend, clicks, conversions, and ROAS.", pillars: ["Acquisition"] },
+      { name: "Mailchimp", domain: "mailchimp.com", brandColor: "#FFE01B", description: "Sync email performance, list growth, open rates, and campaign revenue.", pillars: ["Acquisition", "Retention"] },
     ],
   },
   {
     name: "Accounting & Finance",
     icon: BookOpen,
     items: [
-      { name: "QuickBooks", brandColor: "#2CA01C", description: "Sync accounting data, profit & loss, margins, expenses, and invoices.", pillars: ["Profitability", "Operations"] },
-      { name: "Xero", brandColor: "#13B5EA", description: "Sync financial reports, bank transactions, invoices, and cash flow.", pillars: ["Profitability", "Operations"] },
-      { name: "Wave", brandColor: "#0764E6", description: "Sync income, expenses, invoicing, and financial reports.", pillars: ["Profitability", "Operations"] },
+      { name: "QuickBooks", domain: "quickbooks.intuit.com", brandColor: "#2CA01C", description: "Sync accounting data, profit & loss, margins, expenses, and invoices.", pillars: ["Profitability", "Operations"] },
+      { name: "Xero", domain: "xero.com", brandColor: "#13B5EA", description: "Sync financial reports, bank transactions, invoices, and cash flow.", pillars: ["Profitability", "Operations"] },
+      { name: "Wave", domain: "waveapps.com", brandColor: "#0764E6", description: "Sync income, expenses, invoicing, and financial reports.", pillars: ["Profitability", "Operations"] },
     ],
   },
   {
     name: "CRM & Operations",
     icon: Handshake,
     items: [
-      { name: "HubSpot", brandColor: "#FF7A59", description: "Sync CRM contacts, deal pipeline, customer lifecycle, and leads.", pillars: ["Retention", "Acquisition"] },
-      { name: "Calendly", brandColor: "#006BFF", description: "Sync booking data, appointment volume, and no-show rates.", pillars: ["Operations"] },
-      { name: "Notion", brandColor: "#000000", description: "Sync project tracking, task completion, and team productivity.", pillars: ["Operations"] },
+      { name: "HubSpot", domain: "hubspot.com", brandColor: "#FF7A59", description: "Sync CRM contacts, deal pipeline, customer lifecycle, and leads.", pillars: ["Retention", "Acquisition"] },
+      { name: "Calendly", domain: "calendly.com", brandColor: "#006BFF", description: "Sync booking data, appointment volume, and no-show rates.", pillars: ["Operations"] },
+      { name: "Notion", domain: "notion.so", brandColor: "#000000", description: "Sync project tracking, task completion, and team productivity.", pillars: ["Operations"] },
     ],
   },
 ];
@@ -240,6 +240,39 @@ const PROVIDER_CATALOG = [
     connectEndpoint: "",
   },
 ];
+
+// ── Integration Logo (favicon with letter fallback) ──
+
+function IntegrationLogo({ domain, name, brandColor, size = 36 }: { domain: string; name: string; brandColor: string; size?: number }) {
+  const [errored, setErrored] = useState(false);
+  const src = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+
+  if (errored) {
+    return (
+      <div style={{
+        width: size, height: size, minWidth: size, borderRadius: 9,
+        background: brandColor, display: "flex",
+        alignItems: "center", justifyContent: "center",
+        fontSize: 16, fontWeight: 800, color: "#fff",
+      }}>
+        {name[0]}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={name}
+      onError={() => setErrored(true)}
+      style={{
+        width: size, height: size, minWidth: size, borderRadius: 9,
+        objectFit: "contain", background: "#fff",
+        border: "1px solid #f0f2f6",
+      }}
+    />
+  );
+}
 
 // ── Toggle Switch ──
 
@@ -1425,15 +1458,7 @@ function SettingsContent() {
                               borderTop: intgIdx > 0 ? "1px solid #f0f0f0" : "none",
                             }}
                           >
-                            <div style={{
-                              width: 36, height: 36, minWidth: 36, borderRadius: 9,
-                              background: intg.brandColor, display: "flex",
-                              alignItems: "center", justifyContent: "center",
-                              fontSize: 16, fontWeight: 800, color: "#fff",
-                              fontFamily: "inherit",
-                            }}>
-                              {intg.name[0]}
-                            </div>
+                            <IntegrationLogo domain={intg.domain} name={intg.name} brandColor={intg.brandColor} />
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
                                 <span style={{ fontSize: 13, fontWeight: 700, color: "#1b2434" }}>{intg.name}</span>
