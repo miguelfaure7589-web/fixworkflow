@@ -43,6 +43,7 @@ import {
   Play,
   Plug,
   RefreshCw,
+  Star,
 } from "lucide-react";
 import { dispatchChatPrefill } from "@/lib/prompts/chatContext";
 import { CATEGORY_PROMPT_MAP } from "@/lib/prompts/rationale";
@@ -60,11 +61,6 @@ import {
   generateEstimatedPillarDetails,
   PILLAR_FIELDS,
 } from "@/lib/reasoning";
-import {
-  DASHBOARD_STATS,
-  DASHBOARD_REVIEWS,
-  MINI_REVIEWS,
-} from "@/data/reviews";
 import RecommendedTools from "@/components/dashboard/RecommendedTools";
 import ResourceShelf from "@/components/dashboard/ResourceShelf";
 import CreditRepairCard from "@/components/dashboard/CreditRepairCard";
@@ -2291,100 +2287,177 @@ function AiBusinessSummary({ isPremium }: { isPremium: boolean }) {
   );
 }
 
-// ── Social Proof Section ──
+// ── Leave a Review Section ──
 
-function SocialProofSection() {
+function LeaveReviewSection() {
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [existingReview, setExistingReview] = useState<{ rating: number; comment: string | null } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch existing review on mount
+  useEffect(() => {
+    fetch("/api/reviews")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.review) {
+          setExistingReview(data.review);
+          setRating(data.review.rating);
+          setComment(data.review.comment || "");
+          setSubmitted(true);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSubmit = async () => {
+    if (rating < 1) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating, comment }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setExistingReview(data.review);
+        setSubmitted(true);
+      }
+    } catch {
+      // silent
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEdit = () => {
+    setSubmitted(false);
+  };
+
+  if (loading) return null;
+
   return (
-    <div className="space-y-5">
-      {/* Stats Bar */}
-      <div className="bg-white border border-[#e6e9ef] rounded-[14px] shadow-sm" style={{ padding: "18px 28px" }}>
-        <div className="flex items-center justify-between">
-          {DASHBOARD_STATS.map((stat) => (
-            <div key={stat.label} className="text-center">
-              <p style={{ fontSize: 22, fontWeight: 800, color: "#1b2434", letterSpacing: -0.3 }}>
-                {stat.number}
-                {stat.suffix && <span style={{ fontSize: 14, fontWeight: 600, color: "#facc15" }}>{stat.suffix}</span>}
-              </p>
-              <p style={{ fontSize: 11, color: "#8d95a3", marginTop: 2 }}>{stat.label}</p>
-            </div>
-          ))}
+    <div className="bg-white border border-[#e6e9ef] rounded-[14px] shadow-sm" style={{ padding: "28px 32px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: 10,
+          background: "rgba(67,97,238,0.08)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <Star size={18} color="#4361ee" />
+        </div>
+        <div>
+          <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1b2434", margin: 0 }}>
+            {submitted ? "Thanks for your review!" : "How is FixWorkFlow working for you?"}
+          </h3>
+          <p style={{ fontSize: 12, color: "#8d95a3", margin: 0 }}>
+            {submitted ? "Your feedback helps us improve." : "Leave a rating and optional comment."}
+          </p>
         </div>
       </div>
 
-      {/* Featured Reviews */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.6, textTransform: "uppercase", color: "#8d95a3" }}>
-            What business owners are saying
-          </span>
-          <span style={{ fontSize: 11, fontWeight: 600, color: "#5a6578" }}>
-            <span style={{ color: "#facc15" }}>★★★★★</span> 4.9/5 from 127 reviews
-          </span>
-        </div>
-        <div className="flex gap-3.5">
-          {DASHBOARD_REVIEWS.map((review) => (
-            <div key={review.name} className="flex-1 bg-white border border-[#e6e9ef] rounded-[14px]" style={{ padding: "20px 22px" }}>
-              <div style={{ display: "flex", gap: 2, fontSize: 13, color: "#facc15" }}>★★★★★</div>
-              <p style={{ fontSize: 13, color: "#1b2434", lineHeight: 1.65, fontWeight: 500, marginTop: 10 }}>
-                &ldquo;{review.text}&rdquo;
-              </p>
-              {review.result && (
-                <div style={{
-                  marginTop: 10, padding: "6px 10px", borderRadius: 6,
-                  background: "rgba(16,185,129,0.07)", border: "1px solid rgba(16,185,129,0.15)",
-                  fontSize: 11, fontWeight: 600, color: "#10b981",
-                }}>
-                  ↗ {review.result}
-                </div>
-              )}
-              <div style={{ paddingTop: 14, borderTop: "1px solid #f0f2f6", marginTop: 16, display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  background: review.avatarColor,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  color: "white", fontSize: 14, fontWeight: 700,
-                }}>
-                  {review.initials}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: "#1b2434" }}>{review.name}</p>
-                  <p style={{ fontSize: 11, color: "#8d95a3" }}>{review.role}</p>
-                </div>
-                <span style={{
-                  fontSize: 10, fontWeight: 600, color: "#5a6578",
-                  padding: "3px 8px", borderRadius: 4,
-                  background: "#f4f5f8",
-                }}>
-                  {review.type}
-                </span>
-              </div>
+      {submitted ? (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+            <div style={{ display: "flex", gap: 4 }}>
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star
+                  key={s}
+                  size={22}
+                  fill={s <= (existingReview?.rating || rating) ? "#facc15" : "none"}
+                  color={s <= (existingReview?.rating || rating) ? "#facc15" : "#d1d5db"}
+                  strokeWidth={1.5}
+                />
+              ))}
             </div>
-          ))}
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#1b2434" }}>
+              {existingReview?.rating || rating}/5
+            </span>
+          </div>
+          {existingReview?.comment && (
+            <p style={{ fontSize: 13, color: "#5a6578", lineHeight: 1.6, margin: "0 0 12px", fontStyle: "italic" }}>
+              &ldquo;{existingReview.comment}&rdquo;
+            </p>
+          )}
+          <button
+            onClick={handleEdit}
+            style={{
+              fontSize: 12, fontWeight: 600, color: "#4361ee",
+              background: "none", border: "none", cursor: "pointer",
+              padding: 0, textDecoration: "underline",
+            }}
+          >
+            Update your review
+          </button>
         </div>
-      </div>
+      ) : (
+        <div>
+          {/* Star Rating */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+            {[1, 2, 3, 4, 5].map((s) => (
+              <button
+                key={s}
+                onClick={() => setRating(s)}
+                onMouseEnter={() => setHover(s)}
+                onMouseLeave={() => setHover(0)}
+                style={{
+                  background: "none", border: "none", cursor: "pointer", padding: 2,
+                  transition: "transform 0.1s",
+                  transform: (hover === s) ? "scale(1.15)" : "scale(1)",
+                }}
+              >
+                <Star
+                  size={28}
+                  fill={s <= (hover || rating) ? "#facc15" : "none"}
+                  color={s <= (hover || rating) ? "#facc15" : "#d1d5db"}
+                  strokeWidth={1.5}
+                />
+              </button>
+            ))}
+            {rating > 0 && (
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#1b2434", alignSelf: "center", marginLeft: 4 }}>
+                {rating}/5
+              </span>
+            )}
+          </div>
 
-      {/* Mini Review Strip */}
-      <div className="bg-white border border-[#e6e9ef] rounded-[14px] shadow-sm" style={{ padding: "18px 24px" }}>
-        <div className="flex" style={{ gap: 20 }}>
-          {MINI_REVIEWS.map((review, i) => (
-            <div
-              key={review.name}
-              style={{
-                flex: 1,
-                ...(i < MINI_REVIEWS.length - 1 ? { borderRight: "1px solid #f0f2f6", paddingRight: 20 } : {}),
-              }}
-            >
-              <div style={{ fontSize: 13, color: "#facc15", marginBottom: 6 }}>★★★★★</div>
-              <p style={{ fontSize: 12, color: "#5a6578", lineHeight: 1.5, fontStyle: "italic" }}>
-                &ldquo;{review.text}&rdquo;
-              </p>
-              <p style={{ fontSize: 11, color: "#b4bac5", marginTop: 6 }}>
-                <span style={{ fontWeight: 600, color: "#8d95a3" }}>{review.name}</span> · {review.role}
-              </p>
-            </div>
-          ))}
+          {/* Comment */}
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Optional: Tell us what you think..."
+            rows={3}
+            style={{
+              width: "100%", fontSize: 13, color: "#1b2434",
+              border: "1px solid #e6e9ef", borderRadius: 10, padding: "12px 14px",
+              resize: "vertical", outline: "none", fontFamily: "inherit",
+              background: "#fafbfd",
+            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "#4361ee"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "#e6e9ef"; }}
+          />
+
+          {/* Submit */}
+          <button
+            onClick={handleSubmit}
+            disabled={rating < 1 || submitting}
+            style={{
+              marginTop: 12, padding: "10px 24px", fontSize: 13, fontWeight: 700,
+              color: "#fff", background: rating < 1 ? "#d1d5db" : "#4361ee",
+              border: "none", borderRadius: 10, cursor: rating < 1 ? "default" : "pointer",
+              opacity: submitting ? 0.7 : 1,
+              transition: "background 0.15s",
+            }}
+          >
+            {submitting ? "Submitting..." : existingReview ? "Update Review" : "Submit Review"}
+          </button>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -2970,8 +3043,8 @@ export default function RevenueDashboard() {
         {/* Recommended Tools & Resources */}
         <RecommendationsSection isPremium={isPremium} hasScore={hasScore} />
 
-        {/* Social Proof */}
-        <SocialProofSection />
+        {/* Leave a Review */}
+        <LeaveReviewSection />
 
         {/* Bottom Upgrade Banner — free users only */}
         {!isPremium && <BottomUpgradeBanner />}

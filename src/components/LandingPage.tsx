@@ -60,6 +60,7 @@ export default function LandingPage() {
   const [visible, setVisible] = useState(false);
   const [hovered, setHovered] = useState<number | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [realStats, setRealStats] = useState<{ totalUsers: number; totalReviews: number; avgRating: number; businessesScored: number } | null>(null);
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
   const isSmall = isMobile || isTablet;
@@ -71,6 +72,10 @@ export default function LandingPage() {
     const onScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/stats').then(r => r.ok ? r.json() : null).then(d => { if (d) setRealStats(d); }).catch(() => {});
   }, []);
 
   // Close menu on route change or resize
@@ -286,21 +291,30 @@ export default function LandingPage() {
       {/* SOCIAL PROOF */}
       <section id="reviews" style={{ background: '#fff', borderTop: '1px solid #f0f2f6', padding: `${isMobile ? 48 : 80}px ${px}px` }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 20 : 52, marginBottom: 48 }}>
-            {[
-              { n: '850+', l: 'Businesses scored' },
-              { n: '4.9/5', l: 'Average rating', star: true },
-              { n: '$2.4M', l: 'Revenue unlocked' },
-              { n: '89%', l: 'Improved their score' },
-            ].map((s) => (
-              <div key={s.l}>
+          {realStats && realStats.totalUsers >= 10 && (
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : `repeat(${realStats.totalReviews > 0 ? 3 : 2}, 1fr)`, gap: isMobile ? 20 : 52, marginBottom: 48 }}>
+              <div>
                 <div style={{ fontSize: isMobile ? 22 : 26, fontWeight: 900, letterSpacing: -0.5 }}>
-                  {s.n}{s.star && <span style={{ color: '#facc15' }}> ★</span>}
+                  {realStats.totalUsers}+
                 </div>
-                <div style={{ fontSize: 11, color: '#8d95a3', marginTop: 2 }}>{s.l}</div>
+                <div style={{ fontSize: 11, color: '#8d95a3', marginTop: 2 }}>Businesses scored</div>
               </div>
-            ))}
-          </div>
+              {realStats.totalReviews > 0 && (
+                <div>
+                  <div style={{ fontSize: isMobile ? 22 : 26, fontWeight: 900, letterSpacing: -0.5 }}>
+                    {realStats.avgRating}/5<span style={{ color: '#facc15' }}> ★</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: '#8d95a3', marginTop: 2 }}>Average rating ({realStats.totalReviews} reviews)</div>
+                </div>
+              )}
+              <div>
+                <div style={{ fontSize: isMobile ? 22 : 26, fontWeight: 900, letterSpacing: -0.5 }}>
+                  {realStats.businessesScored}
+                </div>
+                <div style={{ fontSize: 11, color: '#8d95a3', marginTop: 2 }}>Scores generated</div>
+              </div>
+            </div>
+          )}
           <h2 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 900, margin: '0 0 28px' }}>Real businesses. Real results.</h2>
           <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 14 }}>
             {reviewData.map((r) => (

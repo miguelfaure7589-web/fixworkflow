@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Zap, RefreshCw, Menu, X, Pencil, Trash2, Search, Save } from "lucide-react";
+import { Zap, RefreshCw, Menu, X, Pencil, Trash2, Search, Save, Star } from "lucide-react";
 import Link from "next/link";
 import UserAvatarDropdown from "@/components/UserAvatarDropdown";
 import { useIsMobile } from "@/hooks/useMediaQuery";
@@ -324,6 +324,8 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [integrationHealth, setIntegrationHealth] = useState<IntegrationHealth | null>(null);
   const [feedbackItems, setFeedbackItems] = useState<{ id: string; userEmail: string | null; userName: string | null; type: string; message: string; pageUrl: string | null; status: string; createdAt: string }[]>([]);
+  const [reviewItems, setReviewItems] = useState<{ id: string; rating: number; comment: string | null; createdAt: string; userName: string | null; userEmail: string | null }[]>([]);
+  const [reviewAvg, setReviewAvg] = useState(0);
   const [syncRunning, setSyncRunning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -346,13 +348,14 @@ export default function AdminDashboard() {
 
   const fetchAll = useCallback(async (rf: string, ar: string) => {
     try {
-      const [m, r, a, u, ih, fb] = await Promise.all([
+      const [m, r, a, u, ih, fb, rv] = await Promise.all([
         fetch("/api/admin/metrics").then(x => x.ok ? x.json() : null),
         fetch("/api/admin/referrals" + (rf !== "all" ? "?status=" + rf : "")).then(x => x.ok ? x.json() : null),
         fetch("/api/admin/affiliate-analytics?range=" + ar).then(x => x.ok ? x.json() : null),
         fetch("/api/admin/users?limit=50").then(x => x.ok ? x.json() : null),
         fetch("/api/admin/integrations").then(x => x.ok ? x.json() : null),
         fetch("/api/admin/feedback").then(x => x.ok ? x.json() : null),
+        fetch("/api/admin/reviews").then(x => x.ok ? x.json() : null),
       ]);
       if (m) setMetrics(m);
       if (r) setReferrals(r.referrals || []);
@@ -360,6 +363,7 @@ export default function AdminDashboard() {
       if (u) setUsers(u.users || []);
       if (ih) setIntegrationHealth(ih);
       if (fb) setFeedbackItems(fb.feedback || []);
+      if (rv) { setReviewItems(rv.reviews || []); setReviewAvg(rv.avgRating || 0); }
     } catch { /* silent */ }
     setLoading(false);
     setRefreshing(false);
@@ -757,6 +761,52 @@ export default function AdminDashboard() {
                     </tr>
                   ))}
                   {feedbackItems.length === 0 && <tr><td colSpan={5} style={{ padding: "32px 16px", textAlign: "center", color: "#8d95a3", fontSize: 13 }}>No feedback yet.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* REVIEWS */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: "#1b2434" }}>Reviews</span>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 10, background: "rgba(67,97,238,0.08)", color: "#4361ee" }}>{reviewItems.length}</span>
+            {reviewAvg > 0 && (
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#facc15", display: "flex", alignItems: "center", gap: 4 }}>
+                <Star size={14} fill="#facc15" color="#facc15" /> {reviewAvg}/5 avg
+              </span>
+            )}
+          </div>
+          <div style={{ ...card, padding: 0, overflow: "hidden" }}>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 600 }}>
+                <thead><tr style={{ background: "#fafbfd", borderBottom: "1px solid #e6e9ef" }}>
+                  {["Date", "User", "Rating", "Comment"].map(h => <th key={h} style={thStyle}>{h}</th>)}
+                </tr></thead>
+                <tbody>
+                  {reviewItems.map(rv => (
+                    <tr key={rv.id} style={{ borderBottom: "1px solid #f0f2f6" }}>
+                      <td style={{ ...tdStyle, whiteSpace: "nowrap", fontSize: 12 }}>{fmtDate(rv.createdAt)}</td>
+                      <td style={tdStyle}>
+                        <div>
+                          <span style={{ fontWeight: 600, color: "#1b2434" }}>{rv.userName || "\u2014"}</span>
+                          {rv.userEmail && <span style={{ fontSize: 11, color: "#8d95a3", marginLeft: 6 }}>{rv.userEmail}</span>}
+                        </div>
+                      </td>
+                      <td style={tdStyle}>
+                        <div style={{ display: "flex", gap: 2 }}>
+                          {[1, 2, 3, 4, 5].map(s => (
+                            <Star key={s} size={14} fill={s <= rv.rating ? "#facc15" : "none"} color={s <= rv.rating ? "#facc15" : "#d1d5db"} strokeWidth={1.5} />
+                          ))}
+                        </div>
+                      </td>
+                      <td style={{ ...tdStyle, maxWidth: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={rv.comment || ""}>
+                        {rv.comment || <span style={{ color: "#8d95a3" }}>No comment</span>}
+                      </td>
+                    </tr>
+                  ))}
+                  {reviewItems.length === 0 && <tr><td colSpan={4} style={{ padding: "32px 16px", textAlign: "center", color: "#8d95a3", fontSize: 13 }}>No reviews yet.</td></tr>}
                 </tbody>
               </table>
             </div>
