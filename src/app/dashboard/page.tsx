@@ -2776,6 +2776,9 @@ export default function RevenueDashboard() {
                 Upgrade to Pro
               </Link>
             )}
+            <Link href="/settings?tab=integrations" style={{ fontSize: 13, color: "#5a6578", textDecoration: "none", fontWeight: 500 }}>
+              Integrations
+            </Link>
             <button
               onClick={() => setFeedbackOpen(true)}
               style={{ fontSize: 13, color: "#5a6578", background: "none", border: "none", cursor: "pointer", fontWeight: 500, fontFamily: "inherit" }}
@@ -2807,6 +2810,9 @@ export default function RevenueDashboard() {
           <div className="flex flex-col p-4 gap-1">
             <Link href="/settings" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50">
               Settings
+            </Link>
+            <Link href="/settings?tab=integrations" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50">
+              Integrations
             </Link>
             <button onClick={() => { setFeedbackOpen(true); setMenuOpen(false); }} className="block w-full text-left px-3 py-3.5 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50" style={{ fontFamily: "inherit", background: "none", border: "none", cursor: "pointer" }}>
               Feedback
@@ -2905,7 +2911,7 @@ export default function RevenueDashboard() {
             </div>
             <span style={{ fontSize: 12, color: "#8d95a3" }}>Connect your business tools for a more accurate Revenue Health Score</span>
           </div>
-          <Link href="/dashboard/integrations" style={{ padding: "8px 16px", borderRadius: 8, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
+          <Link href="/settings?tab=integrations" style={{ padding: "8px 16px", borderRadius: 8, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
             Browse Integrations &rarr;
           </Link>
         </div>

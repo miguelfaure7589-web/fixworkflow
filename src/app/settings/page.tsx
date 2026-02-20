@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import UserAvatarDropdown from "@/components/UserAvatarDropdown";
 import { Zap, Loader2, ChevronDown, Menu, X } from "lucide-react";
@@ -50,6 +50,60 @@ const SECTIONS = [
   { id: "faq", icon: "\u2753", label: "FAQ & Help" },
   { id: "legal", icon: "\u{1F4C4}", label: "Legal" },
 ];
+
+// ── Full integrations catalog (15 integrations, 4 categories) ──
+
+const PILLAR_BADGE_COLORS: Record<string, { bg: string; text: string }> = {
+  Revenue: { bg: "rgba(67,97,238,0.08)", text: "#4361ee" },
+  Profitability: { bg: "rgba(16,185,129,0.08)", text: "#10b981" },
+  Retention: { bg: "rgba(249,115,22,0.08)", text: "#f97316" },
+  Acquisition: { bg: "rgba(139,92,246,0.08)", text: "#8b5cf6" },
+  Operations: { bg: "rgba(107,114,128,0.08)", text: "#6b7280" },
+};
+
+const INTEGRATION_CATEGORIES = [
+  {
+    name: "Revenue & Payments",
+    emoji: "\ud83d\udcb0",
+    items: [
+      { name: "Shopify", brandColor: "#96BF48", description: "Sync orders, revenue, repeat customers, and average order value.", pillars: ["Revenue", "Retention", "Acquisition"] },
+      { name: "Stripe", brandColor: "#635BFF", description: "Sync payment data, MRR, churn rate, and revenue trends.", pillars: ["Revenue", "Profitability"] },
+      { name: "Square", brandColor: "#000000", description: "Sync POS transactions, sales data, and customer purchase history.", pillars: ["Revenue", "Retention"] },
+      { name: "PayPal", brandColor: "#003087", description: "Sync transaction history, payment volume, and revenue data.", pillars: ["Revenue"] },
+      { name: "WooCommerce", brandColor: "#96588A", description: "Sync e-commerce orders, revenue, products, and customer data.", pillars: ["Revenue", "Retention"] },
+    ],
+  },
+  {
+    name: "Marketing & Acquisition",
+    emoji: "\ud83d\udcca",
+    items: [
+      { name: "Google Analytics", brandColor: "#F9AB00", description: "Sync website traffic, conversion rates, and acquisition channels.", pillars: ["Acquisition", "Revenue"] },
+      { name: "Meta Ads", brandColor: "#0668E1", description: "Sync ad spend, impressions, conversions, and cost per acquisition.", pillars: ["Acquisition"] },
+      { name: "Google Ads", brandColor: "#4285F4", description: "Sync ad campaigns, spend, clicks, conversions, and ROAS.", pillars: ["Acquisition"] },
+      { name: "Mailchimp", brandColor: "#FFE01B", description: "Sync email performance, list growth, open rates, and campaign revenue.", pillars: ["Acquisition", "Retention"] },
+    ],
+  },
+  {
+    name: "Accounting & Finance",
+    emoji: "\ud83d\udcd2",
+    items: [
+      { name: "QuickBooks", brandColor: "#2CA01C", description: "Sync accounting data, profit & loss, margins, expenses, and invoices.", pillars: ["Profitability", "Operations"] },
+      { name: "Xero", brandColor: "#13B5EA", description: "Sync financial reports, bank transactions, invoices, and cash flow.", pillars: ["Profitability", "Operations"] },
+      { name: "Wave", brandColor: "#0764E6", description: "Sync income, expenses, invoicing, and financial reports.", pillars: ["Profitability", "Operations"] },
+    ],
+  },
+  {
+    name: "CRM & Operations",
+    emoji: "\ud83e\udd1d",
+    items: [
+      { name: "HubSpot", brandColor: "#FF7A59", description: "Sync CRM contacts, deal pipeline, customer lifecycle, and leads.", pillars: ["Retention", "Acquisition"] },
+      { name: "Calendly", brandColor: "#006BFF", description: "Sync booking data, appointment volume, and no-show rates.", pillars: ["Operations"] },
+      { name: "Notion", brandColor: "#000000", description: "Sync project tracking, task completion, and team productivity.", pillars: ["Operations"] },
+    ],
+  },
+];
+
+const TOTAL_INTEGRATIONS = INTEGRATION_CATEGORIES.reduce((sum, c) => sum + c.items.length, 0);
 
 const BUSINESS_TYPE_OPTIONS = [
   { value: "service_agency", label: "Service / Agency" },
@@ -501,12 +555,27 @@ function CancelModal({ open, onClose, onConfirm }: { open: boolean; onClose: () 
 // ── Main Settings Page ──
 
 export default function SettingsPage() {
+  return (
+    <Suspense>
+      <SettingsContent />
+    </Suspense>
+  );
+}
+
+function SettingsContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  const [active, setActive] = useState("account");
+  const initialTab = searchParams.get("tab") || "account";
+  const [active, setActive] = useState(SECTIONS.some((s) => s.id === initialTab) ? initialTab : "account");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [intgExpanded, setIntgExpanded] = useState<Record<number, boolean>>(() => {
+    const init: Record<number, boolean> = {};
+    INTEGRATION_CATEGORIES.forEach((_, i) => { init[i] = true; });
+    return init;
+  });
 
   // Account form state
   const [name, setName] = useState("");
@@ -789,6 +858,15 @@ export default function SettingsPage() {
     document.getElementById(`section-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  // Scroll to tab from URL query param on mount
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && SECTIONS.some((s) => s.id === tab)) {
+      setTimeout(() => scrollTo(tab), 100);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (status === "loading" || !session?.user) {
     return null; // Next.js loading.tsx skeleton handles this
   }
@@ -808,6 +886,7 @@ export default function SettingsPage() {
           {!isMobile && (
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <Link href="/dashboard" style={{ fontSize: 13, color: "#5a6578", textDecoration: "none", fontWeight: 500 }}>Dashboard</Link>
+              <button onClick={() => scrollTo("integrations")} style={{ fontSize: 13, color: active === "integrations" ? "#4361ee" : "#5a6578", background: "none", border: "none", cursor: "pointer", fontWeight: 500, fontFamily: "inherit" }}>Integrations</button>
               {!isPremium && (
                 <Link
                   href="/pricing"
@@ -1164,8 +1243,13 @@ export default function SettingsPage() {
 
           {/* ── SECTION: INTEGRATIONS ── */}
           <section id="section-integrations">
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: "0 0 4px" }}>Connected Services</h2>
-            <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 20px" }}>Connect your tools to auto-sync your business metrics every week.</p>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: "0 0 4px" }}>Integrations</h2>
+            <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 8px" }}>
+              Connect your business tools for a more accurate Revenue Health Score. More connections = better insights.
+            </p>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 7, background: "rgba(67,97,238,0.06)", fontSize: 12, fontWeight: 600, color: "#4361ee", marginBottom: 20 }}>
+              {connectedIntegrations.length} of {TOTAL_INTEGRATIONS} connected
+            </div>
 
             {integrationsLoading ? (
               <div style={{ ...cardStyle, textAlign: "center", padding: 32 }}>
@@ -1177,6 +1261,7 @@ export default function SettingsPage() {
                 {/* Connected integrations */}
                 {connectedIntegrations.length > 0 && (
                   <div style={{ marginBottom: 20 }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, color: "#1b2434", margin: "0 0 10px" }}>Connected</h3>
                     {connectedIntegrations.map((intg) => {
                       const catalog = PROVIDER_CATALOG.find((p) => p.id === intg.provider);
                       const statusColor = intg.status === "connected" ? "#10b981" : intg.status === "syncing" ? "#f59e0b" : "#ef4444";
@@ -1185,7 +1270,6 @@ export default function SettingsPage() {
                       return (
                         <div key={intg.id} style={{ ...cardStyle, marginBottom: 12 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                            {/* Provider icon */}
                             <img
                               src={`https://www.google.com/s2/favicons?domain=${catalog?.icon || intg.provider}&sz=64`}
                               alt={`${catalog?.name || intg.provider} logo`}
@@ -1237,7 +1321,6 @@ export default function SettingsPage() {
                               </button>
                             </div>
                           </div>
-                          {/* Error message */}
                           {intg.status === "error" && intg.lastSyncError && (
                             <div style={{
                               marginTop: 10, padding: "8px 12px", borderRadius: 8,
@@ -1253,81 +1336,112 @@ export default function SettingsPage() {
                   </div>
                 )}
 
-                {/* Available integrations */}
-                <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
-                  {PROVIDER_CATALOG
-                    .filter((p) => !connectedIntegrations.some((c) => c.provider === p.id))
-                    .map((provider) => {
-                      const isComingSoon = provider.status === "coming_soon";
-                      return (
-                        <div
-                          key={provider.id}
-                          style={{
-                            ...cardStyle,
-                            opacity: isComingSoon ? 0.65 : 1,
-                            display: "flex", flexDirection: "column",
-                          }}
-                        >
-                          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                            <img
-                              src={`https://www.google.com/s2/favicons?domain=${provider.icon}&sz=64`}
-                              alt={`${provider.name} logo`}
-                              style={{ width: 40, height: 40, borderRadius: 10, background: "#f4f5f8" }}
-                            />
-                            <span style={{ fontSize: 16, fontWeight: 700, color: "#1b2434" }}>{provider.name}</span>
-                          </div>
-                          <p style={{ fontSize: 13, color: "#5a6578", margin: "0 0 8px", lineHeight: 1.5 }}>
-                            {provider.description}
-                          </p>
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 12 }}>
-                            {provider.pillarsAffected.map((p) => (
-                              <span key={p} style={{
-                                fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 4,
-                                background: "rgba(67,97,238,0.06)", color: "#4361ee",
-                              }}>
-                                {PILLAR_LABELS_MAP[p] || p}
-                              </span>
-                            ))}
-                          </div>
-                          <div style={{ marginTop: "auto" }}>
-                            {isComingSoon ? (
+                {/* All integrations — accordion by category */}
+                {INTEGRATION_CATEGORIES.map((cat, catIdx) => (
+                  <div key={catIdx} style={{ marginBottom: 12 }}>
+                    <button
+                      onClick={() => setIntgExpanded((prev) => ({ ...prev, [catIdx]: !prev[catIdx] }))}
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                        padding: "12px 16px", background: "#fff", border: "1px solid #e6e9ef",
+                        borderRadius: intgExpanded[catIdx] ? "12px 12px 0 0" : 12,
+                        cursor: "pointer", fontFamily: "inherit", transition: "border-radius 0.2s",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 16 }}>{cat.emoji}</span>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "#1b2434" }}>{cat.name}</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "#8d95a3", background: "#f4f5f8", padding: "2px 7px", borderRadius: 5 }}>
+                          {cat.items.length}
+                        </span>
+                      </div>
+                      <ChevronDown
+                        size={16}
+                        color="#8d95a3"
+                        style={{ transition: "transform 0.25s ease", transform: intgExpanded[catIdx] ? "rotate(180deg)" : "rotate(0deg)" }}
+                      />
+                    </button>
+                    <div style={{
+                      maxHeight: intgExpanded[catIdx] ? cat.items.length * 200 : 0,
+                      overflow: "hidden",
+                      transition: "max-height 0.35s ease",
+                      background: "#fff",
+                      borderLeft: "1px solid #e6e9ef",
+                      borderRight: "1px solid #e6e9ef",
+                      borderBottom: intgExpanded[catIdx] ? "1px solid #e6e9ef" : "none",
+                      borderRadius: "0 0 12px 12px",
+                    }}>
+                      {cat.items.map((intg, intgIdx) => {
+                        const isConnected = connectedIntegrations.some(
+                          (c) => c.provider === intg.name.toLowerCase().replace(/\s+/g, "-"),
+                        );
+                        return (
+                          <div
+                            key={intgIdx}
+                            style={{
+                              display: "flex", alignItems: "center", gap: 12,
+                              padding: "14px 16px",
+                              borderTop: intgIdx > 0 ? "1px solid #f0f0f0" : "none",
+                            }}
+                          >
+                            <div style={{
+                              width: 36, height: 36, minWidth: 36, borderRadius: 9,
+                              background: intg.brandColor, display: "flex",
+                              alignItems: "center", justifyContent: "center",
+                              fontSize: 16, fontWeight: 800, color: "#fff",
+                              fontFamily: "inherit",
+                            }}>
+                              {intg.name[0]}
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: "#1b2434" }}>{intg.name}</span>
+                                {isConnected && (
+                                  <span style={{ fontSize: 10, fontWeight: 600, color: "#10b981", background: "rgba(16,185,129,0.08)", padding: "1px 6px", borderRadius: 4 }}>
+                                    Connected
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ fontSize: 11, color: "#5a6578", lineHeight: 1.5, marginBottom: 4 }}>{intg.description}</div>
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                                {intg.pillars.map((p) => {
+                                  const c = PILLAR_BADGE_COLORS[p] || { bg: "#f4f5f8", text: "#6b7280" };
+                                  return (
+                                    <span key={p} style={{ fontSize: 9, fontWeight: 600, padding: "1px 6px", borderRadius: 3, background: c.bg, color: c.text }}>
+                                      {p}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                            {!isConnected && (
                               <button
                                 disabled
                                 style={{
-                                  width: "100%", padding: "10px 18px", borderRadius: 9,
+                                  padding: "6px 14px", borderRadius: 7,
                                   border: "1px solid #e6e9ef", background: "#f4f5f8",
-                                  color: "#8d95a3", fontSize: 13, fontWeight: 600,
+                                  color: "#8d95a3", fontSize: 11, fontWeight: 600,
                                   cursor: "not-allowed", fontFamily: "inherit",
+                                  whiteSpace: "nowrap",
                                 }}
                               >
                                 Coming Soon
                               </button>
-                            ) : (
-                              <button
-                                onClick={() => {
-                                  setConnectModalProvider(provider.id);
-                                  setConnectError("");
-                                  setShopifyStore("");
-                                }}
-                                style={{
-                                  width: "100%", padding: "10px 18px", borderRadius: 9,
-                                  border: "none", background: gradientBg,
-                                  color: "#fff", fontSize: 13, fontWeight: 700,
-                                  cursor: "pointer", fontFamily: "inherit",
-                                }}
-                              >
-                                Connect
-                              </button>
                             )}
                           </div>
-                          {!isComingSoon && (
-                            <div style={{ fontSize: 11, color: "#8d95a3", marginTop: 8 }}>
-                              Access: {provider.scopesPlainEnglish.join(" \u00b7 ")}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Bottom note */}
+                <div style={{ textAlign: "center", marginTop: 16, padding: "16px", background: "#fff", borderRadius: 12, border: "1px solid #e6e9ef" }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "#1b2434", margin: "0 0 3px" }}>Want an integration we don&apos;t have?</p>
+                  <p style={{ fontSize: 12, color: "#8d95a3", margin: 0 }}>
+                    Let us know at{" "}
+                    <a href="mailto:support@fixworkflow.com" style={{ color: "#4361ee", textDecoration: "none", fontWeight: 600 }}>support@fixworkflow.com</a>
+                  </p>
                 </div>
               </>
             )}
