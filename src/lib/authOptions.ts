@@ -79,7 +79,7 @@ export const authOptions: NextAuthOptions = {
         });
         if (dbUser) {
           token.isAdmin = dbUser.isAdmin;
-          token.isPremium = dbUser.isPremium || dbUser.email === ADMIN_EMAIL;
+          token.isPremium = dbUser.isPremium || dbUser.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
           token.onboardingCompleted = dbUser.onboardingCompleted;
           token.diagnosisCompleted = dbUser.diagnosisCompleted;
           token.phone = dbUser.phone;
@@ -107,7 +107,7 @@ export const authOptions: NextAuthOptions = {
         });
         if (dbUser) {
           token.isAdmin = dbUser.isAdmin;
-          token.isPremium = dbUser.isPremium || dbUser.email === ADMIN_EMAIL;
+          token.isPremium = dbUser.isPremium || dbUser.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
           token.onboardingCompleted = dbUser.onboardingCompleted;
           token.diagnosisCompleted = dbUser.diagnosisCompleted;
           token.phone = dbUser.phone;
