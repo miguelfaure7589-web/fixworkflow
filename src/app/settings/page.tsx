@@ -528,6 +528,7 @@ export default function SettingsPage() {
 
   // Subscription
   const isPremium = !!(session?.user as Record<string, unknown> | undefined)?.isPremium;
+  const isAdminAccount = !!(session?.user as Record<string, unknown> | undefined)?.isAdmin;
   const [cancelOpen, setCancelOpen] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
@@ -1371,7 +1372,11 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              {isPremium ? (
+              {isPremium && isAdminAccount ? (
+                <p style={{ fontSize: 13, color: "#5a6578", margin: 0, lineHeight: 1.6 }}>
+                  Admin Account &mdash; Pro features enabled. No Stripe subscription required.
+                </p>
+              ) : isPremium ? (
                 <>
                   <p style={{ fontSize: 13, color: "#5a6578", margin: "0 0 16px" }}>
                     You are on the Pro plan.

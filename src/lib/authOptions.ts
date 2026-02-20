@@ -6,6 +6,8 @@ import bcrypt from "bcryptjs";
 import type { NextAuthOptions } from "next-auth";
 import { sendWelcomeEmail } from "@/lib/email";
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "fixworkflows@gmail.com";
+
 export const authOptions: NextAuthOptions = {
   debug: true,
   adapter: PrismaAdapter(prisma),
@@ -67,6 +69,7 @@ export const authOptions: NextAuthOptions = {
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
           select: {
+            email: true,
             isAdmin: true,
             isPremium: true,
             onboardingCompleted: true,
@@ -76,7 +79,7 @@ export const authOptions: NextAuthOptions = {
         });
         if (dbUser) {
           token.isAdmin = dbUser.isAdmin;
-          token.isPremium = dbUser.isPremium;
+          token.isPremium = dbUser.isPremium || dbUser.email === ADMIN_EMAIL;
           token.onboardingCompleted = dbUser.onboardingCompleted;
           token.diagnosisCompleted = dbUser.diagnosisCompleted;
           token.phone = dbUser.phone;
@@ -94,6 +97,7 @@ export const authOptions: NextAuthOptions = {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
           select: {
+            email: true,
             isAdmin: true,
             isPremium: true,
             onboardingCompleted: true,
@@ -103,7 +107,7 @@ export const authOptions: NextAuthOptions = {
         });
         if (dbUser) {
           token.isAdmin = dbUser.isAdmin;
-          token.isPremium = dbUser.isPremium;
+          token.isPremium = dbUser.isPremium || dbUser.email === ADMIN_EMAIL;
           token.onboardingCompleted = dbUser.onboardingCompleted;
           token.diagnosisCompleted = dbUser.diagnosisCompleted;
           token.phone = dbUser.phone;
