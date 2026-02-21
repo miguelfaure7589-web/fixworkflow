@@ -70,8 +70,8 @@ const INTEGRATION_CATEGORIES = [
     name: "Revenue & Payments",
     icon: DollarSign,
     items: [
-      { name: "Shopify", domain: "shopify.com", brandColor: "#96BF48", description: "Sync orders, revenue, repeat customers, and average order value.", pillars: ["Revenue", "Retention", "Acquisition"] },
-      { name: "Stripe", domain: "stripe.com", brandColor: "#635BFF", description: "Sync payment data, MRR, churn rate, and revenue trends.", pillars: ["Revenue", "Profitability"] },
+      { name: "Shopify", domain: "shopify.com", brandColor: "#96BF48", description: "Sync orders, revenue, repeat customers, and average order value.", pillars: ["Revenue", "Retention", "Acquisition"], providerId: "shopify" },
+      { name: "Stripe", domain: "stripe.com", brandColor: "#635BFF", description: "Sync payment data, MRR, churn rate, and revenue trends.", pillars: ["Revenue", "Profitability"], providerId: "stripe-data" },
       { name: "Square", domain: "squareup.com", brandColor: "#000000", description: "Sync POS transactions, sales data, and customer purchase history.", pillars: ["Revenue", "Retention"] },
       { name: "PayPal", domain: "paypal.com", brandColor: "#003087", description: "Sync transaction history, payment volume, and revenue data.", pillars: ["Revenue"] },
       { name: "WooCommerce", domain: "woocommerce.com", brandColor: "#96588A", description: "Sync e-commerce orders, revenue, products, and customer data.", pillars: ["Revenue", "Retention"] },
@@ -1481,18 +1481,38 @@ function SettingsContent() {
                               </div>
                             </div>
                             {!isConnected && (
-                              <button
-                                disabled
-                                style={{
-                                  padding: "6px 14px", borderRadius: 7,
-                                  border: "1px solid #e6e9ef", background: "#f4f5f8",
-                                  color: "#8d95a3", fontSize: 11, fontWeight: 600,
-                                  cursor: "not-allowed", fontFamily: "inherit",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                Coming Soon
-                              </button>
+                              intg.providerId ? (
+                                <button
+                                  onClick={() => {
+                                    setConnectError("");
+                                    setConnectModalProvider(intg.providerId!);
+                                  }}
+                                  style={{
+                                    padding: "6px 14px", borderRadius: 7,
+                                    border: "none", background: "#4361ee",
+                                    color: "#fff", fontSize: 11, fontWeight: 600,
+                                    cursor: "pointer", fontFamily: "inherit",
+                                    whiteSpace: "nowrap", transition: "background 0.15s",
+                                  }}
+                                  onMouseEnter={(e) => (e.currentTarget.style.background = "#3451de")}
+                                  onMouseLeave={(e) => (e.currentTarget.style.background = "#4361ee")}
+                                >
+                                  Connect
+                                </button>
+                              ) : (
+                                <button
+                                  disabled
+                                  style={{
+                                    padding: "6px 14px", borderRadius: 7,
+                                    border: "1px solid #e6e9ef", background: "#f4f5f8",
+                                    color: "#8d95a3", fontSize: 11, fontWeight: 600,
+                                    cursor: "not-allowed", fontFamily: "inherit",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  Coming Soon
+                                </button>
+                              )
                             )}
                           </div>
                         );
