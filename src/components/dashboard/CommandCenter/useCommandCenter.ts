@@ -19,7 +19,7 @@ export function useCommandCenter(isPremium: boolean) {
         setError(json.error || "Failed to load data");
         return;
       }
-      const json = await res.json();
+      const json: CommandCenterData = await res.json();
       setData(json);
     } catch {
       setError("Network error");

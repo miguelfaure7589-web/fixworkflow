@@ -5,11 +5,11 @@ import SourceBadge from "./SourceBadge";
 import type { PillarData } from "./types";
 
 const PILLAR_CONFIG: Record<string, { label: string; color: string; icon: string }> = {
-  revenue: { label: "Revenue", color: "#4361ee", icon: "💰" },
-  profitability: { label: "Profitability", color: "#10b981", icon: "📊" },
-  retention: { label: "Retention", color: "#f59e0b", icon: "🔄" },
-  acquisition: { label: "Acquisition", color: "#8b5cf6", icon: "🎯" },
-  ops: { label: "Operations", color: "#f43f5e", icon: "⚙️" },
+  revenue: { label: "Revenue", color: "#4361ee", icon: "\ud83d\udcb0" },
+  profitability: { label: "Profitability", color: "#10b981", icon: "\ud83d\udcca" },
+  retention: { label: "Retention", color: "#f59e0b", icon: "\ud83d\udd04" },
+  acquisition: { label: "Acquisition", color: "#8b5cf6", icon: "\ud83c\udfaf" },
+  ops: { label: "Operations", color: "#f43f5e", icon: "\u2699\ufe0f" },
 };
 
 function DeltaBadge({ delta }: { delta: number }) {
@@ -17,12 +17,8 @@ function DeltaBadge({ delta }: { delta: number }) {
   const isPositive = delta > 0;
   return (
     <span style={{
-      display: "inline-flex",
-      alignItems: "center",
-      padding: "1px 6px",
-      borderRadius: 6,
-      fontSize: 11,
-      fontWeight: 700,
+      display: "inline-flex", alignItems: "center", padding: "2px 7px", borderRadius: 6,
+      fontSize: 11, fontWeight: 700,
       background: isPositive ? "rgba(16,185,129,0.08)" : "rgba(239,68,68,0.08)",
       color: isPositive ? "#10b981" : "#ef4444",
     }}>
@@ -33,17 +29,31 @@ function DeltaBadge({ delta }: { delta: number }) {
 
 export default function PillarHealthCards({
   pillars,
+  overallScore,
   isMobile,
 }: {
   pillars: Record<string, PillarData>;
+  overallScore: number;
   isMobile: boolean;
 }) {
   const pillarNames = ["revenue", "profitability", "retention", "acquisition", "ops"];
 
   return (
-    <div>
-      <div style={{ fontSize: 11, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>
-        Pillar Health
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          Pillar Health
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 11, color: "#8d95a3" }}>Overall:</span>
+          <span style={{
+            fontSize: 16, fontWeight: 800,
+            color: overallScore >= 70 ? "#10b981" : overallScore >= 40 ? "#f59e0b" : "#ef4444",
+          }}>
+            {overallScore}
+          </span>
+          <span style={{ fontSize: 11, color: "#b4bac5" }}>/100</span>
+        </div>
       </div>
       <div style={{
         display: "grid",
@@ -56,20 +66,13 @@ export default function PillarHealthCards({
           if (!cfg || !data) return null;
 
           return (
-            <div
-              key={name}
-              style={{
-                background: "#fff",
-                border: "1px solid #f0f2f6",
-                borderRadius: 12,
-                padding: 16,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-              }}
-            >
-              {/* Header: icon + name */}
+            <div key={name} style={{
+              background: "#fff", border: "1px solid #f0f2f6", borderRadius: 12,
+              padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+              display: "flex", flexDirection: "column", gap: 8,
+              borderTop: `3px solid ${cfg.color}`,
+            }}>
+              {/* Header */}
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ fontSize: 14 }}>{cfg.icon}</span>
                 <span style={{ fontSize: 12, fontWeight: 700, color: "#5a6578" }}>{cfg.label}</span>
@@ -81,15 +84,23 @@ export default function PillarHealthCards({
                 <DeltaBadge delta={data.delta} />
               </div>
 
+              {/* Key metric */}
+              {data.keyMetric && (
+                <div style={{ background: "#f8f9fb", borderRadius: 8, padding: "6px 8px" }}>
+                  <div style={{ fontSize: 10, color: "#8d95a3", fontWeight: 600 }}>{data.keyMetric.label}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: "#1b2434" }}>{data.keyMetric.value}</span>
+                    <SourceBadge source={data.keyMetric.source} />
+                  </div>
+                </div>
+              )}
+
               {/* Top reason */}
               {data.reasons.length > 0 && (
                 <div style={{
-                  fontSize: 11,
-                  color: "#8d95a3",
-                  lineHeight: 1.4,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
+                  fontSize: 11, color: "#8d95a3", lineHeight: 1.4,
+                  overflow: "hidden", textOverflow: "ellipsis",
+                  display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
                 }}>
                   {data.reasons[0]}
                 </div>
@@ -97,10 +108,8 @@ export default function PillarHealthCards({
 
               {/* Source badges */}
               {data.sources.length > 0 && (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                  {data.sources.map((s) => (
-                    <SourceBadge key={s} source={s} />
-                  ))}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: "auto" }}>
+                  {data.sources.map((s) => <SourceBadge key={s} source={s} />)}
                 </div>
               )}
             </div>

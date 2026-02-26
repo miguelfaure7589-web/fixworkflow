@@ -62,7 +62,7 @@ export async function PATCH(req: Request) {
 
   const userId = (session.user as Record<string, unknown>).id as string;
   const body = await req.json();
-  const { name, email, businessName, businessType, phone } = body;
+  const { name, email, businessName, businessType, phone, goals } = body;
 
   // Validate email format
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -76,6 +76,7 @@ export async function PATCH(req: Request) {
       ...(name !== undefined && { name }),
       ...(email !== undefined && { email }),
       ...(phone !== undefined && { phone }),
+      ...(goals !== undefined && { goals }),
     },
   });
 
