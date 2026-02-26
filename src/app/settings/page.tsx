@@ -676,6 +676,7 @@ function SettingsContent() {
   const [syncing, setSyncing] = useState<string | null>(null);
   const [disconnectConfirm, setDisconnectConfirm] = useState<string | null>(null);
   const [gaPropertySelect, setGaPropertySelect] = useState<string>("");
+  const [gaManualPropertyId, setGaManualPropertyId] = useState<string>("");
   const [gaSelectingProperty, setGaSelectingProperty] = useState(false);
 
   // Auth guard
@@ -1407,66 +1408,123 @@ function SettingsContent() {
                             </div>
                           </div>
                           {/* GA4 property selector — shown when connected but no property selected */}
-                          {intg.provider === "google-analytics" && !intg.externalId && intg.metadata?.properties?.length > 1 && (
-                            <div style={{
-                              marginTop: 10, padding: "12px 14px", borderRadius: 8,
-                              background: "#fafbfd", border: "1px solid #e6e9ef",
-                            }}>
-                              <div style={{ fontSize: 12, fontWeight: 700, color: "#1b2434", marginBottom: 6 }}>
-                                Select a GA4 property to sync:
+                          {intg.provider === "google-analytics" && !intg.externalId && (() => {
+                            const gaProperties = (intg.metadata?.properties || []) as { id: string; name: string }[];
+                            const gaError = intg.metadata?.adminApiError as string | undefined;
+                            const hasDropdown = gaProperties.length > 0;
+
+                            const handleSelectProperty = async (propertyId: string, propertyName?: string) => {
+                              setGaSelectingProperty(true);
+                              try {
+                                await fetch("/api/integrations/google-analytics/select-property", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    integrationId: intg.id,
+                                    propertyId,
+                                    propertyName: propertyName || `Property ${propertyId}`,
+                                  }),
+                                });
+                                const res = await fetch("/api/integrations");
+                                const data = await res.json();
+                                if (data.integrations) setConnectedIntegrations(data.integrations);
+                              } catch {}
+                              setGaSelectingProperty(false);
+                              setGaPropertySelect("");
+                              setGaManualPropertyId("");
+                            };
+
+                            return (
+                              <div style={{
+                                marginTop: 10, padding: "12px 14px", borderRadius: 8,
+                                background: "#fafbfd", border: "1px solid #e6e9ef",
+                              }}>
+                                {gaError && (
+                                  <div style={{
+                                    fontSize: 12, color: "#b45309", marginBottom: 10,
+                                    padding: "8px 10px", borderRadius: 6,
+                                    background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.15)",
+                                    lineHeight: 1.5,
+                                  }}>
+                                    {gaError}
+                                  </div>
+                                )}
+
+                                <div style={{ fontSize: 12, fontWeight: 700, color: "#1b2434", marginBottom: 6 }}>
+                                  {hasDropdown ? "Select a GA4 property to sync:" : "Enter your GA4 Property ID:"}
+                                </div>
+
+                                {hasDropdown ? (
+                                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                    <select
+                                      value={gaPropertySelect}
+                                      onChange={(e) => setGaPropertySelect(e.target.value)}
+                                      style={{
+                                        ...inputStyle, flex: 1, padding: "8px 12px",
+                                        fontSize: 13, cursor: "pointer",
+                                      }}
+                                    >
+                                      <option value="">Choose a property...</option>
+                                      {gaProperties.map((p) => (
+                                        <option key={p.id} value={p.id}>{p.name} ({p.id})</option>
+                                      ))}
+                                    </select>
+                                    <button
+                                      disabled={!gaPropertySelect || gaSelectingProperty}
+                                      onClick={() => {
+                                        const prop = gaProperties.find((p) => p.id === gaPropertySelect);
+                                        handleSelectProperty(gaPropertySelect, prop?.name);
+                                      }}
+                                      style={{
+                                        padding: "8px 16px", borderRadius: 8,
+                                        border: "none", background: gaPropertySelect ? "#4361ee" : "#e6e9ef",
+                                        color: gaPropertySelect ? "#fff" : "#8d95a3",
+                                        fontSize: 12, fontWeight: 600,
+                                        cursor: gaPropertySelect ? "pointer" : "not-allowed",
+                                        fontFamily: "inherit", whiteSpace: "nowrap",
+                                        opacity: gaSelectingProperty ? 0.6 : 1,
+                                      }}
+                                    >
+                                      {gaSelectingProperty ? "Saving..." : "Select"}
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div style={{ fontSize: 11, color: "#5a6578", marginBottom: 6, lineHeight: 1.5 }}>
+                                      Find it in Google Analytics: Admin &rarr; Property Settings &rarr; Property ID (numeric, e.g. 301234567).
+                                    </div>
+                                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                      <input
+                                        value={gaManualPropertyId}
+                                        onChange={(e) => setGaManualPropertyId(e.target.value.replace(/\D/g, ""))}
+                                        placeholder="e.g. 301234567"
+                                        style={{
+                                          ...inputStyle, flex: 1, padding: "8px 12px",
+                                          fontSize: 13,
+                                        }}
+                                      />
+                                      <button
+                                        disabled={!gaManualPropertyId.trim() || gaSelectingProperty}
+                                        onClick={() => handleSelectProperty(gaManualPropertyId.trim())}
+                                        style={{
+                                          padding: "8px 16px", borderRadius: 8,
+                                          border: "none",
+                                          background: gaManualPropertyId.trim() ? "#4361ee" : "#e6e9ef",
+                                          color: gaManualPropertyId.trim() ? "#fff" : "#8d95a3",
+                                          fontSize: 12, fontWeight: 600,
+                                          cursor: gaManualPropertyId.trim() ? "pointer" : "not-allowed",
+                                          fontFamily: "inherit", whiteSpace: "nowrap",
+                                          opacity: gaSelectingProperty ? 0.6 : 1,
+                                        }}
+                                      >
+                                        {gaSelectingProperty ? "Saving..." : "Save"}
+                                      </button>
+                                    </div>
+                                  </>
+                                )}
                               </div>
-                              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                                <select
-                                  value={gaPropertySelect}
-                                  onChange={(e) => setGaPropertySelect(e.target.value)}
-                                  style={{
-                                    ...inputStyle, flex: 1, padding: "8px 12px",
-                                    fontSize: 13, cursor: "pointer",
-                                  }}
-                                >
-                                  <option value="">Choose a property...</option>
-                                  {(intg.metadata.properties as { id: string; name: string }[]).map((p) => (
-                                    <option key={p.id} value={p.id}>{p.name} ({p.id})</option>
-                                  ))}
-                                </select>
-                                <button
-                                  disabled={!gaPropertySelect || gaSelectingProperty}
-                                  onClick={async () => {
-                                    setGaSelectingProperty(true);
-                                    try {
-                                      const prop = (intg.metadata.properties as { id: string; name: string }[]).find((p) => p.id === gaPropertySelect);
-                                      await fetch("/api/integrations/google-analytics/select-property", {
-                                        method: "POST",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({
-                                          integrationId: intg.id,
-                                          propertyId: gaPropertySelect,
-                                          propertyName: prop?.name,
-                                        }),
-                                      });
-                                      // Refresh integrations list
-                                      const res = await fetch("/api/integrations");
-                                      const data = await res.json();
-                                      if (data.integrations) setConnectedIntegrations(data.integrations);
-                                    } catch {}
-                                    setGaSelectingProperty(false);
-                                    setGaPropertySelect("");
-                                  }}
-                                  style={{
-                                    padding: "8px 16px", borderRadius: 8,
-                                    border: "none", background: gaPropertySelect ? "#4361ee" : "#e6e9ef",
-                                    color: gaPropertySelect ? "#fff" : "#8d95a3",
-                                    fontSize: 12, fontWeight: 600,
-                                    cursor: gaPropertySelect ? "pointer" : "not-allowed",
-                                    fontFamily: "inherit", whiteSpace: "nowrap",
-                                    opacity: gaSelectingProperty ? 0.6 : 1,
-                                  }}
-                                >
-                                  {gaSelectingProperty ? "Saving..." : "Select"}
-                                </button>
-                              </div>
-                            </div>
-                          )}
+                            );
+                          })()}
                           {intg.status === "error" && intg.lastSyncError && (
                             <div style={{
                               marginTop: 10, padding: "8px 12px", borderRadius: 8,

@@ -34,32 +34,63 @@ export async function GET(req: Request) {
     const result = await provider.handleCallback(code, parsed.userId);
 
     // Fetch GA4 property list from Admin API
+    // NOTE: The Google Analytics Admin API must be enabled separately in GCP Console.
+    // It's a different API from the GA4 Data API.
     let properties: { id: string; name: string }[] = [];
+    let adminApiError: string | null = null;
     try {
-      const adminRes = await fetch(
-        "https://analyticsadmin.googleapis.com/v1beta/accountSummaries",
-        {
+      // Paginate through all account summaries
+      let pageToken: string | undefined;
+      do {
+        const adminUrl = new URL("https://analyticsadmin.googleapis.com/v1beta/accountSummaries");
+        adminUrl.searchParams.set("pageSize", "200");
+        if (pageToken) adminUrl.searchParams.set("pageToken", pageToken);
+
+        const adminRes = await fetch(adminUrl.toString(), {
           headers: { Authorization: `Bearer ${result.accessToken}` },
-        },
-      );
-      if (adminRes.ok) {
+        });
+
+        if (!adminRes.ok) {
+          const errBody = await adminRes.text();
+          console.error(`[GA] Admin API failed (${adminRes.status}):`, errBody);
+
+          // Detect "API not enabled" specifically
+          if (adminRes.status === 403 && errBody.includes("has not been used in project")) {
+            adminApiError = "Google Analytics Admin API is not enabled in your Google Cloud project. Enable it at console.cloud.google.com, then reconnect — or enter your GA4 Property ID manually below.";
+          } else if (adminRes.status === 403) {
+            adminApiError = `Admin API access denied (${adminRes.status}). You can enter your GA4 Property ID manually below.`;
+          } else {
+            adminApiError = `Failed to list GA4 properties (HTTP ${adminRes.status}). You can enter your GA4 Property ID manually below.`;
+          }
+          break;
+        }
+
         const adminData = await adminRes.json();
         for (const account of adminData.accountSummaries || []) {
           for (const prop of account.propertySummaries || []) {
             // prop.property is like "properties/123456"
             const propId = prop.property?.replace("properties/", "") || "";
-            properties.push({
-              id: propId,
-              name: prop.displayName || `Property ${propId}`,
-            });
+            if (propId) {
+              properties.push({
+                id: propId,
+                name: prop.displayName || `Property ${propId}`,
+              });
+            }
           }
         }
+        pageToken = adminData.nextPageToken;
+      } while (pageToken);
+
+      if (!adminApiError) {
+        console.log(`[GA] Found ${properties.length} GA4 properties`);
       }
-    } catch {
-      // Non-fatal — user can still select property later
+    } catch (adminErr: any) {
+      console.error("[GA] Admin API call threw:", adminErr);
+      adminApiError = `Failed to fetch properties: ${adminErr.message || "unknown error"}. You can enter your GA4 Property ID manually below.`;
     }
 
-    const metadata = { properties };
+    const metadata: Record<string, any> = { properties };
+    if (adminApiError) metadata.adminApiError = adminApiError;
 
     const integration = await prisma.integration.upsert({
       where: {
