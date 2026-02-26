@@ -81,7 +81,10 @@ export async function GET(req: Request) {
         pageToken = adminData.nextPageToken;
       } while (pageToken);
 
-      if (!adminApiError) {
+      if (!adminApiError && properties.length === 0) {
+        console.warn("[GA] Admin API returned 200 but no properties found");
+        adminApiError = "No GA4 properties were found for this Google account. This can happen if the account only has Universal Analytics (GA3) or doesn't have GA4 property access. Enter your GA4 Property ID manually below.";
+      } else if (!adminApiError) {
         console.log(`[GA] Found ${properties.length} GA4 properties`);
       }
     } catch (adminErr: any) {
