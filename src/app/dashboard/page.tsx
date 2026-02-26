@@ -65,7 +65,7 @@ import RecommendedTools from "@/components/dashboard/RecommendedTools";
 import ResourceShelf from "@/components/dashboard/ResourceShelf";
 import CreditRepairCard from "@/components/dashboard/CreditRepairCard";
 import { CreditReferralProvider } from "@/components/dashboard/CreditReferralContext";
-import RevenueTracker from "@/components/dashboard/RevenueTracker";
+import CommandCenter from "@/components/dashboard/CommandCenter";
 import LogoImg, { faviconUrl } from "@/components/ui/LogoImg";
 import {
   getToolRecommendations,
@@ -229,7 +229,7 @@ const PILLAR_LABELS: Record<string, string> = {
   ops: "Operations",
 };
 
-function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro = true, isTopOrBottom = true, onEditProfile }: { name: string; pillar: PillarData; index?: number; businessType?: string; missingData?: string[]; isPro?: boolean; isTopOrBottom?: boolean; onEditProfile?: () => void }) {
+function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro = true, isTopOrBottom = true, onEditProfile, delta }: { name: string; pillar: PillarData; index?: number; businessType?: string; missingData?: string[]; isPro?: boolean; isTopOrBottom?: boolean; onEditProfile?: () => void; delta?: number }) {
   const [estimatedOpen, setEstimatedOpen] = useState(false);
   const pillarFieldList = PILLAR_FIELDS[name] ?? [];
   const missingForPillar = missingData ? pillarFieldList.filter((f) => missingData.includes(f)) : [];
@@ -259,6 +259,11 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
           />
         </div>
         <span className="text-sm font-bold text-gray-800 w-10 tabular-nums">{pillar.score}</span>
+        {delta !== undefined && delta !== 0 && (
+          <span className={`text-[10px] font-semibold ${delta > 0 ? "text-emerald-600" : "text-red-500"}`}>
+            {delta > 0 ? `+${delta}` : delta}
+          </span>
+        )}
         {needsFocus && (
           <span className="px-1.5 py-0.5 bg-amber-50 border border-amber-200 rounded text-[10px] font-semibold text-amber-600 whitespace-nowrap">
             Needs focus
@@ -482,6 +487,9 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
   const [businessType, setBusinessType] = useState<string>("");
   const [dismissedMissing, setDismissedMissing] = useState(false);
   const [savedBusinessType, setSavedBusinessType] = useState<string>("");
+  const [previousScore, setPreviousScore] = useState<number | null>(null);
+  const [scoreChangeReason, setScoreChangeReason] = useState<string | null>(null);
+  const [previousPillarScores, setPreviousPillarScores] = useState<Record<string, number> | null>(null);
 
   // Load existing profile values for pre-filling the form
   const loadProfileValues = useCallback(() => {
@@ -511,10 +519,13 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
         if (!r.ok) throw new Error("Failed");
         return r.json();
       })
-      .then((json: { ok: boolean; result: RevenueHealthData | null; updatedAt?: string }) => {
+      .then((json: { ok: boolean; result: RevenueHealthData | null; updatedAt?: string; previousScore?: number | null; scoreChangeReason?: string | null; previousPillarScores?: Record<string, number> | null }) => {
         if (json.result) {
           setHealthData(json.result);
           setUpdatedAt(json.updatedAt ?? null);
+          setPreviousScore(json.previousScore ?? null);
+          setScoreChangeReason(json.scoreChangeReason ?? null);
+          setPreviousPillarScores(json.previousPillarScores ?? null);
           setHasProfile(true);
           onScoreChange(true);
           onMissingData?.(json.result?.missingData ?? []);
@@ -729,6 +740,15 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
               <span className={`text-3xl font-extrabold tabular-nums ${scoreColor}`}>{healthData.score}</span>
               <span className="text-xs text-gray-400">/ 100</span>
             </div>
+            {previousScore !== null && healthData.score - previousScore !== 0 && (
+              <span className={`absolute -top-2 -right-2 text-xs font-bold rounded-full px-2 py-0.5 ${
+                healthData.score - previousScore > 0
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-red-100 text-red-700"
+              }`}>
+                {healthData.score - previousScore > 0 ? `▲ +${healthData.score - previousScore}` : `▼ ${healthData.score - previousScore}`}
+              </span>
+            )}
           </div>
           {savedBusinessType ? (
             <p className="text-xs text-gray-500 mt-2 font-medium">
@@ -738,6 +758,9 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
             <p className="text-xs text-amber-500 mt-2">
               Using Service/Agency defaults
             </p>
+          )}
+          {scoreChangeReason && (
+            <p className="text-xs text-gray-400 mt-1 text-center max-w-[200px]">{scoreChangeReason}</p>
           )}
           {updatedAt && (
             <p className="text-xs text-gray-400 mt-1">
@@ -887,6 +910,9 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
                 isPro={isPremium}
                 isTopOrBottom={name === weakest1 || name === weakest2}
                 onEditProfile={handleEditProfile}
+                delta={previousPillarScores && previousPillarScores[name] !== undefined
+                  ? (pillar as PillarData).score - previousPillarScores[name]
+                  : undefined}
               />
             ));
           })()}
@@ -1409,7 +1435,7 @@ const PILLAR_METRICS: Record<string, { key: string; label: string; placeholder: 
 
 // ── Playbooks Section (3-Phase Progress Tracker) ──
 
-function PlaybooksSection({ isPremium, hasScore, onScoreRefresh }: { isPremium: boolean; hasScore: boolean; onScoreRefresh: () => void }) {
+function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = [] }: { isPremium: boolean; hasScore: boolean; onScoreRefresh: () => void; integrations?: { id: string; provider: string; status: string }[] }) {
   const [playbooks, setPlaybooks] = useState<TriggeredPlaybookData[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
@@ -1937,7 +1963,7 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh }: { isPremium: 
                         const recTools = getToolRecommendations(userProfile)
                           .filter(t => t.targetPillars.includes(pillarLabel));
                         if (recTools.length === 0) return null;
-                        return <RecommendedTools tools={recTools} isPremium={isPremium} />;
+                        return <RecommendedTools tools={recTools} isPremium={isPremium} integrations={integrations} />;
                       })()}
 
                       {/* AI Expansion CTA (premium) */}
@@ -2525,7 +2551,7 @@ function BottomUpgradeBanner() {
 
 // ── Recommendations Section (Tool Stack + Resource Shelf) ──
 
-function RecommendationsSection({ isPremium, hasScore }: { isPremium: boolean; hasScore: boolean }) {
+function RecommendationsSection({ isPremium, hasScore, integrations = [] }: { isPremium: boolean; hasScore: boolean; integrations?: { id: string; provider: string; status: string }[] }) {
   const [tools, setTools] = useState<ScoredProduct[]>([]);
   const [books, setBooks] = useState<ScoredProduct[]>([]);
   const [courses, setCourses] = useState<ScoredProduct[]>([]);
@@ -2582,7 +2608,7 @@ function RecommendationsSection({ isPremium, hasScore }: { isPremium: boolean; h
     >
       {/* Credit repair card — featured placement above tool stack */}
       <CreditRepairCard usesPersonalCredit={usesPersonalCredit} />
-      {tools.length > 0 && <RecommendedTools tools={tools} isPremium={isPremium} />}
+      {tools.length > 0 && <RecommendedTools tools={tools} isPremium={isPremium} integrations={integrations} />}
       {(books.length > 0 || courses.length > 0 || templates.length > 0) && (
         <ResourceShelf
           books={books}
@@ -2717,6 +2743,11 @@ export default function RevenueDashboard() {
       }
     }
 
+    // Fetch integration data for all authenticated users
+    fetch("/api/integrations").then((r) => r.json()).then((d) => {
+      if (d.integrations) setIntegrations(d.integrations);
+    }).catch(() => {});
+
     if (!isPremium) {
       setLoading(false);
       return;
@@ -2736,11 +2767,6 @@ export default function RevenueDashboard() {
         setError(err.message);
         setLoading(false);
       });
-
-    // Fetch integration data
-    fetch("/api/integrations").then((r) => r.json()).then((d) => {
-      if (d.integrations) setIntegrations(d.integrations);
-    }).catch(() => toast("Failed to load integrations.", "error"));
 
     // Fetch metric sources and pillar history
     fetch("/api/dashboard/integration-status").then((r) => r.json()).then((d) => {
@@ -3061,16 +3087,16 @@ export default function RevenueDashboard() {
         {/* Revenue Health Score Section */}
         <RevenueHealthSection isPremium={isPremium} onScoreChange={setHasScore} onMissingData={setMissingKeys} key={scoreRefreshKey} />
 
-        {/* Revenue Tracker (Pro) */}
-        <div id="revenue-tracker">
-          <RevenueTracker isPremium={isPremium} onScoreRefresh={() => setScoreRefreshKey((k) => k + 1)} />
+        {/* Revenue Command Center (Pro) */}
+        <div id="revenue-command-center">
+          <CommandCenter isPremium={isPremium} onScoreRefresh={() => setScoreRefreshKey((k) => k + 1)} />
         </div>
 
         {/* Execution Playbooks (3-Phase Tracker) */}
-        <PlaybooksSection isPremium={isPremium} hasScore={hasScore} onScoreRefresh={() => setScoreRefreshKey((k) => k + 1)} />
+        <PlaybooksSection isPremium={isPremium} hasScore={hasScore} onScoreRefresh={() => setScoreRefreshKey((k) => k + 1)} integrations={integrations} />
 
         {/* Recommended Tools & Resources */}
-        <RecommendationsSection isPremium={isPremium} hasScore={hasScore} />
+        <RecommendationsSection isPremium={isPremium} hasScore={hasScore} integrations={integrations} />
 
         {/* Leave a Review */}
         <LeaveReviewSection />

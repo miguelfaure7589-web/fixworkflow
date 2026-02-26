@@ -34,6 +34,10 @@ model User {
   phone                String?
   notificationPrefs    Json?
   privacyPrefs         Json?
+  previousScore        Int?
+  scoreChangeReason    String?
+  previousPillarScores Json?
+  goals                Json?     // { monthlyRevenue?: number, grossMargin?: number, ... }
   cancellationDate     DateTime?
 
   businessProfiles        BusinessProfile[]
@@ -53,6 +57,7 @@ model User {
   weeklyLogs              WeeklyLog[]
   feedback                Feedback[]
   reviews                 Review[]
+  scoreAlerts             ScoreAlert[]
 }
 
 model Account {
@@ -586,4 +591,20 @@ model Review {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId])
+}
+
+// ─── Score Alerts (Phase 2) ───
+
+model ScoreAlert {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // "pillar_drop" | "goal_hit" | "streak" | "data_stale"
+  title     String
+  message   String
+  severity  String   // "info" | "warning" | "critical"
+  pillar    String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
