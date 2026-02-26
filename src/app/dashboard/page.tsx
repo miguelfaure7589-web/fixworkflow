@@ -2970,24 +2970,53 @@ export default function RevenueDashboard() {
         )}
 
         {/* Connected Integrations CTA Card */}
-        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e6e9ef", padding: "18px 20px", display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ width: 40, height: 40, minWidth: 40, borderRadius: 10, background: "rgba(67,97,238,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Plug size={20} color="#4361ee" />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "#1b2434" }}>Connected Integrations</span>
-              <span style={{ fontSize: 11, fontWeight: 600, color: "#8d95a3" }}>0 of 15 tools connected</span>
+        {(() => {
+          const INTEGRATION_ICON_DOMAINS: Record<string, string> = {
+            shopify: "cdn.shopify.com",
+            "stripe-data": "stripe.com",
+            quickbooks: "quickbooks.intuit.com",
+            "google-analytics": "analytics.google.com",
+          };
+          const connectedCount = integrations.length;
+          const pct = Math.round((connectedCount / 15) * 100);
+          return (
+            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e6e9ef", padding: "18px 20px", display: "flex", alignItems: "center", gap: 16 }}>
+              <div style={{ width: 40, height: 40, minWidth: 40, borderRadius: 10, background: "rgba(67,97,238,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Plug size={20} color="#4361ee" />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "#1b2434" }}>Connected Integrations</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#8d95a3" }}>{connectedCount} of 15 tools connected</span>
+                </div>
+                <div style={{ height: 4, borderRadius: 2, background: "#f0f0f0", marginBottom: 6 }}>
+                  <div style={{ height: 4, borderRadius: 2, background: "#4361ee", width: `${pct}%`, transition: "width 0.3s ease" }} />
+                </div>
+                {connectedCount > 0 ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    {integrations.map((intg) => {
+                      const domain = INTEGRATION_ICON_DOMAINS[intg.provider] || intg.provider;
+                      return (
+                        <img
+                          key={intg.id}
+                          src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+                          alt={intg.provider}
+                          style={{ width: 20, height: 20, borderRadius: 4, objectFit: "contain", background: "#fff", border: "1px solid #f0f2f6" }}
+                        />
+                      );
+                    })}
+                    <span style={{ fontSize: 12, color: "#8d95a3", marginLeft: 4 }}>connected</span>
+                  </div>
+                ) : (
+                  <span style={{ fontSize: 12, color: "#8d95a3" }}>Connect your business tools for a more accurate Revenue Health Score</span>
+                )}
+              </div>
+              <Link href="/settings?tab=integrations" style={{ padding: "8px 16px", borderRadius: 8, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
+                Browse Integrations &rarr;
+              </Link>
             </div>
-            <div style={{ height: 4, borderRadius: 2, background: "#f0f0f0", marginBottom: 6 }}>
-              <div style={{ height: 4, borderRadius: 2, background: "#4361ee", width: "0%" }} />
-            </div>
-            <span style={{ fontSize: 12, color: "#8d95a3" }}>Connect your business tools for a more accurate Revenue Health Score</span>
-          </div>
-          <Link href="/settings?tab=integrations" style={{ padding: "8px 16px", borderRadius: 8, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
-            Browse Integrations &rarr;
-          </Link>
-        </div>
+          );
+        })()}
 
         {/* Admin: Sync My Score card */}
         {!!(session?.user as Record<string, unknown> | undefined)?.isAdmin && (
