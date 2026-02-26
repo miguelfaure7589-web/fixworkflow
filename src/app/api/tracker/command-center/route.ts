@@ -38,30 +38,30 @@ export async function GET() {
   }
 
   const userId = user.id as string;
+  if (!userId) {
+    return Response.json({ error: "Missing user ID in session" }, { status: 401 });
+  }
 
   try {
-    // ── Parallel data fetch ──
-    const [
-      logs,
-      snapshot,
-      userData,
-      integrations,
-      profile,
-      alerts,
-    ] = await Promise.all([
+    console.log("[CC] Starting for user:", userId, "isPremium:", user.isPremium, "isAdmin:", user.isAdmin);
+    // ── Parallel data fetch (each query individually safe) ──
+    const [logs, snapshot, userData, integrations, profile, alerts] = await Promise.all([
       prisma.weeklyLog.findMany({
         where: { userId },
         orderBy: { weekOf: "desc" },
         take: 12,
-      }),
+      }).catch((e: unknown) => { console.error("[CC] weeklyLog query failed:", e); return []; }),
+
       prisma.revenueScoreSnapshot.findFirst({
         where: { userId },
         orderBy: { createdAt: "desc" },
-      }),
+      }).catch((e: unknown) => { console.error("[CC] snapshot query failed:", e); return null; }),
+
       prisma.user.findUnique({
         where: { id: userId },
         select: { previousScore: true, scoreChangeReason: true, previousPillarScores: true, goals: true },
-      }),
+      }).catch((e: unknown) => { console.error("[CC] user query failed:", e); return null; }),
+
       prisma.integration.findMany({
         where: { userId },
         select: {
@@ -76,16 +76,18 @@ export async function GET() {
             select: { dataSnapshot: true, pillarImpact: true },
           },
         },
-      }),
+      }).catch((e: unknown) => { console.error("[CC] integration query failed:", e); return []; }),
+
       prisma.revenueProfile.findUnique({
         where: { userId },
         select: { revenueMonthly: true, grossMarginPct: true },
-      }),
+      }).catch((e: unknown) => { console.error("[CC] profile query failed:", e); return null; }),
+
       prisma.scoreAlert.findMany({
         where: { userId },
         orderBy: { createdAt: "desc" },
         take: 10,
-      }),
+      }).catch((e: unknown) => { console.error("[CC] scoreAlert query failed:", e); return []; }),
     ]);
 
     // ── 1. Revenue Overview ──
@@ -99,7 +101,7 @@ export async function GET() {
     const lastMonthLogs = await prisma.weeklyLog.findMany({
       where: { userId, weekOf: { gte: lastMonthStart, lte: lastMonthEnd } },
       orderBy: { weekOf: "desc" },
-    });
+    }).catch((e: unknown) => { console.error("[CC] lastMonthLogs query failed:", e); return []; });
 
     const thisMonthRevenue = thisMonthLogs.reduce((s, l) => s + l.revenue, 0);
     const lastMonthRevenue = lastMonthLogs.reduce((s, l) => s + l.revenue, 0);
@@ -124,7 +126,7 @@ export async function GET() {
     const history = await prisma.metricHistory.findMany({
       where: { userId, weekOf: { gte: twoWeeksAgo } },
       orderBy: { weekOf: "desc" },
-    });
+    }).catch((e: unknown) => { console.error("[CC] metricHistory query failed:", e); return []; });
 
     const pillarsByWeek: Record<string, { weekOf: string; score: number; metrics: Record<string, unknown>; source: string }[]> = {};
     for (const h of history) {
@@ -138,7 +140,14 @@ export async function GET() {
     }
 
     const pillarNames = ["revenue", "profitability", "retention", "acquisition", "ops"];
-    const parsedPillars = snapshot ? JSON.parse(snapshot.pillarsJson) : null;
+    let parsedPillars: Record<string, { score?: number; reasons?: string[]; levers?: string[] }> | null = null;
+    if (snapshot?.pillarsJson) {
+      try {
+        parsedPillars = JSON.parse(snapshot.pillarsJson);
+      } catch {
+        console.error("[CC] Failed to parse pillarsJson:", snapshot.pillarsJson?.slice(0, 200));
+      }
+    }
     const connectedProviders = integrations.map((i) => i.provider);
     const pillarsData: Record<string, {
       score: number;
@@ -198,55 +207,69 @@ export async function GET() {
     }
 
     // ── 3. Integration Data Streams ──
-    const integrationStreams = await Promise.all(
-      integrations.map(async (integ) => {
-        const latestLog = integ.syncLogs[0];
-        const rawData = (latestLog?.dataSnapshot ?? {}) as Record<string, unknown>;
+    let integrationStreams: {
+      id: string; provider: string; status: string;
+      lastSyncAt: string | null; lastSyncStatus: string | null;
+      metrics: Record<string, number | string | null>; sparkline: number[];
+    }[] = [];
+    try {
+      integrationStreams = await Promise.all(
+        integrations.map(async (integ) => {
+          const latestLog = integ.syncLogs[0];
+          const rawData = (latestLog?.dataSnapshot ?? {}) as Record<string, unknown>;
 
-        // Build provider-specific metrics
-        const metrics: Record<string, number | string | null> = {};
-        if (integ.provider === "shopify") {
-          metrics.orders = (rawData.orders as number) ?? null;
-          metrics.revenue = (rawData.totalRevenue as number) ?? null;
-          metrics.aov = (rawData.averageOrderValue as number) ?? null;
-          metrics.newCustomers = (rawData.newCustomers as number) ?? null;
-        } else if (integ.provider === "google-analytics") {
-          metrics.sessions = (rawData.sessions as number) ?? null;
-          metrics.conversionRate = (rawData.conversionRate as number) ?? null;
-          metrics.newUsers = (rawData.newUsers as number) ?? null;
-          metrics.bounceRate = (rawData.bounceRate as number) ?? null;
-        } else if (integ.provider === "quickbooks") {
-          metrics.totalIncome = (rawData.totalIncome as number) ?? null;
-          metrics.totalExpenses = (rawData.totalExpenses as number) ?? null;
-          metrics.netIncome = (rawData.netIncome as number) ?? null;
-          metrics.overdueCount = (rawData.overdueCount as number) ?? null;
-        } else if (integ.provider === "stripe-data") {
-          metrics.revenue = (rawData.grossRevenue as number) ?? null;
-          metrics.fees = (rawData.fees as number) ?? null;
-          metrics.mrr = (rawData.recurringRevenue as number) ?? null;
-          metrics.activeCustomers = (rawData.activeCustomers as number) ?? null;
-        }
+          // Build provider-specific metrics
+          const metrics: Record<string, number | string | null> = {};
+          if (integ.provider === "shopify") {
+            metrics.orders = (rawData.orders as number) ?? null;
+            metrics.revenue = (rawData.totalRevenue as number) ?? null;
+            metrics.aov = (rawData.averageOrderValue as number) ?? null;
+            metrics.newCustomers = (rawData.newCustomers as number) ?? null;
+          } else if (integ.provider === "google-analytics") {
+            metrics.sessions = (rawData.sessions as number) ?? null;
+            metrics.conversionRate = (rawData.conversionRate as number) ?? null;
+            metrics.newUsers = (rawData.newUsers as number) ?? null;
+            metrics.bounceRate = (rawData.bounceRate as number) ?? null;
+          } else if (integ.provider === "quickbooks") {
+            metrics.totalIncome = (rawData.totalIncome as number) ?? null;
+            metrics.totalExpenses = (rawData.totalExpenses as number) ?? null;
+            metrics.netIncome = (rawData.netIncome as number) ?? null;
+            metrics.overdueCount = (rawData.overdueCount as number) ?? null;
+          } else if (integ.provider === "stripe-data") {
+            metrics.revenue = (rawData.grossRevenue as number) ?? null;
+            metrics.fees = (rawData.fees as number) ?? null;
+            metrics.mrr = (rawData.recurringRevenue as number) ?? null;
+            metrics.activeCustomers = (rawData.activeCustomers as number) ?? null;
+          }
 
-        // Sparkline: last 8 weeks of revenue pillar scores for this provider
-        const providerHistory = await prisma.metricHistory.findMany({
-          where: { userId, source: integ.provider },
-          orderBy: { weekOf: "asc" },
-          take: 8,
-          select: { score: true },
-        });
-        const sparkline = providerHistory.map((h) => h.score);
+          // Sparkline: last 8 weeks of scores for this provider
+          let sparkline: number[] = [];
+          try {
+            const providerHistory = await prisma.metricHistory.findMany({
+              where: { userId, source: integ.provider },
+              orderBy: { weekOf: "asc" },
+              take: 8,
+              select: { score: true },
+            });
+            sparkline = providerHistory.map((h) => h.score);
+          } catch (e) {
+            console.error("[CC] sparkline query failed for", integ.provider, e);
+          }
 
-        return {
-          id: integ.id,
-          provider: integ.provider,
-          status: integ.status,
-          lastSyncAt: integ.lastSyncAt?.toISOString() ?? null,
-          lastSyncStatus: integ.lastSyncStatus,
-          metrics,
-          sparkline,
-        };
-      })
-    );
+          return {
+            id: integ.id,
+            provider: integ.provider,
+            status: integ.status,
+            lastSyncAt: integ.lastSyncAt?.toISOString() ?? null,
+            lastSyncStatus: integ.lastSyncStatus,
+            metrics,
+            sparkline,
+          };
+        })
+      );
+    } catch (e) {
+      console.error("[CC] integrationStreams failed:", e);
+    }
 
     // ── 4. Alerts & Opportunities ──
     const alertItems = alerts.map((a) => ({
@@ -334,6 +357,7 @@ export async function GET() {
     };
 
     // ── Response ──
+    console.log("[CC] Success — score:", snapshot?.score ?? 0, "pillars:", Object.keys(pillarsData).length, "integrations:", integrationStreams.length, "alerts:", alertItems.length);
     return Response.json({
       ok: true,
 
@@ -378,8 +402,9 @@ export async function GET() {
       })),
     });
   } catch (err: unknown) {
-    console.error("[COMMAND CENTER]", err);
+    console.error("[COMMAND CENTER] Fatal error:", err);
     const message = err instanceof Error ? err.message : "Internal server error";
-    return Response.json({ error: message }, { status: 500 });
+    const stack = err instanceof Error ? err.stack : undefined;
+    return Response.json({ error: message, stack: process.env.NODE_ENV === "development" ? stack : undefined }, { status: 500 });
   }
 }

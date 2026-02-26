@@ -23,6 +23,36 @@ function getWeekStart(date: Date): Date {
   return d;
 }
 
+// ── Score change reason generator ──
+
+function generateScoreChangeReason(
+  prevSnapshot: { pillarRevenue: number; pillarProfitability: number; pillarRetention: number; pillarAcquisition: number; pillarOps: number },
+  newPillars: { revenue: { score: number; reasons: string[] }; profitability: { score: number; reasons: string[] }; retention: { score: number; reasons: string[] }; acquisition: { score: number; reasons: string[] }; ops: { score: number; reasons: string[] } },
+): string | null {
+  const pillarMap: { key: string; label: string; prev: number; curr: number; reasons: string[] }[] = [
+    { key: "revenue", label: "Revenue", prev: prevSnapshot.pillarRevenue, curr: newPillars.revenue.score, reasons: newPillars.revenue.reasons },
+    { key: "profitability", label: "Profitability", prev: prevSnapshot.pillarProfitability, curr: newPillars.profitability.score, reasons: newPillars.profitability.reasons },
+    { key: "retention", label: "Retention", prev: prevSnapshot.pillarRetention, curr: newPillars.retention.score, reasons: newPillars.retention.reasons },
+    { key: "acquisition", label: "Acquisition", prev: prevSnapshot.pillarAcquisition, curr: newPillars.acquisition.score, reasons: newPillars.acquisition.reasons },
+    { key: "ops", label: "Operations", prev: prevSnapshot.pillarOps, curr: newPillars.ops.score, reasons: newPillars.ops.reasons },
+  ];
+
+  let biggest = pillarMap[0];
+  for (const p of pillarMap) {
+    if (Math.abs(p.curr - p.prev) > Math.abs(biggest.curr - biggest.prev)) {
+      biggest = p;
+    }
+  }
+
+  const delta = biggest.curr - biggest.prev;
+  if (delta === 0) return null;
+
+  const direction = delta > 0 ? "improved" : "dropped";
+  const reasonSuffix = biggest.reasons[0] ? ` — ${biggest.reasons[0]}` : "";
+  const full = `${biggest.label} ${direction}${reasonSuffix}`;
+  return full.length > 100 ? full.slice(0, 97) + "..." : full;
+}
+
 // ── Sync a single integration ──
 
 export async function syncIntegration(integrationId: string): Promise<SyncResult> {
@@ -191,6 +221,29 @@ export async function syncIntegration(integrationId: string): Promise<SyncResult
         // Store pillar impact
         for (const [key, p] of Object.entries(result.pillars)) {
           pillarImpact[key] = p.score;
+        }
+
+        // Save previous score data to User before creating new snapshot
+        const prevSnapshot = await prisma.revenueScoreSnapshot.findFirst({
+          where: { userId: integration.userId },
+          orderBy: { createdAt: "desc" },
+        });
+        if (prevSnapshot) {
+          const reason = generateScoreChangeReason(prevSnapshot, result.pillars as any);
+          await prisma.user.update({
+            where: { id: integration.userId },
+            data: {
+              previousScore: prevSnapshot.score,
+              previousPillarScores: {
+                revenue: prevSnapshot.pillarRevenue,
+                profitability: prevSnapshot.pillarProfitability,
+                retention: prevSnapshot.pillarRetention,
+                acquisition: prevSnapshot.pillarAcquisition,
+                ops: prevSnapshot.pillarOps,
+              },
+              scoreChangeReason: reason,
+            },
+          });
         }
 
         // Save score snapshot

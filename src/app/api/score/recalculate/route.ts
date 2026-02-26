@@ -44,6 +44,45 @@ export async function POST() {
   const bt = (profile.businessType as BusinessTypeName | null) ?? undefined;
   const result = computeRevenueHealthScore(inputs, bt);
 
+  // Save previous score data to User before creating new snapshot
+  const prevSnapshot = await prisma.revenueScoreSnapshot.findFirst({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+  if (prevSnapshot) {
+    const pillarMap = [
+      { label: "Revenue", prev: prevSnapshot.pillarRevenue, curr: result.pillars.revenue.score, reasons: result.pillars.revenue.reasons },
+      { label: "Profitability", prev: prevSnapshot.pillarProfitability, curr: result.pillars.profitability.score, reasons: result.pillars.profitability.reasons },
+      { label: "Retention", prev: prevSnapshot.pillarRetention, curr: result.pillars.retention.score, reasons: result.pillars.retention.reasons },
+      { label: "Acquisition", prev: prevSnapshot.pillarAcquisition, curr: result.pillars.acquisition.score, reasons: result.pillars.acquisition.reasons },
+      { label: "Operations", prev: prevSnapshot.pillarOps, curr: result.pillars.ops.score, reasons: result.pillars.ops.reasons },
+    ];
+    let biggest = pillarMap[0];
+    for (const p of pillarMap) {
+      if (Math.abs(p.curr - p.prev) > Math.abs(biggest.curr - biggest.prev)) biggest = p;
+    }
+    const delta = biggest.curr - biggest.prev;
+    const direction = delta > 0 ? "improved" : "dropped";
+    const reasonSuffix = biggest.reasons[0] ? ` — ${biggest.reasons[0]}` : "";
+    const reasonFull = delta !== 0 ? `${biggest.label} ${direction}${reasonSuffix}` : null;
+    const scoreChangeReason = reasonFull && reasonFull.length > 100 ? reasonFull.slice(0, 97) + "..." : reasonFull;
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        previousScore: prevSnapshot.score,
+        previousPillarScores: {
+          revenue: prevSnapshot.pillarRevenue,
+          profitability: prevSnapshot.pillarProfitability,
+          retention: prevSnapshot.pillarRetention,
+          acquisition: prevSnapshot.pillarAcquisition,
+          ops: prevSnapshot.pillarOps,
+        },
+        scoreChangeReason,
+      },
+    });
+  }
+
   const snapshot = await prisma.revenueScoreSnapshot.create({
     data: {
       userId,

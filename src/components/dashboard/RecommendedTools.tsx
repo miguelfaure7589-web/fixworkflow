@@ -1,16 +1,147 @@
 'use client';
 
-import { useCallback } from 'react';
-import { ExternalLink, TrendingUp } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { ExternalLink, TrendingUp, Plug, CheckCircle2 } from 'lucide-react';
 import type { ScoredProduct } from '@/lib/recommendations';
 import LogoImg, { faviconUrl } from '@/components/ui/LogoImg';
+
+// Map tool names AND affiliate IDs to integration provider IDs and connect endpoints
+interface IntegrationMapping {
+  providerId: string;
+  connectEndpoint: string;
+  comingSoon?: boolean;
+  needsStoreDomain?: boolean;
+}
+
+const INTEGRATION_MAPPINGS: IntegrationMapping[] = [
+  { providerId: 'quickbooks', connectEndpoint: '/api/integrations/quickbooks/connect' },
+  { providerId: 'shopify', connectEndpoint: '/api/integrations/shopify/connect', needsStoreDomain: true },
+  { providerId: 'stripe-data', connectEndpoint: '/api/integrations/stripe-data/connect' },
+  { providerId: 'google-analytics', connectEndpoint: '/api/integrations/google-analytics/connect' },
+  { providerId: 'mailchimp', connectEndpoint: '', comingSoon: true },
+];
+
+// Lookup by tool name or affiliate product id
+const TOOL_INTEGRATION_MAP: Record<string, IntegrationMapping> = {
+  // By name
+  'QuickBooks': INTEGRATION_MAPPINGS[0],
+  'Shopify': INTEGRATION_MAPPINGS[1],
+  'Stripe': INTEGRATION_MAPPINGS[2],
+  'Google Analytics': INTEGRATION_MAPPINGS[3],
+  'Mailchimp': INTEGRATION_MAPPINGS[4],
+  // By affiliate id
+  'aff_quickbooks': INTEGRATION_MAPPINGS[0],
+  'aff_stripe': INTEGRATION_MAPPINGS[2],
+  'aff_mailchimp': INTEGRATION_MAPPINGS[4],
+};
+
+function getIntegrationMapping(tool: { name: string; id: string }): IntegrationMapping | undefined {
+  return TOOL_INTEGRATION_MAP[tool.name] || TOOL_INTEGRATION_MAP[tool.id];
+}
+
+interface IntegrationInfo {
+  id: string;
+  provider: string;
+  status: string;
+}
 
 interface Props {
   tools: ScoredProduct[];
   isPremium: boolean;
+  integrations?: IntegrationInfo[];
 }
 
-function ToolCard({ tool, onClickTool }: { tool: ScoredProduct; onClickTool: (t: ScoredProduct) => void }) {
+function ConnectButton({ tool, integrations }: { tool: ScoredProduct; integrations: IntegrationInfo[] }) {
+  const [connecting, setConnecting] = useState(false);
+  const mapping = getIntegrationMapping(tool);
+  if (!mapping) return null;
+
+  const connected = integrations.find(
+    (i) => i.provider === mapping.providerId && i.status === 'connected'
+  );
+
+  if (connected) {
+    return (
+      <span
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 4,
+          padding: '6px 12px', borderRadius: 8,
+          background: 'rgba(16,185,129,0.08)', color: '#10b981',
+          fontSize: 12, fontWeight: 700,
+        }}
+      >
+        <CheckCircle2 style={{ width: 12, height: 12 }} /> Connected
+      </span>
+    );
+  }
+
+  if (mapping.comingSoon) {
+    return (
+      <span
+        title="Coming Soon"
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 4,
+          padding: '6px 12px', borderRadius: 8,
+          background: '#f9fafb', color: '#b4bac5',
+          fontSize: 12, fontWeight: 700, border: '1px solid #e6e9ef',
+          cursor: 'default',
+        }}
+      >
+        <Plug style={{ width: 11, height: 11 }} /> Coming Soon
+      </span>
+    );
+  }
+
+  const handleConnect = async () => {
+    // Shopify needs store domain — redirect to settings integrations tab
+    if (mapping.needsStoreDomain) {
+      window.location.href = '/settings?tab=integrations';
+      return;
+    }
+
+    setConnecting(true);
+    try {
+      const res = await fetch(mapping.connectEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (data.authUrl) {
+        window.location.href = data.authUrl;
+      }
+    } catch {
+      // Fallback to settings page on error
+      window.location.href = '/settings?tab=integrations';
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleConnect}
+      disabled={connecting}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        padding: '6px 12px', borderRadius: 8,
+        background: 'transparent', color: '#4361ee',
+        fontSize: 12, fontWeight: 700,
+        border: '1.5px solid #4361ee', cursor: connecting ? 'wait' : 'pointer',
+        transition: 'background 0.15s, color 0.15s',
+        opacity: connecting ? 0.6 : 1,
+      }}
+      onMouseEnter={(e) => { if (!connecting) { e.currentTarget.style.background = '#4361ee'; e.currentTarget.style.color = '#fff'; } }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#4361ee'; }}
+    >
+      <Plug style={{ width: 11, height: 11 }} /> {connecting ? 'Connecting...' : 'Connect'}
+    </button>
+  );
+}
+
+function ToolCard({ tool, onClickTool, integrations }: { tool: ScoredProduct; onClickTool: (t: ScoredProduct) => void; integrations: IntegrationInfo[] }) {
+  const hasIntegration = !!getIntegrationMapping(tool);
+
   return (
     <div
       style={{
@@ -59,25 +190,34 @@ function ToolCard({ tool, onClickTool }: { tool: ScoredProduct; onClickTool: (t:
         </div>
       )}
 
-      {/* Affiliate button */}
-      <button
-        onClick={() => onClickTool(tool)}
-        style={{
-          marginTop: 12, padding: '8px 16px', borderRadius: 8,
-          background: '#4361ee', color: '#fff', fontSize: 12, fontWeight: 700,
-          border: 'none', cursor: 'pointer', alignSelf: 'flex-start',
-          transition: 'background 0.15s',
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = '#3451de')}
-        onMouseLeave={(e) => (e.currentTarget.style.background = '#4361ee')}
-      >
-        Try {tool.name} <ExternalLink style={{ width: 11, height: 11, display: 'inline', marginLeft: 3 }} />
-      </button>
+      {/* Action buttons */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+        <button
+          onClick={() => onClickTool(tool)}
+          style={{
+            padding: '8px 16px', borderRadius: 8,
+            background: '#4361ee', color: '#fff', fontSize: 12, fontWeight: 700,
+            border: 'none', cursor: 'pointer',
+            transition: 'background 0.15s',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = '#3451de')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = '#4361ee')}
+        >
+          Try {tool.name} <ExternalLink style={{ width: 11, height: 11, display: 'inline', marginLeft: 3 }} />
+        </button>
+        {hasIntegration && <ConnectButton tool={tool} integrations={integrations} />}
+      </div>
     </div>
   );
 }
 
-export default function RecommendedTools({ tools, isPremium }: Props) {
+function isToolConnected(tool: ScoredProduct, integrations: IntegrationInfo[]): boolean {
+  const mapping = getIntegrationMapping(tool);
+  if (!mapping) return false;
+  return integrations.some((i) => i.provider === mapping.providerId && i.status === 'connected');
+}
+
+export default function RecommendedTools({ tools, isPremium, integrations = [] }: Props) {
   const handleClick = useCallback((tool: ScoredProduct) => {
     fetch('/api/affiliate/click', {
       method: 'POST',
@@ -89,8 +229,36 @@ export default function RecommendedTools({ tools, isPremium }: Props) {
 
   if (!tools.length) return null;
 
-  const gridTools = tools.slice(0, 4);
-  const compactTool = tools[4] || null;
+  // Filter out tools whose integration is already connected
+  const visibleTools = tools.filter((t) => !isToolConnected(t, integrations));
+
+  // All recommended tools are connected — show success state
+  if (visibleTools.length === 0) {
+    return (
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.4, color: '#8d95a3', textTransform: 'uppercase' as const }}>Recommended Tools</div>
+            <div style={{ fontSize: 12, color: '#b4bac5', marginTop: 2 }}>Ranked by impact on your score</div>
+          </div>
+        </div>
+        <div style={{
+          background: '#fff', borderRadius: 14, border: '1px solid rgba(16,185,129,0.2)',
+          padding: '24px 20px', display: 'flex', alignItems: 'center', gap: 12,
+        }}>
+          <CheckCircle2 style={{ width: 24, height: 24, color: '#10b981', flexShrink: 0 }} />
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#1b2434' }}>All recommended tools connected</div>
+            <div style={{ fontSize: 12, color: '#8d95a3', marginTop: 2 }}>Your score is using real data from your integrations.</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const gridTools = visibleTools.slice(0, 4);
+  const compactTool = visibleTools[4] || null;
+  const compactHasIntegration = compactTool ? !!getIntegrationMapping(compactTool) : false;
 
   return (
     <div>
@@ -100,7 +268,7 @@ export default function RecommendedTools({ tools, isPremium }: Props) {
           <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.4, color: '#8d95a3', textTransform: 'uppercase' as const }}>Recommended Tools</div>
           <div style={{ fontSize: 12, color: '#b4bac5', marginTop: 2 }}>Ranked by impact on your score</div>
         </div>
-        <span style={{ fontSize: 11, color: '#8d95a3' }}>{tools.length} matched</span>
+        <span style={{ fontSize: 11, color: '#8d95a3' }}>{visibleTools.length} matched</span>
       </div>
 
       {isPremium ? (
@@ -108,7 +276,7 @@ export default function RecommendedTools({ tools, isPremium }: Props) {
           {/* Pro: full 2x2 grid */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {gridTools.map((tool) => (
-              <ToolCard key={tool.id} tool={tool} onClickTool={handleClick} />
+              <ToolCard key={tool.id} tool={tool} onClickTool={handleClick} integrations={integrations} />
             ))}
           </div>
 
@@ -137,22 +305,25 @@ export default function RecommendedTools({ tools, isPremium }: Props) {
                 </div>
                 <p style={{ fontSize: 12, color: '#5a6578', lineHeight: 1.5, margin: '4px 0 0' }}>{compactTool.filledReasoning}</p>
               </div>
-              <button
-                onClick={() => handleClick(compactTool)}
-                style={{
-                  padding: '8px 16px', borderRadius: 8, background: '#4361ee', color: '#fff',
-                  fontSize: 12, fontWeight: 700, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
-                }}
-              >
-                Try {compactTool.name} <ExternalLink style={{ width: 11, height: 11, display: 'inline', marginLeft: 3 }} />
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                <button
+                  onClick={() => handleClick(compactTool)}
+                  style={{
+                    padding: '8px 16px', borderRadius: 8, background: '#4361ee', color: '#fff',
+                    fontSize: 12, fontWeight: 700, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+                  }}
+                >
+                  Try {compactTool.name} <ExternalLink style={{ width: 11, height: 11, display: 'inline', marginLeft: 3 }} />
+                </button>
+                {compactHasIntegration && <ConnectButton tool={compactTool} integrations={integrations} />}
+              </div>
             </div>
           )}
         </>
       ) : (
         <>
           {/* Free: first card visible */}
-          {gridTools[0] && <ToolCard tool={gridTools[0]} onClickTool={handleClick} />}
+          {gridTools[0] && <ToolCard tool={gridTools[0]} onClickTool={handleClick} integrations={integrations} />}
 
           {/* Remaining cards — blurred with overlay */}
           {gridTools.length > 1 && (
@@ -160,7 +331,7 @@ export default function RecommendedTools({ tools, isPremium }: Props) {
               <div style={{ filter: 'blur(4px)', pointerEvents: 'none' as const, userSelect: 'none' as const }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   {gridTools.slice(1).map((tool) => (
-                    <ToolCard key={tool.id} tool={tool} onClickTool={handleClick} />
+                    <ToolCard key={tool.id} tool={tool} onClickTool={handleClick} integrations={integrations} />
                   ))}
                 </div>
               </div>
@@ -172,7 +343,7 @@ export default function RecommendedTools({ tools, isPremium }: Props) {
                 borderRadius: 14, gap: 8,
               }}>
                 <span style={{ fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 4, background: 'rgba(139,92,246,0.1)', color: '#8b5cf6', letterSpacing: 0.5 }}>PRO</span>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#1b2434' }}>+{tools.length - 1} more tools ranked by impact</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#1b2434' }}>+{visibleTools.length - 1} more tools ranked by impact</div>
                 <div style={{ fontSize: 12, color: '#8d95a3' }}>Unlock with Pro to see all personalized recommendations</div>
                 <a
                   href="/pricing"

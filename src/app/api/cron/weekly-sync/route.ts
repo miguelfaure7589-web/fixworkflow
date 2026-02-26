@@ -10,30 +10,21 @@ import { runWeeklySync } from "@/lib/integrations/sync";
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes for long syncs
 
-export async function POST(req: Request) {
-  // Check authorization: either CRON_SECRET or admin session
+async function authorize(req: Request): Promise<boolean> {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  let authorized = false;
-
   if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
-    authorized = true;
+    return true;
   }
 
-  if (!authorized) {
-    const session = await getServerSession(authOptions);
-    const isAdmin = (session?.user as Record<string, unknown> | undefined)?.isAdmin;
-    if (isAdmin) authorized = true;
-  }
+  const session = await getServerSession(authOptions);
+  const isAdmin = (session?.user as Record<string, unknown> | undefined)?.isAdmin;
+  return !!isAdmin;
+}
 
-  if (!authorized) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const result = await runWeeklySync();
-
-  return NextResponse.json({
+function formatResults(result: Awaited<ReturnType<typeof runWeeklySync>>) {
+  return {
     success: true,
     totalIntegrations: result.totalIntegrations,
     synced: result.synced,
@@ -45,5 +36,25 @@ export async function POST(req: Request) {
       error: r.error,
       metricsUpdated: r.metricsUpdated,
     })),
-  });
+  };
+}
+
+// GET — called by Vercel Cron
+export async function GET(req: Request) {
+  if (!(await authorize(req))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const result = await runWeeklySync();
+  return NextResponse.json(formatResults(result));
+}
+
+// POST — called manually from admin dashboard
+export async function POST(req: Request) {
+  if (!(await authorize(req))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const result = await runWeeklySync();
+  return NextResponse.json(formatResults(result));
 }

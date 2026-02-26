@@ -98,6 +98,12 @@ export async function GET() {
     return Response.json({ ok: true, result: null });
   }
 
+  // Fetch user's previous score data
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { previousScore: true, scoreChangeReason: true, previousPillarScores: true },
+  });
+
   // Check for existing snapshot
   const existingSnapshot = await prisma.revenueScoreSnapshot.findFirst({
     where: { userId },
@@ -107,7 +113,14 @@ export async function GET() {
   // If snapshot exists and is newer than the profile update, return it
   if (existingSnapshot && existingSnapshot.createdAt >= profile.updatedAt) {
     const { result, updatedAt } = snapshotToResult(existingSnapshot);
-    return Response.json({ ok: true, result, updatedAt });
+    return Response.json({
+      ok: true,
+      result,
+      updatedAt,
+      previousScore: user?.previousScore ?? null,
+      scoreChangeReason: user?.scoreChangeReason ?? null,
+      previousPillarScores: user?.previousPillarScores ?? null,
+    });
   }
 
   // Profile exists but no snapshot (or stale) — compute + save
@@ -116,5 +129,12 @@ export async function GET() {
   const result = computeRevenueHealthScore(inputs, bt);
   const updatedAt = await saveSnapshot(userId, result);
 
-  return Response.json({ ok: true, result, updatedAt });
+  return Response.json({
+    ok: true,
+    result,
+    updatedAt,
+    previousScore: user?.previousScore ?? null,
+    scoreChangeReason: user?.scoreChangeReason ?? null,
+    previousPillarScores: user?.previousPillarScores ?? null,
+  });
 }

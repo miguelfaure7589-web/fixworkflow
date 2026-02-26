@@ -16,7 +16,9 @@ export function useCommandCenter(isPremium: boolean) {
       const res = await fetch("/api/tracker/command-center");
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        setError(json.error || "Failed to load data");
+        const errMsg = json.error || `HTTP ${res.status}`;
+        console.error("[CommandCenter] API error:", res.status, json);
+        setError(errMsg);
         return;
       }
       const json: CommandCenterData = await res.json();
