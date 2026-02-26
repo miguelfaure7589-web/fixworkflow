@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
 import "@/lib/integrations/providers/shopify";
 import "@/lib/integrations/providers/stripe-data";
+import "@/lib/integrations/providers/google-analytics";
 import { syncIntegration } from "@/lib/integrations/sync";
 
 export async function POST(

@@ -67,7 +67,7 @@ export const PROVIDER_CATALOG: ProviderCatalogEntry[] = [
     icon: "analytics.google.com",
     description: "Sync traffic, conversion rates, and acquisition channels.",
     pillarsAffected: ["acquisition", "revenue"],
-    status: "coming_soon",
+    status: "active",
     scopesPlainEnglish: [
       "Read traffic and session data",
       "Read conversion and goal data",

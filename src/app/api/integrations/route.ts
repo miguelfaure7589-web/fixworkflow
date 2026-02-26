@@ -23,6 +23,7 @@ export async function GET() {
       lastSyncStatus: true,
       lastSyncError: true,
       syncFrequency: true,
+      metadata: true,
       createdAt: true,
     },
     orderBy: { createdAt: "desc" },

@@ -81,7 +81,7 @@ const INTEGRATION_CATEGORIES = [
     name: "Marketing & Acquisition",
     icon: BarChart3,
     items: [
-      { name: "Google Analytics", domain: "analytics.google.com", brandColor: "#F9AB00", description: "Sync website traffic, conversion rates, and acquisition channels.", pillars: ["Acquisition", "Revenue"] },
+      { name: "Google Analytics", domain: "analytics.google.com", brandColor: "#F9AB00", description: "Sync website traffic, conversion rates, and acquisition channels.", pillars: ["Acquisition", "Revenue"], providerId: "google-analytics" },
       { name: "Meta Ads", domain: "meta.com", brandColor: "#0668E1", description: "Sync ad spend, impressions, conversions, and cost per acquisition.", pillars: ["Acquisition"] },
       { name: "Google Ads", domain: "ads.google.com", brandColor: "#4285F4", description: "Sync ad campaigns, spend, clicks, conversions, and ROAS.", pillars: ["Acquisition"] },
       { name: "Mailchimp", domain: "mailchimp.com", brandColor: "#FFE01B", description: "Sync email performance, list growth, open rates, and campaign revenue.", pillars: ["Acquisition", "Retention"] },
@@ -156,9 +156,11 @@ interface ConnectedIntegration {
   provider: string;
   status: string;
   storeDomain: string | null;
+  externalId: string | null;
   lastSyncAt: string | null;
   lastSyncStatus: string | null;
   lastSyncError: string | null;
+  metadata: any;
 }
 
 const PILLAR_LABELS_MAP: Record<string, string> = {
@@ -221,11 +223,15 @@ const PROVIDER_CATALOG = [
     icon: "analytics.google.com",
     description: "Sync traffic, conversion rates, and acquisition channels.",
     pillarsAffected: ["acquisition", "revenue"],
-    status: "coming_soon" as const,
-    scopesPlainEnglish: ["Read traffic and session data", "Read conversion and goal data"],
-    noAccessLabel: "",
+    status: "active" as const,
+    scopesPlainEnglish: [
+      "Read traffic and session data",
+      "Read conversion and goal data",
+      "Read acquisition channel breakdowns",
+    ],
+    noAccessLabel: "We cannot modify your analytics settings",
     needsStoreDomain: false,
-    connectEndpoint: "",
+    connectEndpoint: "/api/integrations/google-analytics/connect",
   },
   {
     id: "mailchimp",
@@ -669,6 +675,8 @@ function SettingsContent() {
   const [connectError, setConnectError] = useState("");
   const [syncing, setSyncing] = useState<string | null>(null);
   const [disconnectConfirm, setDisconnectConfirm] = useState<string | null>(null);
+  const [gaPropertySelect, setGaPropertySelect] = useState<string>("");
+  const [gaSelectingProperty, setGaSelectingProperty] = useState(false);
 
   // Auth guard
   useEffect(() => {
@@ -1367,6 +1375,9 @@ function SettingsContent() {
                                   : "Never synced \u2014 first sync pending"
                                 }
                                 {intg.storeDomain && <span> &middot; {intg.storeDomain}</span>}
+                                {intg.provider === "google-analytics" && intg.metadata?.selectedPropertyName && (
+                                  <span> &middot; {intg.metadata.selectedPropertyName}</span>
+                                )}
                               </div>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1395,6 +1406,67 @@ function SettingsContent() {
                               </button>
                             </div>
                           </div>
+                          {/* GA4 property selector — shown when connected but no property selected */}
+                          {intg.provider === "google-analytics" && !intg.externalId && intg.metadata?.properties?.length > 1 && (
+                            <div style={{
+                              marginTop: 10, padding: "12px 14px", borderRadius: 8,
+                              background: "#fafbfd", border: "1px solid #e6e9ef",
+                            }}>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: "#1b2434", marginBottom: 6 }}>
+                                Select a GA4 property to sync:
+                              </div>
+                              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                <select
+                                  value={gaPropertySelect}
+                                  onChange={(e) => setGaPropertySelect(e.target.value)}
+                                  style={{
+                                    ...inputStyle, flex: 1, padding: "8px 12px",
+                                    fontSize: 13, cursor: "pointer",
+                                  }}
+                                >
+                                  <option value="">Choose a property...</option>
+                                  {(intg.metadata.properties as { id: string; name: string }[]).map((p) => (
+                                    <option key={p.id} value={p.id}>{p.name} ({p.id})</option>
+                                  ))}
+                                </select>
+                                <button
+                                  disabled={!gaPropertySelect || gaSelectingProperty}
+                                  onClick={async () => {
+                                    setGaSelectingProperty(true);
+                                    try {
+                                      const prop = (intg.metadata.properties as { id: string; name: string }[]).find((p) => p.id === gaPropertySelect);
+                                      await fetch("/api/integrations/google-analytics/select-property", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                          integrationId: intg.id,
+                                          propertyId: gaPropertySelect,
+                                          propertyName: prop?.name,
+                                        }),
+                                      });
+                                      // Refresh integrations list
+                                      const res = await fetch("/api/integrations");
+                                      const data = await res.json();
+                                      if (data.integrations) setConnectedIntegrations(data.integrations);
+                                    } catch {}
+                                    setGaSelectingProperty(false);
+                                    setGaPropertySelect("");
+                                  }}
+                                  style={{
+                                    padding: "8px 16px", borderRadius: 8,
+                                    border: "none", background: gaPropertySelect ? "#4361ee" : "#e6e9ef",
+                                    color: gaPropertySelect ? "#fff" : "#8d95a3",
+                                    fontSize: 12, fontWeight: 600,
+                                    cursor: gaPropertySelect ? "pointer" : "not-allowed",
+                                    fontFamily: "inherit", whiteSpace: "nowrap",
+                                    opacity: gaSelectingProperty ? 0.6 : 1,
+                                  }}
+                                >
+                                  {gaSelectingProperty ? "Saving..." : "Select"}
+                                </button>
+                              </div>
+                            </div>
+                          )}
                           {intg.status === "error" && intg.lastSyncError && (
                             <div style={{
                               marginTop: 10, padding: "8px 12px", borderRadius: 8,
@@ -2008,7 +2080,7 @@ function SettingsContent() {
                   style={{ width: 40, height: 40, borderRadius: 10, background: "#f4f5f8" }}
                 />
                 <h3 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: 0 }}>
-                  Connect {provider.id === "stripe-data" ? "your Stripe account" : `your ${provider.name} store`}
+                  Connect {provider.id === "stripe-data" ? "your Stripe account" : provider.id === "google-analytics" ? "Google Analytics" : `your ${provider.name} store`}
                 </h3>
               </div>
 
