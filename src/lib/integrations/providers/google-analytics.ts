@@ -127,7 +127,10 @@ const googleAnalyticsProvider: IntegrationProvider = {
       });
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(`GA4 report failed: ${text}`);
+        if (res.status === 403 && text.includes("has not been used in project")) {
+          throw new Error("Google Analytics Data API is not enabled. Enable it at console.cloud.google.com → APIs & Services → Enable 'Google Analytics Data API', then sync again.");
+        }
+        throw new Error(`GA4 report failed (${res.status}): ${text.substring(0, 200)}`);
       }
       return res.json();
     }

@@ -42,7 +42,7 @@ export async function GET(req: Request) {
       // Paginate through all account summaries
       let pageToken: string | undefined;
       do {
-        const adminUrl = new URL("https://analyticsadmin.googleapis.com/v1beta/accountSummaries");
+        const adminUrl = new URL("https://analyticsadmin.googleapis.com/v1alpha/accountSummaries");
         adminUrl.searchParams.set("pageSize", "200");
         if (pageToken) adminUrl.searchParams.set("pageToken", pageToken);
 
