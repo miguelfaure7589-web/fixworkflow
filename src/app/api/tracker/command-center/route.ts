@@ -33,7 +33,7 @@ export async function GET() {
   }
 
   const user = session.user as Record<string, unknown>;
-  if (!user.isPremium) {
+  if (!user.isPremium && !user.isAdmin) {
     return Response.json({ error: "Premium required" }, { status: 402 });
   }
 
@@ -111,7 +111,9 @@ export async function GET() {
     // Determine primary revenue source
     const hasShopify = integrations.some((i) => i.provider === "shopify" && i.status === "connected");
     const hasStripe = integrations.some((i) => i.provider === "stripe-data" && i.status === "connected");
-    const revenueSource = hasShopify ? "shopify" : hasStripe ? "stripe-data" : logs.length > 0 ? "tracker" : null;
+    const hasGA = integrations.some((i) => i.provider === "google-analytics" && i.status === "connected");
+    const hasQB = integrations.some((i) => i.provider === "quickbooks" && i.status === "connected");
+    const revenueSource = hasShopify ? "shopify" : hasStripe ? "stripe-data" : hasQB ? "quickbooks" : hasGA ? "google-analytics" : logs.length > 0 ? "tracker" : "profile";
 
     // Total revenue: prefer profile (integration-synced) over manual logs
     const totalRevenue = profile?.revenueMonthly ?? thisMonthRevenue;
@@ -148,14 +150,25 @@ export async function GET() {
       keyMetric: { label: string; value: string; source: string } | null;
     }> = {};
 
+    // Direct pillar score fields as fallback
+    const snapshotPillarScores: Record<string, number> = snapshot ? {
+      revenue: snapshot.pillarRevenue,
+      profitability: snapshot.pillarProfitability,
+      retention: snapshot.pillarRetention,
+      acquisition: snapshot.pillarAcquisition,
+      ops: snapshot.pillarOps,
+    } : {};
+
     for (const name of pillarNames) {
       const pillarDetail = parsedPillars?.[name];
       const historyEntries = pillarsByWeek[name];
-      const current = pillarDetail?.score ?? 0;
+      // Use pillarsJson score, fall back to direct snapshot fields, then 0
+      const current = pillarDetail?.score ?? snapshotPillarScores[name] ?? 0;
       const prev = historyEntries && historyEntries.length >= 2 ? historyEntries[1].score : null;
 
       const autoSources = (PILLAR_SOURCE_MAP[name] || []).filter((s) => connectedProviders.includes(s));
-      const sources = logs.length > 0 ? [...new Set([...autoSources, "tracker"])] : [...new Set(autoSources)];
+      // Include "tracker" if logs exist, and always include connected providers
+      const sources = [...new Set([...autoSources, ...(logs.length > 0 ? ["tracker"] : [])])];
 
       // Extract key metric for this pillar
       let keyMetric: { label: string; value: string; source: string } | null = null;
