@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/authOptions";
 import "@/lib/integrations/providers/shopify";
 import "@/lib/integrations/providers/stripe-data";
 import "@/lib/integrations/providers/google-analytics";
+import "@/lib/integrations/providers/quickbooks";
 import { runWeeklySync } from "@/lib/integrations/sync";
 
 export const runtime = "nodejs";

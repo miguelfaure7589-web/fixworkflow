@@ -91,7 +91,7 @@ const INTEGRATION_CATEGORIES = [
     name: "Accounting & Finance",
     icon: BookOpen,
     items: [
-      { name: "QuickBooks", domain: "quickbooks.intuit.com", brandColor: "#2CA01C", description: "Sync accounting data, profit & loss, margins, expenses, and invoices.", pillars: ["Profitability", "Operations"] },
+      { name: "QuickBooks", domain: "quickbooks.intuit.com", brandColor: "#2CA01C", description: "Sync accounting data, profit & loss, margins, expenses, and invoices.", pillars: ["Profitability", "Operations"], providerId: "quickbooks" },
       { name: "Xero", domain: "xero.com", brandColor: "#13B5EA", description: "Sync financial reports, bank transactions, invoices, and cash flow.", pillars: ["Profitability", "Operations"] },
       { name: "Wave", domain: "waveapps.com", brandColor: "#0764E6", description: "Sync income, expenses, invoicing, and financial reports.", pillars: ["Profitability", "Operations"] },
     ],
@@ -211,11 +211,15 @@ const PROVIDER_CATALOG = [
     icon: "quickbooks.intuit.com",
     description: "Sync accounting data, margins, expenses, and invoices.",
     pillarsAffected: ["profitability", "operations"],
-    status: "coming_soon" as const,
-    scopesPlainEnglish: ["Read income and expense reports", "Read invoice and payment data"],
-    noAccessLabel: "",
+    status: "active" as const,
+    scopesPlainEnglish: [
+      "Read income and expense reports",
+      "Read invoice and payment data",
+      "Read customer records",
+    ],
+    noAccessLabel: "We cannot create transactions or modify your books",
     needsStoreDomain: false,
-    connectEndpoint: "",
+    connectEndpoint: "/api/integrations/quickbooks/connect",
   },
   {
     id: "google-analytics",
@@ -1378,6 +1382,9 @@ function SettingsContent() {
                                 {intg.storeDomain && <span> &middot; {intg.storeDomain}</span>}
                                 {intg.provider === "google-analytics" && intg.metadata?.selectedPropertyName && (
                                   <span> &middot; {intg.metadata.selectedPropertyName}</span>
+                                )}
+                                {intg.provider === "quickbooks" && intg.metadata?.companyName && (
+                                  <span> &middot; {intg.metadata.companyName}</span>
                                 )}
                               </div>
                             </div>

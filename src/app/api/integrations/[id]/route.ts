@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import "@/lib/integrations/providers/shopify";
 import "@/lib/integrations/providers/stripe-data";
 import "@/lib/integrations/providers/google-analytics";
+import "@/lib/integrations/providers/quickbooks";
 import { getProvider } from "@/lib/integrations/registry";
 
 export async function DELETE(

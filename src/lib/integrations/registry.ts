@@ -55,10 +55,11 @@ export const PROVIDER_CATALOG: ProviderCatalogEntry[] = [
     icon: "quickbooks.intuit.com",
     description: "Sync accounting data, margins, expenses, and invoices.",
     pillarsAffected: ["profitability", "operations"],
-    status: "coming_soon",
+    status: "active",
     scopesPlainEnglish: [
       "Read income and expense reports",
       "Read invoice and payment data",
+      "Read customer records",
     ],
   },
   {
