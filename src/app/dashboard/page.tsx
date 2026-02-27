@@ -3148,133 +3148,156 @@ export default function RevenueDashboard() {
         isPremium={isPremium}
       />
 
-      <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-10 space-y-6 sm:space-y-8">
-        {/* Personalized Greeting */}
-        <PersonalizedGreeting
-          session={session}
-          businessType={dashData?.businessProfile?.businessType}
-          overallScore={dashData?.score?.total}
-          profileGoal={userProfileGoal}
-        />
+      <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
 
-        {/* Profile completion nudge */}
-        {!profileNudgeDismissed && !userAvatarUrl && !userBio && !userBusinessStage && session?.user && (
-          <div className="flex items-center gap-3 px-4 py-3 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl text-sm">
-            <UserCircle className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-            <span className="text-indigo-800 dark:text-indigo-300 flex-1">
-              Complete your profile for personalized insights.{" "}
-              <Link href="/settings?tab=profile" className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline">
-                Set up your profile
-              </Link>
-            </span>
-            <button
-              onClick={() => {
-                setProfileNudgeDismissed(true);
-                localStorage.setItem("profileNudgeDismissed", "true");
-              }}
-              className="text-indigo-400 hover:text-indigo-600 p-0.5"
-              aria-label="Dismiss"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+        {/* SECTION 1 — GREETING (compact) */}
+        <div style={{ marginBottom: 12 }}>
+          <PersonalizedGreeting
+            session={session}
+            businessType={dashData?.businessProfile?.businessType}
+            overallScore={dashData?.score?.total}
+            profileGoal={userProfileGoal}
+          />
+        </div>
 
-        {/* AI Business Summary — top of dashboard */}
-        <AiBusinessSummary isPremium={isPremium} />
-
-        {/* Missing phone number prompt */}
-        {!phoneBannerDismissed && session?.user && !(session.user as Record<string, unknown>).phone && (
-          <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-sm">
-            <Info className="w-4 h-4 text-amber-600 flex-shrink-0" />
-            <span className="text-amber-800 flex-1">
-              Add your phone number so our partners can reach you.{" "}
-              <Link href="/settings" className="text-indigo-600 font-medium hover:underline">
-                Update in Settings
-              </Link>
-            </span>
-            <button
-              onClick={() => setPhoneBannerDismissed(true)}
-              className="text-amber-400 hover:text-amber-600 p-0.5"
-              aria-label="Dismiss"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {/* Weekly tracker reminder */}
-        {showTrackerReminder && !trackerReminderDismissed && isPremium && (
-          <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl text-sm">
-            <Activity className="w-4 h-4 text-blue-600 flex-shrink-0" />
-            <span className="text-blue-800 dark:text-blue-300 flex-1">
-              You haven&apos;t logged this week&apos;s numbers yet.{" "}
-              <a href="#revenue-tracker" className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline">
-                Log Now
-              </a>
-            </span>
-            <button
-              onClick={() => setTrackerReminderDismissed(true)}
-              className="text-blue-400 hover:text-blue-600 p-0.5"
-              aria-label="Dismiss"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {/* Connected Integrations CTA Card */}
+        {/* SECTION 2 — SMART NUDGE BAR (single line, dismissible) */}
         {(() => {
-          const INTEGRATION_ICON_DOMAINS: Record<string, string> = {
-            shopify: "cdn.shopify.com",
-            "stripe-data": "stripe.com",
-            quickbooks: "quickbooks.intuit.com",
-            "google-analytics": "analytics.google.com",
-          };
-          const connectedCount = integrations.length;
-          const pct = Math.round((connectedCount / 15) * 100);
-          return (
-            <div style={{ background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-default)", padding: "18px 20px", display: "flex", alignItems: "center", gap: 16 }}>
-              <div style={{ width: 40, height: 40, minWidth: 40, borderRadius: 10, background: "rgba(67,97,238,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Plug size={20} color="#4361ee" />
+          const showProfileNudge = !profileNudgeDismissed && !userAvatarUrl && !userBio && !userBusinessStage && !!session?.user;
+          const showTrackerNudge = showTrackerReminder && !trackerReminderDismissed && isPremium;
+          const showPhoneNudge = !phoneBannerDismissed && session?.user && !(session.user as Record<string, unknown>).phone;
+          // Priority: profile > tracker > phone
+          if (showProfileNudge) {
+            return (
+              <div style={{ marginBottom: 16, padding: "10px 16px", background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 8, display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
+                <UserCircle style={{ width: 16, height: 16, color: "#4361ee", flexShrink: 0 }} />
+                <span style={{ flex: 1, color: "var(--text-secondary)" }}>
+                  Complete your profile for personalized insights.{" "}
+                  <Link href="/settings?tab=profile" style={{ color: "#4361ee", fontWeight: 600, textDecoration: "none" }}>Set up your profile &rarr;</Link>
+                </span>
+                <button onClick={() => { setProfileNudgeDismissed(true); localStorage.setItem("profileNudgeDismissed", "true"); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: "var(--text-muted)" }} aria-label="Dismiss">
+                  <X style={{ width: 14, height: 14 }} />
+                </button>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Connected Integrations</span>
-                  <span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>{connectedCount} of 15 tools connected</span>
-                </div>
-                <div style={{ height: 6, borderRadius: 3, background: "var(--border-primary)", marginBottom: 6 }}>
-                  <div style={{ height: 6, borderRadius: 3, background: "#4361ee", width: `${pct}%`, transition: "width 0.3s ease" }} />
-                </div>
-                {connectedCount > 0 ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    {integrations.map((intg) => {
-                      const domain = INTEGRATION_ICON_DOMAINS[intg.provider] || intg.provider;
-                      return (
-                        <img
-                          key={intg.id}
-                          src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
-                          alt={intg.provider}
-                          style={{ width: 20, height: 20, borderRadius: 4, objectFit: "contain", background: "var(--bg-card)", border: "1px solid var(--border-light)" }}
-                        />
-                      );
-                    })}
-                    <span style={{ fontSize: 12, color: "var(--text-muted)", marginLeft: 4 }}>connected</span>
-                  </div>
-                ) : (
-                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Connect your business tools for a more accurate Revenue Health Score</span>
-                )}
+            );
+          }
+          if (showTrackerNudge) {
+            return (
+              <div style={{ marginBottom: 16, padding: "10px 16px", background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 8, display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
+                <Activity style={{ width: 16, height: 16, color: "#4361ee", flexShrink: 0 }} />
+                <span style={{ flex: 1, color: "var(--text-secondary)" }}>
+                  You haven&apos;t logged this week&apos;s numbers yet.{" "}
+                  <a href="#revenue-tracker" style={{ color: "#4361ee", fontWeight: 600, textDecoration: "none" }}>Log Now &rarr;</a>
+                </span>
+                <button onClick={() => setTrackerReminderDismissed(true)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: "var(--text-muted)" }} aria-label="Dismiss">
+                  <X style={{ width: 14, height: 14 }} />
+                </button>
               </div>
-              <Link href="/settings?tab=integrations" style={{ padding: "8px 16px", borderRadius: 8, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}>
-                Browse Integrations &rarr;
-              </Link>
-            </div>
-          );
+            );
+          }
+          if (showPhoneNudge) {
+            return (
+              <div style={{ marginBottom: 16, padding: "10px 16px", background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 8, display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
+                <Info style={{ width: 16, height: 16, color: "var(--text-muted)", flexShrink: 0 }} />
+                <span style={{ flex: 1, color: "var(--text-secondary)" }}>
+                  Add your phone number so our partners can reach you.{" "}
+                  <Link href="/settings" style={{ color: "#4361ee", fontWeight: 600, textDecoration: "none" }}>Update in Settings &rarr;</Link>
+                </span>
+                <button onClick={() => setPhoneBannerDismissed(true)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: "var(--text-muted)" }} aria-label="Dismiss">
+                  <X style={{ width: 14, height: 14 }} />
+                </button>
+              </div>
+            );
+          }
+          return null;
         })()}
 
-        {/* Admin: Sync My Score card */}
+        {/* SECTION 3+4 — SCORE ROW + 5-PILLAR BREAKDOWN (hero of the page) */}
+        <div style={{ marginBottom: 16 }}>
+          <RevenueHealthSection isPremium={isPremium} isAdmin={isAdmin} onScoreChange={setHasScore} onMissingData={setMissingKeys} key={scoreRefreshKey} />
+        </div>
+
+        {/* SECTION 5 — AI SUMMARY */}
+        <div style={{ marginBottom: 16 }}>
+          <AiBusinessSummary isPremium={isPremium} />
+        </div>
+
+        {/* SECTION 6 — REVENUE COMMAND CENTER (Pro) */}
+        <div id="revenue-command-center" style={{ marginBottom: 16 }}>
+          <CommandCenter isPremium={isPremium} onScoreRefresh={() => setScoreRefreshKey((k) => k + 1)} />
+        </div>
+
+        {/* SECTION 7 — CONNECTED INTEGRATIONS BAR */}
+        <div style={{ marginBottom: 16 }}>
+          {(() => {
+            const INTEGRATION_ICON_DOMAINS: Record<string, string> = {
+              shopify: "cdn.shopify.com",
+              "stripe-data": "stripe.com",
+              quickbooks: "quickbooks.intuit.com",
+              "google-analytics": "analytics.google.com",
+            };
+            const connectedCount = integrations.length;
+            const pct = Math.round((connectedCount / 15) * 100);
+            return (
+              <div style={{ background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-default)", padding: "18px 20px", display: "flex", alignItems: "center", gap: 16 }}>
+                <div style={{ width: 40, height: 40, minWidth: 40, borderRadius: 10, background: "rgba(67,97,238,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Plug size={20} color="#4361ee" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Connected Integrations</span>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>{connectedCount} of 15 tools connected</span>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 3, background: "var(--border-primary)", marginBottom: 6 }}>
+                    <div style={{ height: 6, borderRadius: 3, background: "#4361ee", width: `${pct}%`, transition: "width 0.3s ease" }} />
+                  </div>
+                  {connectedCount > 0 ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      {integrations.map((intg) => {
+                        const domain = INTEGRATION_ICON_DOMAINS[intg.provider] || intg.provider;
+                        return (
+                          <img
+                            key={intg.id}
+                            src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+                            alt={intg.provider}
+                            style={{ width: 20, height: 20, borderRadius: 4, objectFit: "contain", background: "var(--bg-card)", border: "1px solid var(--border-light)" }}
+                          />
+                        );
+                      })}
+                      <span style={{ fontSize: 12, color: "var(--text-muted)", marginLeft: 4 }}>connected</span>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Connect your business tools for a more accurate Revenue Health Score</span>
+                  )}
+                </div>
+                <Link href="/settings?tab=integrations" style={{ padding: "8px 16px", borderRadius: 8, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}>
+                  Browse Integrations &rarr;
+                </Link>
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* SECTION 8 — PLAYBOOKS */}
+        <div style={{ marginBottom: 16 }}>
+          <PlaybooksSection isPremium={isPremium} hasScore={hasScore} onScoreRefresh={() => setScoreRefreshKey((k) => k + 1)} integrations={integrations} />
+        </div>
+
+        {/* SECTION 9 — RECOMMENDED TOOLS */}
+        <div style={{ marginBottom: 16 }}>
+          <RecommendationsSection isPremium={isPremium} hasScore={hasScore} integrations={integrations} />
+        </div>
+
+        {/* Leave a Review */}
+        <div style={{ marginBottom: 16 }}>
+          <LeaveReviewSection />
+        </div>
+
+        {/* Bottom Upgrade Banner — free users only */}
+        {!isPremium && <BottomUpgradeBanner />}
+
+        {/* SECTION 10 — ADMIN-ONLY (bottom of page) */}
         {(session?.user as Record<string, unknown> | undefined)?.email === 'fixworkflows@gmail.com' && (
-          <div style={{ background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-default)", padding: "14px 20px", display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ marginBottom: 16, background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-default)", padding: "14px 20px", display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ width: 36, height: 36, minWidth: 36, borderRadius: 8, background: "rgba(16,185,129,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <RefreshCw size={18} color="#10b981" style={adminSyncing ? { animation: "spin 1s linear infinite" } : undefined} />
             </div>
@@ -3311,26 +3334,6 @@ export default function RevenueDashboard() {
             </button>
           </div>
         )}
-
-        {/* Revenue Health Score Section */}
-        <RevenueHealthSection isPremium={isPremium} isAdmin={isAdmin} onScoreChange={setHasScore} onMissingData={setMissingKeys} key={scoreRefreshKey} />
-
-        {/* Revenue Command Center (Pro) */}
-        <div id="revenue-command-center">
-          <CommandCenter isPremium={isPremium} onScoreRefresh={() => setScoreRefreshKey((k) => k + 1)} />
-        </div>
-
-        {/* Execution Playbooks (3-Phase Tracker) */}
-        <PlaybooksSection isPremium={isPremium} hasScore={hasScore} onScoreRefresh={() => setScoreRefreshKey((k) => k + 1)} integrations={integrations} />
-
-        {/* Recommended Tools & Resources */}
-        <RecommendationsSection isPremium={isPremium} hasScore={hasScore} integrations={integrations} />
-
-        {/* Leave a Review */}
-        <LeaveReviewSection />
-
-        {/* Bottom Upgrade Banner — free users only */}
-        {!isPremium && <BottomUpgradeBanner />}
 
         {/* Existing Revenue Intelligence Dashboard */}
         {dashData && (
