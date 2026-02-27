@@ -46,6 +46,9 @@ import {
   RefreshCw,
   Star,
   UserCircle,
+  DollarSign,
+  Users,
+  Settings,
 } from "lucide-react";
 import { dispatchChatPrefill } from "@/lib/prompts/chatContext";
 import { CATEGORY_PROMPT_MAP } from "@/lib/prompts/rationale";
@@ -1509,6 +1512,71 @@ const CATEGORY_COLORS: Record<string, string> = {
   ops: "bg-[var(--bg-subtle)] text-[var(--text-secondary)] border-[var(--border-default)]",
 };
 
+// ── Playbook Card Design System ──
+
+const PILLAR_ICONS: Record<string, React.ComponentType<{ style?: React.CSSProperties }>> = {
+  profitability: DollarSign,
+  revenue: TrendingUp,
+  acquisition: Users,
+  retention: RefreshCw,
+  ops: Settings,
+};
+
+const PILLAR_TAG_STYLES: Record<string, { color: string; background: string; border: string }> = {
+  revenue: { color: "#4361ee", background: "rgba(67, 97, 238, 0.08)", border: "1px solid rgba(67, 97, 238, 0.15)" },
+  profitability: { color: "#f59e0b", background: "rgba(245, 158, 11, 0.08)", border: "1px solid rgba(245, 158, 11, 0.15)" },
+  retention: { color: "#10b981", background: "rgba(16, 185, 129, 0.08)", border: "1px solid rgba(16, 185, 129, 0.15)" },
+  acquisition: { color: "#7c3aed", background: "rgba(124, 58, 237, 0.08)", border: "1px solid rgba(124, 58, 237, 0.15)" },
+  ops: { color: "#06b6d4", background: "rgba(6, 182, 212, 0.08)", border: "1px solid rgba(6, 182, 212, 0.15)" },
+};
+
+const PILLAR_ICON_COLORS: Record<string, string> = {
+  revenue: "#4361ee",
+  profitability: "#f59e0b",
+  retention: "#10b981",
+  acquisition: "#7c3aed",
+  ops: "#06b6d4",
+};
+
+function humanizeTriggerReason(category: string, triggerReason: string, pillars: Record<string, PillarData> | null): string {
+  const pillarLabel = PILLAR_LABELS[category] || category;
+  const pillarScore = pillars?.[category]?.score;
+
+  // Pillar-based trigger: "Your X score is Y/100 (below Z)."
+  if (triggerReason.includes("score is") && pillarScore !== undefined) {
+    const templates: Record<string, string> = {
+      revenue: `Revenue is your biggest growth opportunity at ${pillarScore}/100`,
+      profitability: `Your margins need attention \u2014 profitability is scoring ${pillarScore}/100`,
+      retention: `Customer retention needs work \u2014 scoring ${pillarScore}/100`,
+      acquisition: `Customer acquisition could improve \u2014 scoring ${pillarScore}/100`,
+      ops: `Operations efficiency is lagging at ${pillarScore}/100`,
+    };
+    return templates[category] || `${pillarLabel} needs attention at ${pillarScore}/100`;
+  }
+
+  // Metric-based trigger: "Your X is Y, below the Z threshold."
+  if (triggerReason.includes("below the") && pillarScore !== undefined) {
+    const templates: Record<string, string> = {
+      revenue: `Revenue metrics are below target \u2014 scoring ${pillarScore}/100`,
+      profitability: `Your margins need attention \u2014 profitability is scoring ${pillarScore}/100`,
+      retention: `Churn is higher than ideal \u2014 retention scoring ${pillarScore}/100`,
+      acquisition: `Acquisition metrics need a boost \u2014 scoring ${pillarScore}/100`,
+      ops: `Operational bottlenecks detected \u2014 scoring ${pillarScore}/100`,
+    };
+    return templates[category] || `${pillarLabel} metrics are below target at ${pillarScore}/100`;
+  }
+
+  if (triggerReason.includes("above the") && pillarScore !== undefined) {
+    return `${pillarLabel} has metrics above healthy thresholds \u2014 scoring ${pillarScore}/100`;
+  }
+
+  // Fallback: return original but append score if available
+  if (pillarScore !== undefined) {
+    return `${pillarLabel} scoring ${pillarScore}/100 \u2014 room to improve`;
+  }
+  return triggerReason;
+}
+
 const EFFORT_ESTIMATE: Record<string, string> = {
   low: "~20 min",
   medium: "~45 min",
@@ -1771,7 +1839,17 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
   }
 
   return (
-    <div className="space-y-4">
+    <div>
+      {/* Section header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase", color: "var(--text-muted)" }}>
+          Active Playbooks
+        </span>
+        <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+          {playbooks.length} active
+        </span>
+      </div>
+
       {playbooks.map((pb) => {
         const isActive = activeSlug === pb.slug;
         const progress = stepProgress[pb.slug] ?? new Array(pb.baseSteps.length).fill(false);
@@ -1783,40 +1861,92 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
         const metrics = PILLAR_METRICS[pb.category] ?? PILLAR_METRICS.ops;
         const phase = isActive ? activePhase : 1;
 
+        const PillarIcon = PILLAR_ICONS[pb.category] || BookOpen;
+        const tagStyle = PILLAR_TAG_STYLES[pb.category] || PILLAR_TAG_STYLES.ops;
+        const iconColor = PILLAR_ICON_COLORS[pb.category] || "var(--text-accent)";
+        const subtitle = humanizeTriggerReason(pb.category, pb.triggerReason, healthPillars);
+
         return (
-          <div key={pb.slug} className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-150">
-            {/* Collapsed header */}
+          <div
+            key={pb.slug}
+            style={{
+              background: "var(--bg-card)",
+              border: "1px solid var(--border-primary, var(--border-default))",
+              borderRadius: 12,
+              marginBottom: 12,
+              transition: "background 0.15s ease",
+              cursor: "pointer",
+              overflow: "hidden",
+            }}
+            onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "var(--bg-card-hover, var(--bg-card))"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "var(--bg-card)"; }}
+          >
+            {/* Card header — always visible */}
             <button
               onClick={() => {
                 if (isActive) { setActiveSlug(null); }
                 else { setActiveSlug(pb.slug); setActivePhase(1); setMetricsUpdated(false); setAfterScore(null); setMetricForm({}); }
               }}
-              className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-[var(--bg-card-hover)] transition-colors duration-150"
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "20px 24px",
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+                textAlign: "left",
+                fontFamily: "inherit",
+              }}
             >
-              <BookOpen className="w-4 h-4 text-[var(--text-muted)] flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${CATEGORY_COLORS[pb.category] || CATEGORY_COLORS.ops}`}>
-                    {PILLAR_LABELS[pb.category] || pb.category}
-                  </span>
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${PLAYBOOK_EFFORT_COLORS[pb.effortLevel] || PLAYBOOK_EFFORT_COLORS.medium}`}>
-                    {pb.effortLevel} effort
-                  </span>
-                  {completedCount > 0 && (
-                    <span className="px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded text-[10px] font-medium text-emerald-600">
-                      {completedCount}/{totalSteps} done
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm font-semibold text-[var(--text-primary)]">{pb.title}</p>
-                <p className="text-xs text-[var(--text-muted)] mt-0.5">{pb.triggerReason}</p>
+              {/* Pillar icon */}
+              <div style={{
+                padding: 8,
+                background: "rgba(67, 97, 238, 0.08)",
+                borderRadius: 8,
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                <PillarIcon style={{ width: 18, height: 18, color: iconColor }} />
               </div>
-              <ChevronDown className={`w-4 h-4 text-[var(--text-muted)] flex-shrink-0 transition-transform ${isActive ? "rotate-180" : ""}`} />
+
+              {/* Title + subtitle */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>{pb.title}</p>
+                <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: 0, marginTop: 4 }}>{subtitle}</p>
+              </div>
+
+              {/* Right side: pillar tag + progress + chevron */}
+              <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                {completedCount > 0 && (
+                  <span style={{
+                    fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 4,
+                    color: "#10b981", background: "rgba(16, 185, 129, 0.08)", border: "1px solid rgba(16, 185, 129, 0.15)",
+                  }}>
+                    {completedCount}/{totalSteps}
+                  </span>
+                )}
+                <span style={{
+                  fontSize: 10, fontWeight: 600, letterSpacing: "0.4px", textTransform: "uppercase",
+                  padding: "3px 8px", borderRadius: 4,
+                  color: tagStyle.color, background: tagStyle.background, border: tagStyle.border,
+                }}>
+                  {PILLAR_LABELS[pb.category] || pb.category}
+                </span>
+                <ChevronDown style={{
+                  width: 18, height: 18, color: "var(--text-muted)", flexShrink: 0,
+                  transform: isActive ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.2s",
+                }} />
+              </div>
             </button>
 
             {/* Expanded 3-phase view */}
             {isActive && (
-              <div className="border-t border-[var(--border-default)]">
+              <div style={{ borderTop: "1px solid var(--border-primary, var(--border-default))" }}>
                 {/* Phase tabs */}
                 <div className="flex border-b border-[var(--border-default)]">
                   {([1, 2, 3] as const).map((p) => {
