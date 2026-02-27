@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChevronDown, BarChart3 } from "lucide-react";
 import { ProBadge } from "@/components/ProBadge";
 import { useToast } from "@/components/Toast";
-import { useIsMobile } from "@/hooks/useMediaQuery";
+import { useIsMobile, useIsTablet } from "@/hooks/useMediaQuery";
 import { useCommandCenter } from "./useCommandCenter";
 import LoadingSkeleton from "./LoadingSkeleton";
 import RevenueOverview from "./RevenueOverview";
@@ -58,6 +58,7 @@ function CommandCenterInner({
 }) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
   const [submitting, setSubmitting] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const { data, loading, error, refresh } = useCommandCenter(isPremium);
@@ -214,6 +215,7 @@ function CommandCenterInner({
               totalRevenue={data.totalRevenue}
               revenueSource={data.revenueSource}
               isMobile={isMobile}
+              isTablet={isTablet}
             />
 
             {/* 2. Pillar Health Cards */}
@@ -221,23 +223,25 @@ function CommandCenterInner({
               pillars={data.pillars}
               overallScore={data.overallScore}
               isMobile={isMobile}
+              isTablet={isTablet}
             />
 
             {/* 3. Integration Data Streams */}
             <IntegrationStreams
               streams={data.integrationStreams}
               isMobile={isMobile}
+              isTablet={isTablet}
               onSync={handleSync}
             />
 
             {/* 4. Alerts & Opportunities */}
-            <AlertsOpportunities alerts={data.alerts} />
+            <AlertsOpportunities alerts={data.alerts} isMobile={isMobile} />
 
             {/* 5. Weekly Comparison Table */}
             <WeeklyComparison rows={data.weeklyComparison} isMobile={isMobile} />
 
             {/* 6. Goal Tracking */}
-            <GoalTracking goals={data.goals} onSaveGoals={handleSaveGoals} />
+            <GoalTracking goals={data.goals} onSaveGoals={handleSaveGoals} isMobile={isMobile} isTablet={isTablet} />
 
             {/* 7. Manual Entry (collapsible fallback) */}
             <div style={{
@@ -264,7 +268,7 @@ function CommandCenterInner({
               </button>
               {manualOpen && (
                 <div style={{ padding: "0 16px 16px" }}>
-                  <ManualLogForm onSubmit={handleLogSubmit} submitting={submitting} />
+                  <ManualLogForm onSubmit={handleLogSubmit} submitting={submitting} isTablet={isTablet} />
                 </div>
               )}
             </div>
@@ -295,7 +299,7 @@ function CommandCenterInner({
                 Connect Integration
               </Link>
             </div>
-            <ManualLogForm onSubmit={handleLogSubmit} submitting={submitting} />
+            <ManualLogForm onSubmit={handleLogSubmit} submitting={submitting} isTablet={isTablet} />
           </div>
         )}
       </div>

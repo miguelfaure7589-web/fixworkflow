@@ -62,6 +62,7 @@ export default function RevenueOverview({
   totalRevenue,
   revenueSource,
   isMobile,
+  isTablet,
 }: {
   weeklyLogs: WeeklyLogEntry[];
   monthly: MonthlySummary;
@@ -69,6 +70,7 @@ export default function RevenueOverview({
   totalRevenue: number;
   revenueSource: string | null;
   isMobile: boolean;
+  isTablet: boolean;
 }) {
   const ranges = [
     { label: "4w", weeks: 4 },
@@ -111,7 +113,7 @@ export default function RevenueOverview({
 
         {/* Big number + delta */}
         <div style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap" }}>
-          <span style={{ fontSize: isMobile ? 36 : 44, fontWeight: 800, color: "#1b2434", lineHeight: 1 }}>
+          <span style={{ fontSize: isMobile ? 32 : isTablet ? 36 : 44, fontWeight: 800, color: "#1b2434", lineHeight: 1 }}>
             {fmtDollarFull(totalRevenue)}
           </span>
           <span style={{ fontSize: 13, color: "#8d95a3", fontWeight: 500 }}>this month</span>
@@ -156,7 +158,7 @@ export default function RevenueOverview({
               <span style={{ fontSize: 13, color: "#8d95a3" }}>Log a few more weeks to see your trend line.</span>
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={isMobile ? 160 : 200}>
               <AreaChart data={chartData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
                 <defs>
                   <linearGradient id="ccAreaGrad" x1="0" y1="0" x2="0" y2="1">
@@ -184,7 +186,7 @@ export default function RevenueOverview({
       </div>
 
       {/* Summary stat cards */}
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile || isTablet ? "1fr 1fr" : "repeat(4, 1fr)", gap: 12 }}>
         <SummaryCard
           label="This Month"
           value={fmtDollarFull(Math.round(monthly.thisMonthRevenue))}

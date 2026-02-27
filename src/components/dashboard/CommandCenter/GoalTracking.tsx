@@ -24,9 +24,13 @@ function fmtDollar(n: number): string {
 export default function GoalTracking({
   goals,
   onSaveGoals,
+  isMobile,
+  isTablet,
 }: {
   goals: GoalData;
   onSaveGoals: (goals: { monthlyRevenue?: number; grossMargin?: number }) => void;
+  isMobile: boolean;
+  isTablet: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -73,7 +77,7 @@ export default function GoalTracking({
           background: "#fff", border: "1px solid #f0f2f6", borderRadius: 12,
           padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
         }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 12 }}>
             <div>
               <label style={{ fontSize: 11, fontWeight: 600, color: "#8d95a3", display: "block", marginBottom: 4 }}>
                 MONTHLY REVENUE TARGET
@@ -121,7 +125,8 @@ export default function GoalTracking({
               background: "linear-gradient(135deg, #4361ee, #6366f1)",
               color: "#fff", fontSize: 13, fontWeight: 700, border: "none",
               cursor: saving ? "not-allowed" : "pointer",
-              display: "flex", alignItems: "center", gap: 6,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              width: isMobile ? "100%" : "auto",
             }}
           >
             {saving ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <Check size={14} />}
@@ -129,7 +134,7 @@ export default function GoalTracking({
           </button>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
           {/* Revenue goal */}
           <div style={{
             background: "#fff", border: "1px solid #f0f2f6", borderRadius: 12,

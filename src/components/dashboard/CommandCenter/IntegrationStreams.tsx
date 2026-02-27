@@ -79,10 +79,12 @@ function timeAgo(iso: string | null): string {
 export default function IntegrationStreams({
   streams,
   isMobile,
+  isTablet,
   onSync,
 }: {
   streams: IntegrationStream[];
   isMobile: boolean;
+  isTablet: boolean;
   onSync: (integrationId: string) => void;
 }) {
   const [syncingId, setSyncingId] = useState<string | null>(null);
@@ -106,7 +108,7 @@ export default function IntegrationStreams({
       </div>
       <div style={{
         display: "grid",
-        gridTemplateColumns: isMobile ? "1fr" : streams.length <= 2 ? "repeat(2, 1fr)" : "repeat(2, 1fr)",
+        gridTemplateColumns: isMobile || isTablet ? "1fr" : "repeat(2, 1fr)",
         gap: 12,
       }}>
         {streams.map((stream) => {

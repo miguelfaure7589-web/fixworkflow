@@ -25,7 +25,7 @@ function timeAgo(iso: string): string {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-export default function AlertsOpportunities({ alerts }: { alerts: ScoreAlertItem[] }) {
+export default function AlertsOpportunities({ alerts, isMobile }: { alerts: ScoreAlertItem[]; isMobile?: boolean }) {
   if (alerts.length === 0) return null;
 
   return (
@@ -38,8 +38,8 @@ export default function AlertsOpportunities({ alerts }: { alerts: ScoreAlertItem
           const style = SEVERITY_STYLES[alert.severity] ?? SEVERITY_STYLES.info;
           return (
             <div key={alert.id} style={{
-              display: "flex", alignItems: "flex-start", gap: 12,
-              padding: "12px 16px", borderRadius: 10,
+              display: "flex", alignItems: "flex-start", gap: isMobile ? 8 : 12,
+              padding: isMobile ? "10px 12px" : "12px 16px", borderRadius: 10,
               background: style.bg, border: `1px solid ${style.border}`,
             }}>
               <div style={{ color: style.iconColor, flexShrink: 0, marginTop: 1 }}>
@@ -57,7 +57,7 @@ export default function AlertsOpportunities({ alerts }: { alerts: ScoreAlertItem
                     </span>
                   )}
                 </div>
-                <div style={{ fontSize: 12, color: "#5a6578", lineHeight: 1.4 }}>{alert.message}</div>
+                <div style={{ fontSize: 12, color: "#5a6578", lineHeight: 1.4, wordBreak: "break-word" }}>{alert.message}</div>
               </div>
               <span style={{ fontSize: 10, color: "#b4bac5", whiteSpace: "nowrap", flexShrink: 0 }}>
                 {timeAgo(alert.createdAt)}

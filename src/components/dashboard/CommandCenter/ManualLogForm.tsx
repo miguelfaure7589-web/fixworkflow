@@ -71,9 +71,11 @@ function InputCell({
 export default function ManualLogForm({
   onSubmit,
   submitting,
+  isTablet,
 }: {
   onSubmit: (data: { revenue: number; orders?: number; expenses?: number; weekOf: string }) => void;
   submitting: boolean;
+  isTablet?: boolean;
 }) {
   const isMobile = useIsMobile();
   const [revenue, setRevenue] = useState("");
@@ -118,7 +120,7 @@ export default function ManualLogForm({
     <div style={{ marginBottom: 0 }}>
       <div style={{
         display: "grid",
-        gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr auto",
+        gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr 1fr" : "1fr 1fr 1fr auto",
         gap: 12,
         alignItems: "end",
       }}>

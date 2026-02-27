@@ -31,10 +31,12 @@ export default function PillarHealthCards({
   pillars,
   overallScore,
   isMobile,
+  isTablet,
 }: {
   pillars: Record<string, PillarData>;
   overallScore: number;
   isMobile: boolean;
+  isTablet: boolean;
 }) {
   const pillarNames = ["revenue", "profitability", "retention", "acquisition", "ops"];
 
@@ -57,7 +59,7 @@ export default function PillarHealthCards({
       </div>
       <div style={{
         display: "grid",
-        gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(5, 1fr)",
+        gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr 1fr" : "repeat(5, 1fr)",
         gap: 12,
       }}>
         {pillarNames.map((name) => {
@@ -71,6 +73,7 @@ export default function PillarHealthCards({
               padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
               display: "flex", flexDirection: "column", gap: 8,
               borderTop: `3px solid ${cfg.color}`,
+              overflow: "hidden", minWidth: 0,
             }}>
               {/* Header */}
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -99,8 +102,7 @@ export default function PillarHealthCards({
               {data.reasons.length > 0 && (
                 <div style={{
                   fontSize: 11, color: "#8d95a3", lineHeight: 1.4,
-                  overflow: "hidden", textOverflow: "ellipsis",
-                  display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                 }}>
                   {data.reasons[0]}
                 </div>
