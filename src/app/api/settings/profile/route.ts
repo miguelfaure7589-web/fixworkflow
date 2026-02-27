@@ -26,6 +26,11 @@ export async function GET() {
       cancellationDate: true,
       notificationPrefs: true,
       privacyPrefs: true,
+      avatarUrl: true,
+      bio: true,
+      businessStage: true,
+      profileGoal: true,
+      referralSource: true,
       accounts: { select: { provider: true }, take: 1 },
       businessProfiles: {
         select: { businessName: true, businessType: true },
@@ -48,6 +53,11 @@ export async function GET() {
     cancellationDate: user.cancellationDate,
     notificationPrefs: user.notificationPrefs,
     privacyPrefs: user.privacyPrefs,
+    avatarUrl: user.avatarUrl,
+    bio: user.bio,
+    businessStage: user.businessStage,
+    profileGoal: user.profileGoal,
+    referralSource: user.referralSource,
     authProvider: user.accounts[0]?.provider || null,
     hasPassword: !!user.password,
     businessProfile: user.businessProfiles[0] || null,
@@ -62,11 +72,16 @@ export async function PATCH(req: Request) {
 
   const userId = (session.user as Record<string, unknown>).id as string;
   const body = await req.json();
-  const { name, email, businessName, businessType, phone, goals } = body;
+  const { name, email, businessName, businessType, phone, goals, bio, businessStage, profileGoal, referralSource } = body;
 
   // Validate email format
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
+  }
+
+  // Validate bio length
+  if (bio !== undefined && typeof bio === "string" && bio.length > 160) {
+    return NextResponse.json({ error: "Bio must be 160 characters or less" }, { status: 400 });
   }
 
   // Update User record
@@ -77,6 +92,10 @@ export async function PATCH(req: Request) {
       ...(email !== undefined && { email }),
       ...(phone !== undefined && { phone }),
       ...(goals !== undefined && { goals }),
+      ...(bio !== undefined && { bio }),
+      ...(businessStage !== undefined && { businessStage }),
+      ...(profileGoal !== undefined && { profileGoal }),
+      ...(referralSource !== undefined && { referralSource }),
     },
   });
 

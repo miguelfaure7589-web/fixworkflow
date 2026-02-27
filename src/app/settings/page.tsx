@@ -9,7 +9,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import {
   Zap, Loader2, ChevronDown, Menu, X, User, Link2, CreditCard,
   Bell, Shield, HelpCircle, FileText, DollarSign, BarChart3,
-  BookOpen, Handshake, ArrowRight,
+  BookOpen, Handshake, ArrowRight, UserCircle, Camera,
 } from "lucide-react";
 import { useToast } from "@/components/Toast";
 import { useIsMobile } from "@/hooks/useMediaQuery";
@@ -47,6 +47,7 @@ const DEFAULT_PRIVACY: PrivacyPrefs = {
 // ── Sections ──
 
 const SECTIONS = [
+  { id: "profile", icon: UserCircle, label: "Profile" },
   { id: "account", icon: User, label: "Account" },
   { id: "integrations", icon: Link2, label: "Integrations" },
   { id: "billing", icon: CreditCard, label: "Subscription & Billing" },
@@ -634,6 +635,18 @@ function SettingsContent() {
   const [origProfile, setOrigProfile] = useState({ name: "", email: "", businessName: "", businessType: "", phone: "" });
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState("");
+
+  // Profile section state
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [bio, setBio] = useState("");
+  const [businessStage, setBusinessStage] = useState("");
+  const [profileGoal, setProfileGoal] = useState("");
+  const [referralSource, setReferralSource] = useState("");
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [profileSectionSaving, setProfileSectionSaving] = useState(false);
+  const [profileSectionMsg, setProfileSectionMsg] = useState("");
+  const [origProfileSection, setOrigProfileSection] = useState({ bio: "", businessStage: "", profileGoal: "", referralSource: "" });
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [authProvider, setAuthProvider] = useState<string | null>(null);
   const [hasPassword, setHasPassword] = useState(false);
@@ -716,6 +729,18 @@ function SettingsContent() {
         setAuthProvider(prov);
         setHasPassword(!!data.hasPassword);
         setOrigProfile({ name: n, email: e, businessName: bn, businessType: bt, phone: ph });
+
+        // Profile section data
+        if (data.avatarUrl) setAvatarUrl(data.avatarUrl);
+        const bBio = (data.bio as string) || "";
+        const bStage = (data.businessStage as string) || "";
+        const bGoal = (data.profileGoal as string) || "";
+        const bRef = (data.referralSource as string) || "";
+        setBio(bBio);
+        setBusinessStage(bStage);
+        setProfileGoal(bGoal);
+        setReferralSource(bRef);
+        setOrigProfileSection({ bio: bBio, businessStage: bStage, profileGoal: bGoal, referralSource: bRef });
 
         if (data.notificationPrefs) setNotifPrefs({ ...DEFAULT_NOTIF, ...data.notificationPrefs });
         if (data.privacyPrefs) setPrivacyPrefs({ ...DEFAULT_PRIVACY, ...data.privacyPrefs });
@@ -1112,6 +1137,210 @@ function SettingsContent() {
 
         {/* RIGHT CONTENT */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: isMobile ? 32 : 48 }}>
+
+          {/* ── SECTION 0: PROFILE ── */}
+          <section id="section-profile">
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px" }}>Profile</h2>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 20px" }}>Add a photo and tell us about your business so we can personalize your experience.</p>
+
+            <div style={{ ...cardStyle, marginBottom: 16 }}>
+              {/* Avatar */}
+              <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 20 }}>
+                <div
+                  onClick={() => avatarInputRef.current?.click()}
+                  style={{
+                    width: 80, height: 80, borderRadius: "50%", position: "relative", cursor: "pointer",
+                    background: avatarUrl ? "none" : "rgba(67,97,238,0.08)",
+                    border: "2px dashed var(--border-default)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    overflow: "hidden", flexShrink: 0,
+                  }}
+                >
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    <UserCircle style={{ width: 36, height: 36, color: "var(--text-muted)" }} />
+                  )}
+                  <div style={{
+                    position: "absolute", inset: 0, borderRadius: "50%",
+                    background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center",
+                    opacity: 0, transition: "opacity 0.2s",
+                  }}
+                    onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.opacity = "0"; }}
+                  >
+                    <Camera style={{ width: 20, height: 20, color: "#fff" }} />
+                  </div>
+                  {avatarUploading && (
+                    <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Loader2 style={{ width: 20, height: 20, color: "#fff", animation: "spin 1s linear infinite" }} />
+                    </div>
+                  )}
+                </div>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  style={{ display: "none" }}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setAvatarUploading(true);
+                    try {
+                      const fd = new FormData();
+                      fd.append("avatar", file);
+                      const res = await fetch("/api/user/avatar", { method: "POST", body: fd });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.error || "Upload failed");
+                      setAvatarUrl(data.avatarUrl);
+                    } catch (err) {
+                      toast((err as Error).message, "error");
+                    } finally {
+                      setAvatarUploading(false);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>Profile Photo</div>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)" }}>Click to upload (JPEG, PNG, or WebP, max 2 MB)</div>
+                  {avatarUrl && (
+                    <button
+                      onClick={async () => {
+                        setAvatarUploading(true);
+                        try {
+                          await fetch("/api/user/avatar", { method: "DELETE" });
+                          setAvatarUrl(null);
+                        } catch {
+                          toast("Failed to remove photo", "error");
+                        } finally {
+                          setAvatarUploading(false);
+                        }
+                      }}
+                      style={{ fontSize: 12, color: "#ef4444", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", marginTop: 4, padding: 0 }}
+                    >
+                      Remove photo
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Bio */}
+              <div style={{ marginBottom: 16 }}>
+                <label style={labelStyle}>Bio</label>
+                <textarea
+                  value={bio}
+                  onChange={(e) => { if (e.target.value.length <= 160) setBio(e.target.value); }}
+                  placeholder="Briefly describe you and your business..."
+                  rows={3}
+                  style={{ ...inputStyle, resize: "vertical", minHeight: 72 }}
+                />
+                <div style={{ fontSize: 11, color: bio.length >= 150 ? "#ef4444" : "var(--text-muted)", textAlign: "right", marginTop: 2 }}>
+                  {bio.length}/160
+                </div>
+              </div>
+
+              {/* Business Stage + Goal */}
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16, marginBottom: 16 }}>
+                <div>
+                  <label style={labelStyle}>Business Stage</label>
+                  <select
+                    style={{ ...inputStyle, appearance: "auto" }}
+                    value={businessStage}
+                    onChange={(e) => setBusinessStage(e.target.value)}
+                  >
+                    <option value="">Select stage</option>
+                    <option value="idea">Idea / Pre-launch</option>
+                    <option value="early">Early Stage (0-1 year)</option>
+                    <option value="growing">Growing (1-3 years)</option>
+                    <option value="established">Established (3+ years)</option>
+                    <option value="scaling">Scaling / Expansion</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={labelStyle}>Primary Goal</label>
+                  <select
+                    style={{ ...inputStyle, appearance: "auto" }}
+                    value={profileGoal}
+                    onChange={(e) => setProfileGoal(e.target.value)}
+                  >
+                    <option value="">Select goal</option>
+                    <option value="growing_revenue">Growing Revenue</option>
+                    <option value="improving_profitability">Improving Profitability</option>
+                    <option value="reducing_churn">Reducing Churn</option>
+                    <option value="acquiring_customers">Acquiring Customers</option>
+                    <option value="streamlining_operations">Streamlining Operations</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Referral Source */}
+              <div style={{ marginBottom: 20 }}>
+                <label style={labelStyle}>How did you hear about us?</label>
+                <select
+                  style={{ ...inputStyle, appearance: "auto" }}
+                  value={referralSource}
+                  onChange={(e) => setReferralSource(e.target.value)}
+                >
+                  <option value="">Select one</option>
+                  <option value="google">Google Search</option>
+                  <option value="social_media">Social Media</option>
+                  <option value="friend">Friend / Word of Mouth</option>
+                  <option value="youtube">YouTube</option>
+                  <option value="blog">Blog / Article</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              {/* Save */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <button
+                  disabled={profileSectionSaving || (bio === origProfileSection.bio && businessStage === origProfileSection.businessStage && profileGoal === origProfileSection.profileGoal && referralSource === origProfileSection.referralSource)}
+                  onClick={async () => {
+                    setProfileSectionSaving(true);
+                    setProfileSectionMsg("");
+                    try {
+                      const res = await fetch("/api/settings/profile", {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ bio, businessStage, profileGoal, referralSource }),
+                      });
+                      if (!res.ok) {
+                        const data = await res.json().catch(() => ({}));
+                        throw new Error((data as Record<string, string>).error || "Failed to save");
+                      }
+                      setOrigProfileSection({ bio, businessStage, profileGoal, referralSource });
+                      setProfileSectionMsg("Saved successfully");
+                      setTimeout(() => setProfileSectionMsg(""), 3000);
+                    } catch (err) {
+                      setProfileSectionMsg((err as Error).message);
+                    } finally {
+                      setProfileSectionSaving(false);
+                    }
+                  }}
+                  style={{
+                    padding: "10px 24px",
+                    borderRadius: 9,
+                    border: "none",
+                    background: (bio !== origProfileSection.bio || businessStage !== origProfileSection.businessStage || profileGoal !== origProfileSection.profileGoal || referralSource !== origProfileSection.referralSource) ? gradientBg : "var(--border-default)",
+                    color: (bio !== origProfileSection.bio || businessStage !== origProfileSection.businessStage || profileGoal !== origProfileSection.profileGoal || referralSource !== origProfileSection.referralSource) ? "#fff" : "var(--text-muted)",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: (bio !== origProfileSection.bio || businessStage !== origProfileSection.businessStage || profileGoal !== origProfileSection.profileGoal || referralSource !== origProfileSection.referralSource) ? "pointer" : "not-allowed",
+                    fontFamily: "inherit",
+                    opacity: profileSectionSaving ? 0.6 : 1,
+                  }}
+                >
+                  {profileSectionSaving ? "Saving..." : "Save Profile"}
+                </button>
+                {profileSectionMsg && (
+                  <span style={{ fontSize: 12, color: profileSectionMsg === "Saved successfully" ? "#10b981" : "#ef4444" }}>
+                    {profileSectionMsg}
+                  </span>
+                )}
+              </div>
+            </div>
+          </section>
 
           {/* ── SECTION 1: ACCOUNT ── */}
           <section id="section-account">

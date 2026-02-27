@@ -20,6 +20,12 @@ export async function GET() {
     const user = session.user as Record<string, unknown>;
     const userId = user.id as string;
 
+    // Load user's profileGoal for relevance boosting
+    const userData = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { profileGoal: true },
+    });
+
     // Load profile
     const profile = await prisma.revenueProfile.findUnique({
       where: { userId },
@@ -65,7 +71,7 @@ export async function GET() {
       effortLevel: p.effortLevel,
     }));
 
-    const triggered = getTriggeredPlaybooks(playbookBases, inputs, businessType, scoreResult);
+    const triggered = getTriggeredPlaybooks(playbookBases, inputs, businessType, scoreResult, userData?.profileGoal);
 
     return NextResponse.json({ triggered, hasProfile: true });
   } catch (err: unknown) {

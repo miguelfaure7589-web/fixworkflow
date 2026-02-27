@@ -9,6 +9,7 @@ interface UserAvatarDropdownProps {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    avatarUrl?: string | null;
   };
 }
 
@@ -57,14 +58,15 @@ export default function UserAvatarDropdown({ user }: UserAvatarDropdownProps) {
   }, [open]);
 
   const initials = getInitials(user.name, user.email);
-  const showImage = user.image && !imgError;
+  const avatarSrc = user.avatarUrl || user.image;
+  const showImage = avatarSrc && !imgError;
 
   return (
     <div ref={ref} style={{ position: 'relative' }}>
       <button onClick={() => setOpen(!open)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', display: 'flex' }}>
         {showImage ? (
           <img
-            src={user.image!}
+            src={avatarSrc!}
             alt={user.name || 'User'}
             onError={() => setImgError(true)}
             style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}

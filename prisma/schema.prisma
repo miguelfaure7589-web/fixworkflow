@@ -38,6 +38,11 @@ model User {
   scoreChangeReason    String?
   previousPillarScores Json?
   goals                Json?     // { monthlyRevenue?: number, grossMargin?: number, ... }
+  avatarUrl            String?
+  bio                  String?   @db.Text
+  businessStage        String?
+  profileGoal          String?
+  referralSource       String?
   cancellationDate     DateTime?
 
   businessProfiles        BusinessProfile[]

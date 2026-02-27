@@ -40,6 +40,9 @@ export async function POST(req: Request) {
         toolPain: true,
         primaryGoal: true,
         freeTextChallenge: true,
+        bio: true,
+        businessStage: true,
+        profileGoal: true,
       },
     });
 
@@ -102,6 +105,9 @@ export async function POST(req: Request) {
       toolPain: user?.toolPain,
       primaryGoal: user?.primaryGoal,
       freeTextChallenge: user?.freeTextChallenge,
+      bio: user?.bio,
+      businessStage: user?.businessStage,
+      profileGoal: user?.profileGoal,
       primaryRisk: latestSnapshot.primaryRisk,
       fastestLever: latestSnapshot.fastestLever,
     };

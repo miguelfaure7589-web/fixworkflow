@@ -108,11 +108,21 @@ function evaluateTriggerRule(
  * Returns all playbooks that match the user's current data,
  * sorted by relevance (highest first).
  */
+/** Maps profileGoal values to playbook categories for relevance boosting */
+const GOAL_CATEGORY_MAP: Record<string, string[]> = {
+  growing_revenue: ["revenue", "sales", "growth"],
+  improving_profitability: ["profitability", "margins", "costs"],
+  reducing_churn: ["retention", "churn", "loyalty"],
+  acquiring_customers: ["acquisition", "marketing", "leads"],
+  streamlining_operations: ["operations", "ops", "efficiency"],
+};
+
 export function getTriggeredPlaybooks(
   allPlaybooks: PlaybookBase[],
   inputs: RevenueInputs,
   businessType: BusinessTypeName,
   scoreResult: RevenueHealthScoreResult | null,
+  profileGoal?: string | null,
 ): TriggeredPlaybook[] {
   const triggered: TriggeredPlaybook[] = [];
 
@@ -126,10 +136,20 @@ export function getTriggeredPlaybooks(
     const result = evaluateTriggerRule(rule, inputs, businessType, scoreResult);
 
     if (result.matched) {
+      let boostedRelevance = result.relevance;
+
+      // Apply +15 relevance boost if playbook category aligns with user's profile goal
+      if (profileGoal && GOAL_CATEGORY_MAP[profileGoal]) {
+        const goalCategories = GOAL_CATEGORY_MAP[profileGoal];
+        if (goalCategories.some((cat) => pb.category.toLowerCase().includes(cat))) {
+          boostedRelevance = Math.min(100, boostedRelevance + 15);
+        }
+      }
+
       triggered.push({
         ...pb,
         triggerReason: result.reason,
-        relevanceScore: result.relevance,
+        relevanceScore: boostedRelevance,
       });
     }
   }

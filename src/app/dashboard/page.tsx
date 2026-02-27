@@ -45,6 +45,7 @@ import {
   Plug,
   RefreshCw,
   Star,
+  UserCircle,
 } from "lucide-react";
 import { dispatchChatPrefill } from "@/lib/prompts/chatContext";
 import { CATEGORY_PROMPT_MAP } from "@/lib/prompts/rationale";
@@ -2336,11 +2337,20 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
 
 // ── Personalized Greeting ──
 
-function PersonalizedGreeting({ session, businessType, overallScore, scoreChange }: {
+const PROFILE_GOAL_LABELS: Record<string, string> = {
+  growing_revenue: "Growing Revenue",
+  improving_profitability: "Improving Profitability",
+  reducing_churn: "Reducing Churn",
+  acquiring_customers: "Acquiring Customers",
+  streamlining_operations: "Streamlining Operations",
+};
+
+function PersonalizedGreeting({ session, businessType, overallScore, scoreChange, profileGoal }: {
   session: { user?: Record<string, unknown> } | null;
   businessType?: string;
   overallScore?: number;
   scoreChange?: number;
+  profileGoal?: string | null;
 }) {
   const user = session?.user;
   if (!user) return null;
@@ -2357,11 +2367,24 @@ function PersonalizedGreeting({ session, businessType, overallScore, scoreChange
     subtitle = `Your ${bType} business scored ${overallScore}/100 this week`;
   }
 
+  const goalLabel = profileGoal ? PROFILE_GOAL_LABELS[profileGoal] : null;
+
   return (
     <div style={{ padding: "20px 0 4px 0" }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>
-        {greeting}, {firstName}
-      </h1>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>
+          {greeting}, {firstName}
+        </h1>
+        {goalLabel && (
+          <span style={{
+            fontSize: 11, fontWeight: 600, color: "#4361ee",
+            background: "rgba(67,97,238,0.08)", padding: "3px 10px",
+            borderRadius: 20, whiteSpace: "nowrap",
+          }}>
+            Focused on: {goalLabel}
+          </span>
+        )}
+      </div>
       <p style={{ fontSize: 13, fontWeight: 400, color: "var(--text-muted)", margin: "4px 0 0 0" }}>
         {subtitle}
       </p>
@@ -2796,6 +2819,16 @@ export default function RevenueDashboard() {
   const [adminSyncing, setAdminSyncing] = useState(false);
   const [adminLastSync, setAdminLastSync] = useState<string | null>(null);
 
+  // User profile data
+  const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
+  const [userProfileGoal, setUserProfileGoal] = useState<string | null>(null);
+  const [userBio, setUserBio] = useState<string | null>(null);
+  const [userBusinessStage, setUserBusinessStage] = useState<string | null>(null);
+  const [profileNudgeDismissed, setProfileNudgeDismissed] = useState(() => {
+    if (typeof window !== "undefined") return localStorage.getItem("profileNudgeDismissed") === "true";
+    return false;
+  });
+
   // Handle post-Stripe-checkout upgrade: refresh JWT so isPremium updates
   useEffect(() => {
     if (searchParams.get("upgraded") !== "1") return;
@@ -2890,6 +2923,14 @@ export default function RevenueDashboard() {
     // Fetch integration data for all authenticated users
     fetch("/api/integrations").then((r) => r.json()).then((d) => {
       if (d.integrations) setIntegrations(d.integrations);
+    }).catch(() => {});
+
+    // Fetch user profile data for personalization
+    fetch("/api/settings/profile").then((r) => r.json()).then((d) => {
+      if (d.avatarUrl) setUserAvatarUrl(d.avatarUrl);
+      if (d.profileGoal) setUserProfileGoal(d.profileGoal);
+      if (d.bio) setUserBio(d.bio);
+      if (d.businessStage) setUserBusinessStage(d.businessStage);
     }).catch(() => {});
 
     if (!isPremium) {
@@ -3035,7 +3076,7 @@ export default function RevenueDashboard() {
               </Link>
             )}
             <ThemeToggle />
-            {session?.user && <UserAvatarDropdown user={session.user} />}
+            {session?.user && <UserAvatarDropdown user={{ ...session.user, avatarUrl: userAvatarUrl }} />}
           </div>
           {/* Mobile hamburger */}
           <button
@@ -3072,7 +3113,7 @@ export default function RevenueDashboard() {
               </Link>
             )}
             <div className="mt-2 pt-3 border-t border-[var(--border-default)]">
-              {session?.user && <UserAvatarDropdown user={session.user} />}
+              {session?.user && <UserAvatarDropdown user={{ ...session.user, avatarUrl: userAvatarUrl }} />}
             </div>
           </div>
         </div>
@@ -3102,7 +3143,31 @@ export default function RevenueDashboard() {
           session={session}
           businessType={dashData?.businessProfile?.businessType}
           overallScore={dashData?.score?.total}
+          profileGoal={userProfileGoal}
         />
+
+        {/* Profile completion nudge */}
+        {!profileNudgeDismissed && !userAvatarUrl && !userBio && !userBusinessStage && session?.user && (
+          <div className="flex items-center gap-3 px-4 py-3 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl text-sm">
+            <UserCircle className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+            <span className="text-indigo-800 dark:text-indigo-300 flex-1">
+              Complete your profile for personalized insights.{" "}
+              <Link href="/settings?tab=profile" className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline">
+                Set up your profile
+              </Link>
+            </span>
+            <button
+              onClick={() => {
+                setProfileNudgeDismissed(true);
+                localStorage.setItem("profileNudgeDismissed", "true");
+              }}
+              className="text-indigo-400 hover:text-indigo-600 p-0.5"
+              aria-label="Dismiss"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* AI Business Summary — top of dashboard */}
         <AiBusinessSummary isPremium={isPremium} />
