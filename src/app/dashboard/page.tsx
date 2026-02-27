@@ -269,6 +269,66 @@ function ScoreGauge({ score }: { score: number }) {
   );
 }
 
+/* ── Credit-Karma-style semicircular gauge (stroke-dasharray) ── */
+
+function SemiGauge({ score }: { score: number }) {
+  const [animatedScore, setAnimatedScore] = useState(0);
+
+  useEffect(() => {
+    const t = setTimeout(() => setAnimatedScore(score), 80);
+    return () => clearTimeout(t);
+  }, [score]);
+
+  const clamped = Math.min(Math.max(animatedScore, 0), 100);
+
+  // Arc geometry: semicircle from (20,100) to (180,100), radius 80
+  const arcPath = "M 20 100 A 80 80 0 0 1 180 100";
+  // Approximate semicircle length = π * 80 ≈ 251.33
+  const arcLength = Math.PI * 80;
+  const filledLength = (clamped / 100) * arcLength;
+  const dashOffset = arcLength - filledLength;
+
+  // Color based on score
+  let arcColor = "#ef4444"; // red 0-39
+  if (clamped >= 80) arcColor = "#10b981";      // green
+  else if (clamped >= 60) arcColor = "#4361ee";  // blue
+  else if (clamped >= 40) arcColor = "#f59e0b";  // amber
+
+  return (
+    <div style={{ textAlign: "center", width: "100%", maxWidth: 220 }}>
+      <svg viewBox="0 0 200 120" style={{ width: "100%", height: "auto" }}>
+        {/* Background arc */}
+        <path
+          d={arcPath}
+          fill="none"
+          stroke="var(--border-primary, #2a2f3e)"
+          strokeWidth={14}
+          strokeLinecap="round"
+        />
+        {/* Score arc */}
+        <path
+          d={arcPath}
+          fill="none"
+          stroke={arcColor}
+          strokeWidth={14}
+          strokeLinecap="round"
+          strokeDasharray={arcLength}
+          strokeDashoffset={dashOffset}
+          style={{ transition: "stroke-dashoffset 1.2s ease-out, stroke 0.4s ease" }}
+        />
+        {/* Score number */}
+        <text x={100} y={85} textAnchor="middle" style={{ fontSize: 42, fontWeight: 800, fill: "var(--text-primary)" }}>
+          {score}
+        </text>
+        {/* /100 label */}
+        <text x={100} y={100} textAnchor="middle" style={{ fontSize: 13, fontWeight: 500, fill: "var(--text-muted)" }}>
+          / 100
+        </text>
+      </svg>
+    </div>
+  );
+}
+
 function ComponentBar({ label, value }: { label: string; value: number }) {
   const width = Math.max(2, value);
   let barColor = "bg-red-500";
@@ -470,7 +530,7 @@ function CollapsibleSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className={`bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] shadow-sm overflow-hidden ${className}`}>
+    <div className={`bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] shadow-sm overflow-hidden ${className}`}>
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-[var(--bg-card-hover)] transition-colors duration-150"
@@ -546,7 +606,7 @@ const PROFILE_FIELDS = [
 
 // ── Revenue Health Section ──
 
-function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isPremium: boolean; onScoreChange: (has: boolean) => void; onMissingData?: (keys: string[]) => void }) {
+function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData }: { isPremium: boolean; isAdmin: boolean; onScoreChange: (has: boolean) => void; onMissingData?: (keys: string[]) => void }) {
   const { toast } = useToast();
   const [healthData, setHealthData] = useState<RevenueHealthData | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
@@ -686,7 +746,7 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
 
   if (loading) {
     return (
-      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-8 shadow-sm text-center">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] p-8 shadow-sm text-center">
         <Loader2 className="w-5 h-5 text-[var(--text-muted)] animate-spin mx-auto" />
         <p className="text-xs text-[var(--text-muted)] mt-2">Loading Revenue Health Score...</p>
       </div>
@@ -696,7 +756,7 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
   // No profile — show CTA
   if (!hasProfile && !showForm) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 to-violet-50 border border-blue-100 rounded-[14px] p-8 shadow-sm text-center">
+      <div className="bg-gradient-to-br from-blue-50 to-violet-50 border border-blue-100 rounded-[12px] p-8 shadow-sm text-center">
         <Activity className="w-8 h-8 text-blue-500 mx-auto mb-3" />
         <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Get Your Revenue Health Score</h3>
         <p className="text-sm text-[var(--text-muted)] mb-5 max-w-md mx-auto">
@@ -717,7 +777,7 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
   // Profile form
   if (showForm) {
     return (
-      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-6 shadow-sm">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] p-6 shadow-sm">
         <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Business Profile</h3>
         <p className="text-xs text-[var(--text-muted)] mb-5">Fill in what you know — missing fields are handled gracefully.</p>
         <div className="mb-5">
@@ -774,107 +834,56 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
   // Score display
   if (!healthData) return null;
 
-  const scoreColor = healthData.score >= 70 ? "text-emerald-600"
-    : healthData.score >= 50 ? "text-blue-600"
-    : healthData.score >= 35 ? "text-amber-600"
-    : "text-red-600";
-
-  const gaugeColor = healthData.score >= 70 ? "stroke-emerald-500"
-    : healthData.score >= 50 ? "stroke-blue-500"
-    : healthData.score >= 35 ? "stroke-amber-500"
-    : "stroke-red-500";
-
-  const circumference = 2 * Math.PI * 54;
-  const offset = circumference - (healthData.score / 100) * circumference;
-
   return (
     <div className="space-y-6" data-health-section>
       {/* Score + Risk + Lever */}
       <div className="grid md:grid-cols-3 gap-6">
-        {/* Score Ring */}
-        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-6 shadow-sm flex flex-col items-center">
-          <h2 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-4 flex items-center gap-1.5">
+        {/* Score Gauge */}
+        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] p-6 shadow-sm flex flex-col items-center">
+          <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 16, display: "flex", alignItems: "center", gap: 6 }}>
             <Activity className="w-3.5 h-3.5" />
             Revenue Health Score
           </h2>
-          <div className="relative w-36 h-36">
-            <svg className="w-36 h-36 -rotate-90" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="54" fill="none" stroke="var(--border-default)" strokeWidth="8" />
-              <circle
-                cx="60" cy="60" r="54" fill="none"
-                className={gaugeColor}
-                strokeWidth="8" strokeLinecap="round"
-                strokeDasharray={circumference}
-                strokeDashoffset={offset}
-                style={{ transition: "stroke-dashoffset 1s ease" }}
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className={`text-3xl font-extrabold tabular-nums ${scoreColor}`}>{healthData.score}</span>
-              <span className="text-xs text-[var(--text-muted)]">/ 100</span>
-            </div>
-            {previousScore !== null && healthData.score - previousScore !== 0 && (
-              <span className={`absolute -top-2 -right-2 text-xs font-bold rounded-full px-2 py-0.5 ${
-                healthData.score - previousScore > 0
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-red-100 text-red-700"
-              }`}>
-                {healthData.score - previousScore > 0 ? `▲ +${healthData.score - previousScore}` : `▼ ${healthData.score - previousScore}`}
-              </span>
+          <SemiGauge score={healthData.score} />
+          <div style={{ textAlign: "center", marginTop: 8 }}>
+            {savedBusinessType ? (
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)" }}>
+                {BUSINESS_TYPE_LABELS[savedBusinessType] || savedBusinessType}
+              </p>
+            ) : (
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)" }}>
+                Service/Agency
+              </p>
             )}
-          </div>
-          {savedBusinessType ? (
-            <p className="text-xs text-[var(--text-muted)] mt-2 font-medium">
-              {BUSINESS_TYPE_LABELS[savedBusinessType] || savedBusinessType}
-            </p>
-          ) : (
-            <p className="text-xs text-amber-500 mt-2">
-              Using Service/Agency defaults
-            </p>
-          )}
-          {scoreChangeReason && (
-            <p className="text-xs text-[var(--text-muted)] mt-1 text-center max-w-[200px]">{scoreChangeReason}</p>
-          )}
-          {updatedAt && (
-            <p className="text-xs text-[var(--text-muted)] mt-1">
-              Updated {new Date(updatedAt).toLocaleDateString()} {new Date(updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-            </p>
-          )}
-          <div className="flex items-center gap-2 sm:gap-3 mt-2 flex-wrap justify-center">
-            <button
-              onClick={handleEditProfile}
-              className="text-[11px] sm:text-xs text-blue-500 hover:text-blue-700"
-            >
-              Update Profile
-            </button>
-            <span className="text-[var(--text-muted)] hidden sm:inline">|</span>
-            <button
-              onClick={handleRecalculate}
-              disabled={recalculating}
-              className="text-[11px] sm:text-xs text-[var(--text-muted)] hover:text-blue-500 disabled:opacity-50 flex items-center gap-1"
-            >
-              {recalculating && (
-                <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.3" />
-                  <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                </svg>
-              )}
-              {recalculating ? "Recalculating..." : "Recalculate"}
-            </button>
-            <span className="text-[var(--text-muted)] hidden sm:inline">|</span>
-            <Link
-              href="/diagnosis?edit=true"
-              className="text-[11px] sm:text-xs text-[var(--text-muted)] hover:text-blue-500"
-            >
-              Edit Diagnosis
-            </Link>
-            <span className="text-[var(--text-muted)] hidden sm:inline">|</span>
-            <Link
-              href="/diagnosis?edit=true"
-              className="text-[11px] sm:text-xs text-[var(--text-muted)] hover:text-blue-500"
-            >
-              Edit Metrics
-            </Link>
+            {updatedAt && (
+              <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 2 }}>
+                Updated {new Date(updatedAt).toLocaleDateString()}
+              </p>
+            )}
+            {previousScore !== null && healthData.score - previousScore !== 0 && (
+              <p style={{
+                fontSize: 11, fontWeight: 600, marginTop: 4,
+                color: healthData.score - previousScore > 0 ? "#10b981" : "#ef4444",
+              }}>
+                {healthData.score - previousScore > 0
+                  ? `+${healthData.score - previousScore} pts this week`
+                  : `${healthData.score - previousScore} pts this week`}
+              </p>
+            )}
+            {/* Admin-only controls */}
+            {isAdmin && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap", justifyContent: "center" }}>
+                <button onClick={handleEditProfile} style={{ fontSize: 11, color: "var(--text-accent)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Update Profile</button>
+                <span style={{ color: "var(--text-faint)" }}>|</span>
+                <button onClick={handleRecalculate} disabled={recalculating} style={{ fontSize: 11, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", opacity: recalculating ? 0.5 : 1 }}>
+                  {recalculating ? "Recalculating..." : "Recalculate"}
+                </button>
+                <span style={{ color: "var(--text-faint)" }}>|</span>
+                <Link href="/diagnosis?edit=true" style={{ fontSize: 11, color: "var(--text-muted)", textDecoration: "none" }}>Edit Diagnosis</Link>
+                <span style={{ color: "var(--text-faint)" }}>|</span>
+                <Link href="/diagnosis?edit=true" style={{ fontSize: 11, color: "var(--text-muted)", textDecoration: "none" }}>Edit Metrics</Link>
+              </div>
+            )}
           </div>
           {/* Missing data nudge — compact, dismissible */}
           {healthData.missingData.length > 0 && !dismissedMissing && (
@@ -904,9 +913,9 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
         </div>
 
         {/* Primary Risk */}
-        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-6 shadow-sm hover:shadow-md transition-shadow duration-150">
-          <h2 className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5" />
+        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] p-6 shadow-sm hover:shadow-md transition-shadow duration-150">
+          <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+            <AlertTriangle style={{ width: 14, height: 14, color: "#ef4444" }} />
             Primary Risk
           </h2>
           <p className="text-sm font-semibold text-[var(--text-primary)] leading-relaxed">{healthData.primaryRisk}</p>
@@ -928,9 +937,9 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
         </div>
 
         {/* Fastest Lever */}
-        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-6 shadow-sm hover:shadow-md transition-shadow duration-150">
-          <h2 className="text-xs font-medium text-emerald-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <TrendingUp className="w-3.5 h-3.5" />
+        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] p-6 shadow-sm hover:shadow-md transition-shadow duration-150">
+          <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+            <TrendingUp style={{ width: 14, height: 14, color: "#10b981" }} />
             Fastest Lever
           </h2>
           <p className="text-sm font-semibold text-[var(--text-primary)] leading-relaxed">{healthData.fastestLever}</p>
@@ -1717,7 +1726,7 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
 
   if (!loading && playbooks.length === 0) {
     return (
-      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-8 shadow-sm text-center">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] p-8 shadow-sm text-center">
         <p className="text-sm text-[var(--text-muted)]">Start your first step to see progress here.</p>
         <p className="text-xs text-[var(--text-muted)] mt-1">Playbooks will appear once your Revenue Health Score identifies areas to improve.</p>
       </div>
@@ -1726,7 +1735,7 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
 
   if (loading) {
     return (
-      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-8 shadow-sm text-center">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] p-8 shadow-sm text-center">
         <Loader2 className="w-5 h-5 text-[var(--text-muted)] animate-spin mx-auto" />
         <p className="text-xs text-[var(--text-muted)] mt-2">Finding playbooks for you...</p>
       </div>
@@ -1747,7 +1756,7 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
         const phase = isActive ? activePhase : 1;
 
         return (
-          <div key={pb.slug} className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-150">
+          <div key={pb.slug} className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-150">
             {/* Collapsed header */}
             <button
               onClick={() => {
@@ -2299,6 +2308,28 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
 
 // ── AI Business Summary ──
 
+// ── Personalized Greeting ──
+
+function PersonalizedGreeting({ session }: { session: { user?: Record<string, unknown> } | null }) {
+  const user = session?.user;
+  if (!user) return null;
+
+  const name = typeof user.name === "string" ? user.name.split(" ")[0] : null;
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  return (
+    <div style={{ padding: "0 0 0 0" }}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>
+        {greeting}{name ? `, ${name}` : ""}
+      </h1>
+      <p style={{ fontSize: 13, fontWeight: 400, color: "var(--text-muted)", margin: "4px 0 0 0" }}>
+        Here is your Revenue Health Score overview
+      </p>
+    </div>
+  );
+}
+
 function AiBusinessSummary({ isPremium }: { isPremium: boolean }) {
   const [summary, setSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -2371,7 +2402,7 @@ function AiBusinessSummary({ isPremium }: { isPremium: boolean }) {
 
   if (!isPremium) {
     return (
-      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] shadow-sm overflow-hidden">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] shadow-sm overflow-hidden">
         <LockedOverlay label="AI-Powered Business Summary">
           {cardContent}
         </LockedOverlay>
@@ -2380,7 +2411,7 @@ function AiBusinessSummary({ isPremium }: { isPremium: boolean }) {
   }
 
   return (
-    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] shadow-sm overflow-hidden">
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] shadow-sm overflow-hidden">
       {cardContent}
     </div>
   );
@@ -2441,7 +2472,7 @@ function LeaveReviewSection() {
   if (loading) return null;
 
   return (
-    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] shadow-sm" style={{ padding: "28px 32px" }}>
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] shadow-sm" style={{ padding: "28px 32px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
         <div style={{
           width: 36, height: 36, borderRadius: 10,
@@ -2797,6 +2828,7 @@ export default function RevenueDashboard() {
 
   // @ts-ignore
   const isPremium = session?.user?.isPremium;
+  const isAdmin = !!(session?.user as Record<string, unknown> | undefined)?.isAdmin;
 
   useEffect(() => {
     if (status === "loading") return;
@@ -3026,6 +3058,9 @@ export default function RevenueDashboard() {
       />
 
       <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-10 space-y-6 sm:space-y-8">
+        {/* Personalized Greeting */}
+        <PersonalizedGreeting session={session} />
+
         {/* AI Business Summary — top of dashboard */}
         <AiBusinessSummary isPremium={isPremium} />
 
@@ -3080,7 +3115,7 @@ export default function RevenueDashboard() {
           const connectedCount = integrations.length;
           const pct = Math.round((connectedCount / 15) * 100);
           return (
-            <div style={{ background: "var(--bg-card)", borderRadius: 14, border: "1px solid var(--border-default)", padding: "18px 20px", display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-default)", padding: "18px 20px", display: "flex", alignItems: "center", gap: 16 }}>
               <div style={{ width: 40, height: 40, minWidth: 40, borderRadius: 10, background: "rgba(67,97,238,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Plug size={20} color="#4361ee" />
               </div>
@@ -3120,7 +3155,7 @@ export default function RevenueDashboard() {
 
         {/* Admin: Sync My Score card */}
         {!!(session?.user as Record<string, unknown> | undefined)?.isAdmin && (
-          <div style={{ background: "var(--bg-card)", borderRadius: 14, border: "1px solid var(--border-default)", padding: "14px 20px", display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-default)", padding: "14px 20px", display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ width: 36, height: 36, minWidth: 36, borderRadius: 8, background: "rgba(16,185,129,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <RefreshCw size={18} color="#10b981" style={adminSyncing ? { animation: "spin 1s linear infinite" } : undefined} />
             </div>
@@ -3159,7 +3194,7 @@ export default function RevenueDashboard() {
         )}
 
         {/* Revenue Health Score Section */}
-        <RevenueHealthSection isPremium={isPremium} onScoreChange={setHasScore} onMissingData={setMissingKeys} key={scoreRefreshKey} />
+        <RevenueHealthSection isPremium={isPremium} isAdmin={isAdmin} onScoreChange={setHasScore} onMissingData={setMissingKeys} key={scoreRefreshKey} />
 
         {/* Revenue Command Center (Pro) */}
         <div id="revenue-command-center">

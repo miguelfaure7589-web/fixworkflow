@@ -3,24 +3,27 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #fafafa;
-  --foreground: #111111;
+  --background: #f4f5f8;
+  --foreground: #1b2434;
 
   /* Semantic color tokens */
-  --bg-page: #fafafa;
+  --bg-page: #f4f5f8;
   --bg-card: #ffffff;
   --bg-card-hover: #f8f9fb;
   --bg-subtle: #f0f2f6;
   --bg-input: #f8f9fb;
-  --bg-elevated: #fafbfd;
+  --bg-elevated: #ffffff;
 
   --text-primary: #1b2434;
   --text-secondary: #5a6578;
   --text-muted: #8d95a3;
   --text-faint: #b4bac5;
+  --text-accent: #4361ee;
 
   --border-default: #e6e9ef;
   --border-light: #f0f2f6;
+  --border-primary: #e6e9ef;
+  --border-subtle: #f0f2f6;
 
   --shadow-card: 0 1px 4px rgba(0,0,0,0.04);
 
@@ -38,34 +41,37 @@
 }
 
 .dark {
-  --background: #0d0f17;
-  --foreground: #e4e4e7;
+  --background: #0f1117;
+  --foreground: #f0f1f4;
 
-  --bg-page: #0d0f17;
-  --bg-card: #1a1d28;
-  --bg-card-hover: #20232e;
-  --bg-subtle: #252838;
-  --bg-input: #20232e;
-  --bg-elevated: #1e2130;
+  --bg-page: #0f1117;
+  --bg-card: #1a1d27;
+  --bg-card-hover: #1f2330;
+  --bg-subtle: #242836;
+  --bg-input: #1f2330;
+  --bg-elevated: #242836;
 
-  --text-primary: #e4e4e7;
-  --text-secondary: #9ca0b0;
-  --text-muted: #6b6f82;
-  --text-faint: #454960;
+  --text-primary: #f0f1f4;
+  --text-secondary: #b0b5c0;
+  --text-muted: #7a8194;
+  --text-faint: #505868;
+  --text-accent: #4361ee;
 
-  --border-default: #252838;
-  --border-light: #1e2130;
+  --border-default: #2a2f3e;
+  --border-light: #1f2330;
+  --border-primary: #2a2f3e;
+  --border-subtle: #1f2330;
 
   --shadow-card: 0 1px 6px rgba(0,0,0,0.4);
 
-  --tooltip-bg: #e4e4e7;
-  --tooltip-text: #1a1d28;
+  --tooltip-bg: #f0f1f4;
+  --tooltip-text: #1a1d27;
 
-  --nav-bg: rgba(13,15,23,0.94);
-  --nav-bg-subtle: rgba(13,15,23,0.8);
+  --nav-bg: rgba(15,17,23,0.94);
+  --nav-bg-subtle: rgba(15,17,23,0.8);
   --overlay-bg: rgba(0,0,0,0.65);
 
-  --skeleton-base: #252838;
+  --skeleton-base: #2a2f3e;
   --skeleton-shine: #303548;
 
   --scrollbar-thumb: #303548;

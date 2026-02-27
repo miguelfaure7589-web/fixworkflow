@@ -131,13 +131,12 @@ function CommandCenterInner({
   if (!isPremium) {
     return (
       <div style={{
-        background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 14,
-        overflow: "hidden", boxShadow: "var(--shadow-card)",
+        background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 12,
+        borderLeft: "3px solid #4361ee", overflow: "hidden", boxShadow: "var(--shadow-card)",
       }}>
-        <div style={{ height: 4, background: "linear-gradient(90deg, #4361ee, #6366f1, #818cf8)" }} />
         <div style={{ padding: "16px 24px", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid var(--border-light)" }}>
           <BarChart3 style={{ width: 15, height: 15, color: "#4361ee" }} />
-          <span style={{ fontSize: 13, fontWeight: 800, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.6px" }}>
             Revenue Command Center
           </span>
           <ProBadge small />
@@ -168,12 +167,9 @@ function CommandCenterInner({
   // Pro user: always show the full command center (no collapsing)
   return (
     <div style={{
-      background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 14,
-      overflow: "hidden", boxShadow: "var(--shadow-card)",
+      background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 12,
+      borderLeft: "3px solid #4361ee", overflow: "hidden", boxShadow: "var(--shadow-card)",
     }}>
-      {/* Gradient top accent */}
-      <div style={{ height: 4, background: "linear-gradient(90deg, #4361ee, #6366f1, #818cf8)" }} />
-
       {/* Section header (non-collapsible) */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -182,15 +178,15 @@ function CommandCenterInner({
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <BarChart3 style={{ width: 15, height: 15, color: "#4361ee" }} />
-          <span style={{ fontSize: 13, fontWeight: 800, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.6px" }}>
             Revenue Command Center
           </span>
           <ProBadge small />
         </div>
         {data && (
           <span style={{
-            fontSize: 13, fontWeight: 700,
-            color: data.overallScore >= 70 ? "#10b981" : data.overallScore >= 40 ? "#f59e0b" : "#ef4444",
+            fontSize: 13, fontWeight: 600,
+            color: "var(--text-accent)",
           }}>
             Score: {data.overallScore}/100
           </span>
