@@ -330,11 +330,11 @@ function SemiGauge({ score }: { score: number }) {
           style={{ transition: "stroke-dashoffset 1.2s ease-out, stroke 0.4s ease" }}
         />
         {/* Score number */}
-        <text x={100} y={82} textAnchor="middle" style={{ fontSize: 44, fontWeight: 800, fill: "var(--text-primary)" }}>
+        <text x={100} y={78} textAnchor="middle" dominantBaseline="auto" style={{ fontSize: 44, fontWeight: 800, fill: "var(--text-primary)" }}>
           {score}
         </text>
         {/* /100 label */}
-        <text x={100} y={100} textAnchor="middle" style={{ fontSize: 13, fontWeight: 500, fill: "var(--text-muted)" }}>
+        <text x={100} y={98} textAnchor="middle" style={{ fontSize: 13, fontWeight: 500, fill: "var(--text-muted)" }}>
           / 100
         </text>
       </svg>
@@ -414,9 +414,9 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
         )}
         {needsFocus && (
           <span style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: "0.4px", textTransform: "uppercase" as const,
-            padding: "3px 8px", borderRadius: 5,
-            background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)",
+            fontSize: 9, fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase" as const,
+            padding: "2px 8px", borderRadius: 4,
+            background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.15)",
             whiteSpace: "nowrap",
           }}>
             Needs focus
@@ -627,6 +627,7 @@ const PROFILE_FIELDS = [
 // ── Revenue Health Section ──
 
 function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData }: { isPremium: boolean; isAdmin: boolean; onScoreChange: (has: boolean) => void; onMissingData?: (keys: string[]) => void }) {
+  const { data: healthSession } = useSession();
   const { toast } = useToast();
   const [healthData, setHealthData] = useState<RevenueHealthData | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
@@ -891,7 +892,7 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
               </p>
             )}
             {/* Admin-only controls */}
-            {isAdmin && (
+            {(healthSession?.user as Record<string, unknown> | undefined)?.email === 'fixworkflows@gmail.com' && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap", justifyContent: "center" }}>
                 <button onClick={handleEditProfile} style={{ fontSize: 11, color: "var(--text-accent)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Update Profile</button>
                 <span style={{ color: "var(--text-faint)" }}>|</span>
@@ -2358,13 +2359,17 @@ function PersonalizedGreeting({ session, businessType, overallScore, scoreChange
   const firstName = typeof user.name === "string" ? user.name.split(" ")[0] : "there";
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  const bType = businessType ? (BUSINESS_TYPE_LABELS[businessType] || businessType) : "business";
+  const bType = businessType ? (BUSINESS_TYPE_LABELS[businessType] || businessType) : "";
 
-  let subtitle = `Your ${bType} business overview`;
+  let subtitle = "Your business overview";
   if (overallScore !== undefined && scoreChange && scoreChange > 0) {
-    subtitle = `Your ${bType} business improved +${scoreChange} points this week`;
+    subtitle = `Revenue Health Score: ${overallScore}/100 · +${scoreChange} pts this week`;
+  } else if (overallScore !== undefined && bType) {
+    subtitle = `Revenue Health Score: ${overallScore}/100 · ${bType}`;
   } else if (overallScore !== undefined) {
-    subtitle = `Your ${bType} business scored ${overallScore}/100 this week`;
+    subtitle = `Revenue Health Score: ${overallScore}/100`;
+  } else if (bType) {
+    subtitle = `Your ${bType} business overview`;
   }
 
   const goalLabel = profileGoal ? PROFILE_GOAL_LABELS[profileGoal] : null;
@@ -2772,8 +2777,8 @@ function RecommendationsSection({ isPremium, hasScore, integrations = [] }: { is
       userEmail={recSession?.user?.email || ""}
       userPhone={(recSession?.user as Record<string, unknown> | undefined)?.phone as string || ""}
     >
-      {/* Credit repair card — featured placement above tool stack */}
-      <CreditRepairCard usesPersonalCredit={usesPersonalCredit} />
+      {/* Credit repair card — hidden until opt-in flow is added */}
+      {/* <CreditRepairCard usesPersonalCredit={usesPersonalCredit} /> */}
       {tools.length > 0 && <RecommendedTools tools={tools} isPremium={isPremium} integrations={integrations} />}
       {(books.length > 0 || courses.length > 0 || templates.length > 0) && (
         <ResourceShelf
@@ -3045,6 +3050,9 @@ export default function RevenueDashboard() {
           </Link>
           {/* Desktop nav */}
           <div className="hidden sm:flex items-center gap-3">
+            <Link href="/dashboard" style={{ fontSize: 13, color: "var(--text-primary)", textDecoration: "none", fontWeight: 600 }}>
+              Dashboard
+            </Link>
             {!isPremium && (
               <Link
                 href="/pricing"
@@ -3093,6 +3101,9 @@ export default function RevenueDashboard() {
       {menuOpen && (
         <div className="sm:hidden fixed inset-0 top-[52px] z-40 bg-[var(--bg-card)] overflow-y-auto">
           <div className="flex flex-col p-4 gap-1">
+            <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-semibold text-[var(--text-primary)] rounded-lg hover:bg-[var(--bg-card-hover)]">
+              Dashboard
+            </Link>
             <Link href="/settings" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-medium text-[var(--text-primary)] rounded-lg hover:bg-[var(--bg-card-hover)]">
               Settings
             </Link>
@@ -3262,7 +3273,7 @@ export default function RevenueDashboard() {
         })()}
 
         {/* Admin: Sync My Score card */}
-        {!!(session?.user as Record<string, unknown> | undefined)?.isAdmin && (
+        {(session?.user as Record<string, unknown> | undefined)?.email === 'fixworkflows@gmail.com' && (
           <div style={{ background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-default)", padding: "14px 20px", display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ width: 36, height: 36, minWidth: 36, borderRadius: 8, background: "rgba(16,185,129,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <RefreshCw size={18} color="#10b981" style={adminSyncing ? { animation: "spin 1s linear infinite" } : undefined} />
