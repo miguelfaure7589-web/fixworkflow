@@ -16,7 +16,7 @@ export function WhyToggle({ text, potential, locked = false }: WhyToggleProps) {
     return (
       <div className="mt-1 inline-flex items-center gap-1.5 opacity-60">
         <ProBadge small />
-        <span style={{ fontSize: 11, fontWeight: 600, color: "#7c3aed" }}>Why?</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-accent)" }}>Why?</span>
       </div>
     );
   }
@@ -28,7 +28,8 @@ export function WhyToggle({ text, potential, locked = false }: WhyToggleProps) {
           e.stopPropagation();
           setOpen(!open);
         }}
-        className="inline-flex items-center gap-1 text-xs text-violet-500 hover:text-violet-700 transition-colors"
+        className="inline-flex items-center gap-1 text-xs transition-colors"
+        style={{ color: "var(--text-accent)" }}
       >
         <span
           className={`inline-block text-[10px] transition-transform duration-150 ${
@@ -47,7 +48,7 @@ export function WhyToggle({ text, potential, locked = false }: WhyToggleProps) {
           <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{text}</p>
           {potential && (
             <div className="mt-2 p-2 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-md">
-              <p className="text-xs text-emerald-700 font-medium">&#8599; {potential}</p>
+              <p className="text-xs text-emerald-700 font-medium">{potential}</p>
             </div>
           )}
         </div>

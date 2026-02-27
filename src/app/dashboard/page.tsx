@@ -294,30 +294,42 @@ function SemiGauge({ score }: { score: number }) {
   else if (clamped >= 60) arcColor = "#4361ee";  // blue
   else if (clamped >= 40) arcColor = "#f59e0b";  // amber
 
+  // Glow color with 0.3 opacity
+  const glowColor = arcColor === "#ef4444" ? "rgba(239,68,68,0.3)"
+    : arcColor === "#f59e0b" ? "rgba(245,158,11,0.3)"
+    : arcColor === "#4361ee" ? "rgba(67,97,238,0.3)"
+    : "rgba(16,185,129,0.3)";
+
   return (
     <div style={{ textAlign: "center", width: "100%", maxWidth: 220 }}>
       <svg viewBox="0 0 200 120" style={{ width: "100%", height: "auto" }}>
+        <defs>
+          <filter id="gaugeGlow">
+            <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor={glowColor} floodOpacity="1" />
+          </filter>
+        </defs>
         {/* Background arc */}
         <path
           d={arcPath}
           fill="none"
           stroke="var(--border-primary, #2a2f3e)"
-          strokeWidth={14}
+          strokeWidth={16}
           strokeLinecap="round"
         />
-        {/* Score arc */}
+        {/* Score arc with glow */}
         <path
           d={arcPath}
           fill="none"
           stroke={arcColor}
-          strokeWidth={14}
+          strokeWidth={16}
           strokeLinecap="round"
           strokeDasharray={arcLength}
           strokeDashoffset={dashOffset}
+          filter="url(#gaugeGlow)"
           style={{ transition: "stroke-dashoffset 1.2s ease-out, stroke 0.4s ease" }}
         />
         {/* Score number */}
-        <text x={100} y={85} textAnchor="middle" style={{ fontSize: 42, fontWeight: 800, fill: "var(--text-primary)" }}>
+        <text x={100} y={82} textAnchor="middle" style={{ fontSize: 44, fontWeight: 800, fill: "var(--text-primary)" }}>
           {score}
         </text>
         {/* /100 label */}
@@ -369,36 +381,43 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
   const hasEstimated = missingForPillar.length > 0;
   const estimatedDetails = hasEstimated && businessType ? generateEstimatedPillarDetails(name, pillar.score, businessType, missingData!) : null;
   const width = Math.max(2, pillar.score);
-  let barColor = "bg-red-500";
-  if (pillar.score >= 80) barColor = "bg-emerald-500";
-  else if (pillar.score >= 60) barColor = "bg-blue-500";
-  else if (pillar.score >= 40) barColor = "bg-amber-500";
+  let barBg = "#ef4444"; // red 0-39
+  if (pillar.score >= 80) barBg = "#10b981";       // green
+  else if (pillar.score >= 60) barBg = "#4361ee";   // blue
+  else if (pillar.score >= 40) barBg = "#f59e0b";   // amber
   const needsFocus = pillar.score < 50;
 
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-3">
-        <span className="text-xs font-medium text-[var(--text-secondary)] w-20 sm:w-28 text-right truncate">
+        <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", width: 100, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>
           {PILLAR_LABELS[name] || name}
         </span>
-        <div className="flex-1 bg-[var(--bg-subtle)] rounded-full h-3">
+        <div style={{ flex: 1, height: 8, borderRadius: 4, background: "var(--border-primary)" }}>
           <div
-            className={`h-3 rounded-full ${barColor}`}
             style={{
+              height: 8,
+              borderRadius: 4,
+              background: barBg,
               width: `${width}%`,
-              transition: "width 0.8s ease",
+              transition: "width 1s ease-out",
               transitionDelay: `${index * 120}ms`,
             }}
           />
         </div>
-        <span className="text-sm font-bold text-[var(--text-primary)] w-10 tabular-nums">{pillar.score}</span>
+        <span style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", width: 40, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{pillar.score}</span>
         {delta !== undefined && delta !== 0 && (
-          <span className={`text-[10px] font-semibold ${delta > 0 ? "text-emerald-600" : "text-red-500"}`}>
+          <span style={{ fontSize: 10, fontWeight: 600, color: delta > 0 ? "#10b981" : "#ef4444" }}>
             {delta > 0 ? `+${delta}` : delta}
           </span>
         )}
         {needsFocus && (
-          <span className="px-1.5 py-0.5 bg-amber-50 border border-amber-200 rounded text-[10px] font-semibold text-amber-600 whitespace-nowrap">
+          <span style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: "0.4px", textTransform: "uppercase" as const,
+            padding: "3px 8px", borderRadius: 5,
+            background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)",
+            whiteSpace: "nowrap",
+          }}>
             Needs focus
           </span>
         )}
@@ -441,7 +460,7 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
         <div className="ml-0 sm:ml-32 space-y-0.5 pl-2 sm:pl-0">
           {isPro || isTopOrBottom ? (
             pillar.reasons.map((r, i) => (
-              <p key={i} className="text-xs text-[var(--text-muted)]">{r}</p>
+              <p key={i} style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, margin: 0 }}>{r}</p>
             ))
           ) : (
             <div style={{ position: "relative", overflow: "hidden", borderRadius: 4 }}>
@@ -837,9 +856,9 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
   return (
     <div className="space-y-6" data-health-section>
       {/* Score + Risk + Lever */}
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-3 gap-6" style={{ alignItems: "stretch" }}>
         {/* Score Gauge */}
-        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] p-6 shadow-sm flex flex-col items-center">
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 12, padding: 24, boxShadow: "var(--shadow-card)", display: "flex", flexDirection: "column", alignItems: "center", minHeight: 220 }}>
           <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 16, display: "flex", alignItems: "center", gap: 6 }}>
             <Activity className="w-3.5 h-3.5" />
             Revenue Health Score
@@ -913,63 +932,70 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
         </div>
 
         {/* Primary Risk */}
-        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] p-6 shadow-sm hover:shadow-md transition-shadow duration-150">
-          <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
-            <AlertTriangle style={{ width: 14, height: 14, color: "#ef4444" }} />
-            Primary Risk
-          </h2>
-          <p className="text-sm font-semibold text-[var(--text-primary)] leading-relaxed">{healthData.primaryRisk}</p>
-          <WhyToggle text={generateRiskReasoning(healthData.pillars as Record<string, { score: number; reasons: string[]; levers: string[] }>, savedBusinessType || "service_agency")} />
-          {(() => {
-            const weakest = Object.entries(healthData.pillars)
-              .sort(([, a], [, b]) => (a as PillarData).score - (b as PillarData).score)[0];
-            if (!weakest) return null;
-            const [wName, wPillar] = weakest;
-            return (
-              <p className="text-xs text-[var(--text-muted)] mt-2 leading-relaxed">
-                {PILLAR_LABELS[wName] || wName} is your weakest pillar at <span className="font-semibold text-[var(--text-muted)] tabular-nums">{(wPillar as PillarData).score}/100</span>
-                {healthData.missingData.length > 0 && (
-                  <> — {healthData.missingData.length} missing field{healthData.missingData.length > 1 ? "s" : ""} may be hiding a clearer picture</>
-                )}
-              </p>
-            );
-          })()}
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 12, padding: 24, boxShadow: "var(--shadow-card)", display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 220 }}>
+          <div>
+            <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+              <AlertTriangle style={{ width: 14, height: 14, color: "#ef4444" }} />
+              Primary Risk
+            </h2>
+            <p style={{ fontSize: 14, fontWeight: 500, color: "var(--text-primary)", lineHeight: 1.5, margin: 0 }}>{healthData.primaryRisk}</p>
+          </div>
+          <div>
+            <WhyToggle text={generateRiskReasoning(healthData.pillars as Record<string, { score: number; reasons: string[]; levers: string[] }>, savedBusinessType || "service_agency")} />
+            {(() => {
+              const weakest = Object.entries(healthData.pillars)
+                .sort(([, a], [, b]) => (a as PillarData).score - (b as PillarData).score)[0];
+              if (!weakest) return null;
+              const [wName, wPillar] = weakest;
+              return (
+                <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 8, lineHeight: 1.5 }}>
+                  {PILLAR_LABELS[wName] || wName} is your weakest pillar at <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{(wPillar as PillarData).score}/100</span>
+                  {healthData.missingData.length > 0 && (
+                    <> — {healthData.missingData.length} missing field{healthData.missingData.length > 1 ? "s" : ""} may be hiding a clearer picture</>
+                  )}
+                </p>
+              );
+            })()}
+          </div>
         </div>
 
         {/* Fastest Lever */}
-        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] p-6 shadow-sm hover:shadow-md transition-shadow duration-150">
-          <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
-            <TrendingUp style={{ width: 14, height: 14, color: "#10b981" }} />
-            Fastest Lever
-          </h2>
-          <p className="text-sm font-semibold text-[var(--text-primary)] leading-relaxed">{healthData.fastestLever}</p>
-          {(() => {
-            const lr = generateLeverReasoning(healthData.pillars as Record<string, { score: number; reasons: string[]; levers: string[] }>, savedBusinessType || "service_agency");
-            return <WhyToggle text={lr.text} potential={lr.potential} />;
-          })()}
-          {(() => {
-            const pillars = healthData.pillars;
-            // Try to compute a concrete impact number from acquisition pillar
-            const acqPillar = pillars.acquisition as PillarData | undefined;
-            const revPillar = pillars.revenue as PillarData | undefined;
-            if (acqPillar && acqPillar.score < 70) {
-              const potentialLift = Math.round((70 - acqPillar.score) * 0.3);
-              return (
-                <p className="text-xs text-[var(--text-muted)] mt-2 leading-relaxed">
-                  A <span className="font-semibold text-emerald-600">+{potentialLift} pt</span> improvement in Acquisition could compound across your revenue funnel
-                </p>
-              );
-            }
-            if (revPillar && revPillar.score < 70) {
-              const potentialLift = Math.round((70 - revPillar.score) * 0.3);
-              return (
-                <p className="text-xs text-[var(--text-muted)] mt-2 leading-relaxed">
-                  Boosting Revenue pillar by <span className="font-semibold text-emerald-600">+{potentialLift} pts</span> is your fastest path to a higher overall score
-                </p>
-              );
-            }
-            return null;
-          })()}
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 12, padding: 24, boxShadow: "var(--shadow-card)", display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 220 }}>
+          <div>
+            <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+              <TrendingUp style={{ width: 14, height: 14, color: "#10b981" }} />
+              Fastest Lever
+            </h2>
+            <p style={{ fontSize: 14, fontWeight: 500, color: "var(--text-primary)", lineHeight: 1.5, margin: 0 }}>{healthData.fastestLever}</p>
+          </div>
+          <div>
+            {(() => {
+              const lr = generateLeverReasoning(healthData.pillars as Record<string, { score: number; reasons: string[]; levers: string[] }>, savedBusinessType || "service_agency");
+              return <WhyToggle text={lr.text} potential={lr.potential} />;
+            })()}
+            {(() => {
+              const pillars = healthData.pillars;
+              const acqPillar = pillars.acquisition as PillarData | undefined;
+              const revPillar = pillars.revenue as PillarData | undefined;
+              if (acqPillar && acqPillar.score < 70) {
+                const potentialLift = Math.round((70 - acqPillar.score) * 0.3);
+                return (
+                  <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 8, lineHeight: 1.5 }}>
+                    A <span style={{ fontWeight: 600, color: "#10b981" }}>+{potentialLift} pt</span> improvement in Acquisition could compound across your revenue funnel
+                  </p>
+                );
+              }
+              if (revPillar && revPillar.score < 70) {
+                const potentialLift = Math.round((70 - revPillar.score) * 0.3);
+                return (
+                  <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 8, lineHeight: 1.5 }}>
+                    Boosting Revenue pillar by <span style={{ fontWeight: 600, color: "#10b981" }}>+{potentialLift} pts</span> is your fastest path to a higher overall score
+                  </p>
+                );
+              }
+              return null;
+            })()}
+          </div>
         </div>
       </div>
 
@@ -2310,21 +2336,34 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
 
 // ── Personalized Greeting ──
 
-function PersonalizedGreeting({ session }: { session: { user?: Record<string, unknown> } | null }) {
+function PersonalizedGreeting({ session, businessType, overallScore, scoreChange }: {
+  session: { user?: Record<string, unknown> } | null;
+  businessType?: string;
+  overallScore?: number;
+  scoreChange?: number;
+}) {
   const user = session?.user;
   if (!user) return null;
 
-  const name = typeof user.name === "string" ? user.name.split(" ")[0] : null;
+  const firstName = typeof user.name === "string" ? user.name.split(" ")[0] : "there";
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const bType = businessType ? (BUSINESS_TYPE_LABELS[businessType] || businessType) : "business";
+
+  let subtitle = `Your ${bType} business overview`;
+  if (overallScore !== undefined && scoreChange && scoreChange > 0) {
+    subtitle = `Your ${bType} business improved +${scoreChange} points this week`;
+  } else if (overallScore !== undefined) {
+    subtitle = `Your ${bType} business scored ${overallScore}/100 this week`;
+  }
 
   return (
-    <div style={{ padding: "0 0 0 0" }}>
+    <div style={{ padding: "20px 0 4px 0" }}>
       <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>
-        {greeting}{name ? `, ${name}` : ""}
+        {greeting}, {firstName}
       </h1>
       <p style={{ fontSize: 13, fontWeight: 400, color: "var(--text-muted)", margin: "4px 0 0 0" }}>
-        Here is your Revenue Health Score overview
+        {subtitle}
       </p>
     </div>
   );
@@ -3059,7 +3098,11 @@ export default function RevenueDashboard() {
 
       <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-10 space-y-6 sm:space-y-8">
         {/* Personalized Greeting */}
-        <PersonalizedGreeting session={session} />
+        <PersonalizedGreeting
+          session={session}
+          businessType={dashData?.businessProfile?.businessType}
+          overallScore={dashData?.score?.total}
+        />
 
         {/* AI Business Summary — top of dashboard */}
         <AiBusinessSummary isPremium={isPremium} />
@@ -3122,10 +3165,10 @@ export default function RevenueDashboard() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                   <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Connected Integrations</span>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>{connectedCount} of 15 tools connected</span>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>{connectedCount} of 15 tools connected</span>
                 </div>
-                <div style={{ height: 4, borderRadius: 2, background: "#f0f0f0", marginBottom: 6 }}>
-                  <div style={{ height: 4, borderRadius: 2, background: "#4361ee", width: `${pct}%`, transition: "width 0.3s ease" }} />
+                <div style={{ height: 6, borderRadius: 3, background: "var(--border-primary)", marginBottom: 6 }}>
+                  <div style={{ height: 6, borderRadius: 3, background: "#4361ee", width: `${pct}%`, transition: "width 0.3s ease" }} />
                 </div>
                 {connectedCount > 0 ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -3146,7 +3189,7 @@ export default function RevenueDashboard() {
                   <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Connect your business tools for a more accurate Revenue Health Score</span>
                 )}
               </div>
-              <Link href="/settings?tab=integrations" style={{ padding: "8px 16px", borderRadius: 8, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
+              <Link href="/settings?tab=integrations" style={{ padding: "8px 16px", borderRadius: 8, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}>
                 Browse Integrations &rarr;
               </Link>
             </div>
