@@ -1,5 +1,7 @@
 "use client";
 
+import { useTheme } from "@/components/ThemeProvider";
+
 const RADIUS = 20;
 const STROKE = 4;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -13,6 +15,7 @@ export default function MiniProgressRing({
   color: string;
   size?: number;
 }) {
+  const { isDark } = useTheme();
   const pct = Math.max(0, Math.min(100, score));
   const offset = CIRCUMFERENCE * (1 - pct / 100);
   const center = size / 2;
@@ -25,7 +28,7 @@ export default function MiniProgressRing({
         cy={center}
         r={RADIUS}
         fill="none"
-        stroke="#f0f2f6"
+        stroke={isDark ? "#252838" : "#f0f2f6"}
         strokeWidth={STROKE}
       />
       {/* Progress ring */}
@@ -50,7 +53,7 @@ export default function MiniProgressRing({
         dominantBaseline="central"
         fontSize={13}
         fontWeight={700}
-        fill="#1b2434"
+        fill={isDark ? "#e4e4e7" : "#1b2434"}
         fontFamily="sans-serif"
       >
         {pct}

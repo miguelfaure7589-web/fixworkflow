@@ -30,7 +30,7 @@ export default function AlertsOpportunities({ alerts, isMobile }: { alerts: Scor
 
   return (
     <div style={{ marginBottom: 28 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>
         Alerts & Opportunities
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -47,19 +47,19 @@ export default function AlertsOpportunities({ alerts, isMobile }: { alerts: Scor
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#1b2434" }}>{alert.title}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{alert.title}</span>
                   {alert.pillar && (
                     <span style={{
                       fontSize: 10, fontWeight: 600, padding: "1px 6px", borderRadius: 4,
-                      background: "rgba(141,149,163,0.08)", color: "#8d95a3",
+                      background: "rgba(141,149,163,0.08)", color: "var(--text-muted)",
                     }}>
                       {alert.pillar}
                     </span>
                   )}
                 </div>
-                <div style={{ fontSize: 12, color: "#5a6578", lineHeight: 1.4, wordBreak: "break-word" }}>{alert.message}</div>
+                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.4, wordBreak: "break-word" }}>{alert.message}</div>
               </div>
-              <span style={{ fontSize: 10, color: "#b4bac5", whiteSpace: "nowrap", flexShrink: 0 }}>
+              <span style={{ fontSize: 10, color: "var(--text-faint)", whiteSpace: "nowrap", flexShrink: 0 }}>
                 {timeAgo(alert.createdAt)}
               </span>
             </div>

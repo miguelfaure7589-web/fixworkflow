@@ -75,9 +75,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} antialiased bg-[#fafafa] text-[#111]`}
+        className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} antialiased transition-colors duration-200`}
+        style={{ background: "var(--bg-page)", color: "var(--text-primary)" }}
       >
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-F46KFQ5SGS"

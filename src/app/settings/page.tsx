@@ -5,6 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import UserAvatarDropdown from "@/components/UserAvatarDropdown";
+import ThemeToggle from "@/components/ThemeToggle";
 import {
   Zap, Loader2, ChevronDown, Menu, X, User, Link2, CreditCard,
   Bell, Shield, HelpCircle, FileText, DollarSign, BarChart3,
@@ -120,9 +121,9 @@ const BUSINESS_TYPE_OPTIONS = [
 // ── Styles ──
 
 const cardStyle: React.CSSProperties = {
-  background: "#fff",
+  background: "var(--bg-card)",
   borderRadius: 14,
-  border: "1px solid #e6e9ef",
+  border: "1px solid var(--border-default)",
   padding: 24,
 };
 
@@ -130,9 +131,9 @@ const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "12px 14px",
   borderRadius: 9,
-  border: "1px solid #e6e9ef",
+  border: "1px solid var(--border-default)",
   fontSize: 14,
-  color: "#1b2434",
+  color: "var(--text-primary)",
   outline: "none",
   transition: "border 0.2s, box-shadow 0.2s",
   fontFamily: "inherit",
@@ -143,7 +144,7 @@ const labelStyle: React.CSSProperties = {
   display: "block",
   fontSize: 12,
   fontWeight: 600,
-  color: "#1b2434",
+  color: "var(--text-primary)",
   marginBottom: 4,
 };
 
@@ -277,8 +278,8 @@ function IntegrationLogo({ domain, name, brandColor, size = 36 }: { domain: stri
       onError={() => setErrored(true)}
       style={{
         width: size, height: size, minWidth: size, borderRadius: 9,
-        objectFit: "contain", background: "#fff",
-        border: "1px solid #f0f2f6",
+        objectFit: "contain", background: "var(--bg-card)",
+        border: "1px solid var(--border-light)",
       }}
     />
   );
@@ -295,7 +296,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
         width: 44,
         height: 24,
         borderRadius: 12,
-        background: on ? "#4361ee" : "#e6e9ef",
+        background: on ? "#4361ee" : "var(--border-default)",
         border: "none",
         cursor: "pointer",
         position: "relative",
@@ -308,7 +309,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
           width: 20,
           height: 20,
           borderRadius: "50%",
-          background: "#fff",
+          background: "var(--bg-card)",
           boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
           position: "absolute",
           top: 2,
@@ -327,7 +328,7 @@ function AccordionItem({ q, a }: { q: string; a: string }) {
   const contentRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #e6e9ef", marginBottom: 8, overflow: "hidden" }}>
+    <div style={{ background: "var(--bg-card)", borderRadius: 10, border: "1px solid var(--border-default)", marginBottom: 8, overflow: "hidden" }}>
       <button
         onClick={() => setOpen(!open)}
         style={{
@@ -344,12 +345,12 @@ function AccordionItem({ q, a }: { q: string; a: string }) {
           textAlign: "left",
         }}
       >
-        <span style={{ fontSize: 14, fontWeight: 600, color: "#1b2434" }}>{q}</span>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{q}</span>
         <ChevronDown
           style={{
             width: 16,
             height: 16,
-            color: "#8d95a3",
+            color: "var(--text-muted)",
             flexShrink: 0,
             transition: "transform 0.2s",
             transform: open ? "rotate(180deg)" : "rotate(0deg)",
@@ -364,7 +365,7 @@ function AccordionItem({ q, a }: { q: string; a: string }) {
           transition: "max-height 0.3s ease",
         }}
       >
-        <div style={{ padding: "0 18px 16px", fontSize: 13, color: "#5a6578", lineHeight: 1.7 }}>{a}</div>
+        <div style={{ padding: "0 18px 16px", fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>{a}</div>
       </div>
     </div>
   );
@@ -377,7 +378,7 @@ function LegalAccordion({ title, children }: { title: string; children: React.Re
   const contentRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #e6e9ef", marginBottom: 8, overflow: "hidden" }}>
+    <div style={{ background: "var(--bg-card)", borderRadius: 10, border: "1px solid var(--border-default)", marginBottom: 8, overflow: "hidden" }}>
       <button
         onClick={() => setOpen(!open)}
         style={{
@@ -394,12 +395,12 @@ function LegalAccordion({ title, children }: { title: string; children: React.Re
           textAlign: "left",
         }}
       >
-        <span style={{ fontSize: 14, fontWeight: 600, color: "#1b2434" }}>{title}</span>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{title}</span>
         <ChevronDown
           style={{
             width: 16,
             height: 16,
-            color: "#8d95a3",
+            color: "var(--text-muted)",
             flexShrink: 0,
             transition: "transform 0.2s",
             transform: open ? "rotate(180deg)" : "rotate(0deg)",
@@ -414,7 +415,7 @@ function LegalAccordion({ title, children }: { title: string; children: React.Re
           transition: "max-height 0.4s ease",
         }}
       >
-        <div style={{ padding: "0 18px 16px", fontSize: 13, color: "#5a6578", lineHeight: 1.75 }}>{children}</div>
+        <div style={{ padding: "0 18px 16px", fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.75 }}>{children}</div>
       </div>
     </div>
   );
@@ -444,7 +445,7 @@ function DeleteModal({ open, onClose, onConfirm }: { open: boolean; onClose: () 
     >
       <div
         style={{
-          background: "#fff",
+          background: "var(--bg-card)",
           borderRadius: 18,
           padding: 28,
           maxWidth: 440,
@@ -454,8 +455,8 @@ function DeleteModal({ open, onClose, onConfirm }: { open: boolean; onClose: () 
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: "0 0 8px" }}>Are you sure?</h3>
-        <p style={{ fontSize: 13, color: "#5a6578", lineHeight: 1.7, margin: "0 0 16px" }}>
+        <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 8px" }}>Are you sure?</h3>
+        <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7, margin: "0 0 16px" }}>
           This will permanently delete your account, business profile, diagnosis data, playbook progress, and all
           associated information. This cannot be reversed.
         </p>
@@ -476,9 +477,9 @@ function DeleteModal({ open, onClose, onConfirm }: { open: boolean; onClose: () 
               flex: 1,
               padding: "10px 18px",
               borderRadius: 9,
-              border: "1px solid #e6e9ef",
-              background: "#fff",
-              color: "#5a6578",
+              border: "1px solid var(--border-default)",
+              background: "var(--bg-card)",
+              color: "var(--text-secondary)",
               fontSize: 13,
               fontWeight: 600,
               cursor: "pointer",
@@ -498,8 +499,8 @@ function DeleteModal({ open, onClose, onConfirm }: { open: boolean; onClose: () 
               padding: "10px 18px",
               borderRadius: 9,
               border: "none",
-              background: typed === "DELETE" ? "#ef4444" : "#e6e9ef",
-              color: typed === "DELETE" ? "#fff" : "#8d95a3",
+              background: typed === "DELETE" ? "#ef4444" : "var(--border-default)",
+              color: typed === "DELETE" ? "#fff" : "var(--text-muted)",
               fontSize: 13,
               fontWeight: 600,
               cursor: typed === "DELETE" ? "pointer" : "not-allowed",
@@ -538,7 +539,7 @@ function CancelModal({ open, onClose, onConfirm }: { open: boolean; onClose: () 
     >
       <div
         style={{
-          background: "#fff",
+          background: "var(--bg-card)",
           borderRadius: 18,
           padding: 28,
           maxWidth: 420,
@@ -548,8 +549,8 @@ function CancelModal({ open, onClose, onConfirm }: { open: boolean; onClose: () 
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: "0 0 8px" }}>Cancel your Pro subscription?</h3>
-        <p style={{ fontSize: 13, color: "#5a6578", lineHeight: 1.7, margin: "0 0 20px" }}>
+        <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 8px" }}>Cancel your Pro subscription?</h3>
+        <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7, margin: "0 0 20px" }}>
           You will keep Pro features until the end of your current billing period. After that, your account will revert
           to the Free plan.
         </p>
@@ -564,9 +565,9 @@ function CancelModal({ open, onClose, onConfirm }: { open: boolean; onClose: () 
               flex: 1,
               padding: "10px 18px",
               borderRadius: 9,
-              border: "1px solid #e6e9ef",
-              background: "#fff",
-              color: "#5a6578",
+              border: "1px solid var(--border-default)",
+              background: "var(--bg-card)",
+              color: "var(--text-secondary)",
               fontSize: 13,
               fontWeight: 600,
               cursor: "pointer",
@@ -959,21 +960,21 @@ function SettingsContent() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f4f5f8", fontFamily: "var(--font-outfit, var(--font-geist-sans)), sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-subtle)", fontFamily: "var(--font-outfit, var(--font-geist-sans)), sans-serif" }}>
       {/* NAV — matches dashboard */}
-      <nav style={{ background: "#fff", borderBottom: "1px solid #e6e9ef", position: "relative", zIndex: 50 }}>
+      <nav style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border-default)", position: "relative", zIndex: 50 }}>
         <div style={{ maxWidth: 1000, margin: "0 auto", padding: isMobile ? "12px 16px" : "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
             <div style={{ width: isMobile ? 32 : 36, height: isMobile ? 32 : 36, borderRadius: 10, background: gradientBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Zap style={{ width: isMobile ? 16 : 20, height: isMobile ? 16 : 20, color: "#fff" }} />
             </div>
-            <span style={{ fontSize: isMobile ? 17 : 20, fontWeight: 700, color: "#1b2434" }}>FixWorkFlow</span>
+            <span style={{ fontSize: isMobile ? 17 : 20, fontWeight: 700, color: "var(--text-primary)" }}>FixWorkFlow</span>
           </Link>
           {/* Desktop nav */}
           {!isMobile && (
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <Link href="/dashboard" style={{ fontSize: 13, color: "#5a6578", textDecoration: "none", fontWeight: 500 }}>Dashboard</Link>
-              <button onClick={() => scrollTo("integrations")} style={{ fontSize: 13, color: active === "integrations" ? "#4361ee" : "#5a6578", background: "none", border: "none", cursor: "pointer", fontWeight: 500, fontFamily: "inherit" }}>Integrations</button>
+              <Link href="/dashboard" style={{ fontSize: 13, color: "var(--text-secondary)", textDecoration: "none", fontWeight: 500 }}>Dashboard</Link>
+              <button onClick={() => scrollTo("integrations")} style={{ fontSize: 13, color: active === "integrations" ? "#4361ee" : "var(--text-secondary)", background: "none", border: "none", cursor: "pointer", fontWeight: 500, fontFamily: "inherit" }}>Integrations</button>
               {!isPremium && (
                 <Link
                   href="/pricing"
@@ -999,12 +1000,13 @@ function SettingsContent() {
                   <span style={{ fontSize: 9, fontWeight: 800, background: "#7c3aed", color: "#fff", padding: "2px 6px", borderRadius: 4, letterSpacing: 0.5 }}>ADMIN</span>
                 </Link>
               )}
+              <ThemeToggle />
               <UserAvatarDropdown user={session.user} />
             </div>
           )}
           {/* Mobile hamburger */}
           {isMobile && (
-            <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", padding: 6, cursor: "pointer", color: "#1b2434" }} aria-label="Toggle menu">
+            <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", padding: 6, cursor: "pointer", color: "var(--text-primary)" }} aria-label="Toggle menu">
               {menuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           )}
@@ -1013,15 +1015,15 @@ function SettingsContent() {
 
       {/* Mobile menu overlay */}
       {isMobile && menuOpen && (
-        <div style={{ position: "fixed", top: 56, left: 0, right: 0, bottom: 0, zIndex: 40, background: "#fff", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 4, overflowY: "auto" }}>
-          <Link href="/dashboard" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "14px 12px", fontSize: 16, color: "#1b2434", textDecoration: "none", borderRadius: 10, fontWeight: 500 }}>Dashboard</Link>
+        <div style={{ position: "fixed", top: 56, left: 0, right: 0, bottom: 0, zIndex: 40, background: "var(--bg-card)", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 4, overflowY: "auto" }}>
+          <Link href="/dashboard" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "14px 12px", fontSize: 16, color: "var(--text-primary)", textDecoration: "none", borderRadius: 10, fontWeight: 500 }}>Dashboard</Link>
           {!isPremium && (
-            <Link href="/pricing" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "14px 12px", fontSize: 16, color: "#1b2434", textDecoration: "none", borderRadius: 10, fontWeight: 500 }}>Upgrade to Pro</Link>
+            <Link href="/pricing" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "14px 12px", fontSize: 16, color: "var(--text-primary)", textDecoration: "none", borderRadius: 10, fontWeight: 500 }}>Upgrade to Pro</Link>
           )}
           {!!(session.user as Record<string, unknown>)?.isAdmin && (
             <Link href="/admin" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "14px 12px", fontSize: 16, color: "#7c3aed", textDecoration: "none", borderRadius: 10, fontWeight: 600 }}>Admin</Link>
           )}
-          <div style={{ marginTop: 8, paddingTop: 12, borderTop: "1px solid #e6e9ef" }}>
+          <div style={{ marginTop: 8, paddingTop: 12, borderTop: "1px solid var(--border-default)" }}>
             <UserAvatarDropdown user={session.user} />
           </div>
         </div>
@@ -1039,7 +1041,7 @@ function SettingsContent() {
             position: "sticky",
             top: 0,
             zIndex: 10,
-            background: "#f4f5f8",
+            background: "var(--bg-subtle)",
             WebkitOverflowScrolling: "touch",
             msOverflowStyle: "none",
             scrollbarWidth: "none",
@@ -1056,9 +1058,9 @@ function SettingsContent() {
                   borderRadius: 8,
                   fontSize: 12,
                   fontWeight: active === s.id ? 600 : 500,
-                  color: active === s.id ? "#4361ee" : "#5a6578",
-                  background: active === s.id ? "rgba(67,97,238,0.07)" : "#fff",
-                  border: active === s.id ? "1px solid rgba(67,97,238,0.2)" : "1px solid #e6e9ef",
+                  color: active === s.id ? "#4361ee" : "var(--text-secondary)",
+                  background: active === s.id ? "rgba(67,97,238,0.07)" : "var(--bg-card)",
+                  border: active === s.id ? "1px solid rgba(67,97,238,0.2)" : "1px solid var(--border-default)",
                   cursor: "pointer",
                   fontFamily: "inherit",
                   whiteSpace: "nowrap",
@@ -1085,7 +1087,7 @@ function SettingsContent() {
                   borderRadius: 8,
                   fontSize: 13,
                   fontWeight: active === s.id ? 600 : 500,
-                  color: active === s.id ? "#4361ee" : "#5a6578",
+                  color: active === s.id ? "#4361ee" : "var(--text-secondary)",
                   background: active === s.id ? "rgba(67,97,238,0.07)" : "transparent",
                   border: "none",
                   cursor: "pointer",
@@ -1095,7 +1097,7 @@ function SettingsContent() {
                   marginBottom: 2,
                 }}
                 onMouseEnter={(e) => {
-                  if (active !== s.id) (e.currentTarget.style.background = "#fafbfd");
+                  if (active !== s.id) (e.currentTarget.style.background = "var(--bg-elevated)");
                 }}
                 onMouseLeave={(e) => {
                   if (active !== s.id) (e.currentTarget.style.background = "transparent");
@@ -1113,8 +1115,8 @@ function SettingsContent() {
 
           {/* ── SECTION 1: ACCOUNT ── */}
           <section id="section-account">
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: "0 0 4px" }}>Account Settings</h2>
-            <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 20px" }}>Manage your profile and login information.</p>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px" }}>Account Settings</h2>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 20px" }}>Manage your profile and login information.</p>
 
             {/* Profile */}
             <div style={{ ...cardStyle, marginBottom: 16 }}>
@@ -1126,7 +1128,7 @@ function SettingsContent() {
                 <div>
                   <label style={labelStyle}>Email</label>
                   <input style={inputStyle} type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                  <span style={{ fontSize: 11, color: "#8d95a3", marginTop: 2, display: "block" }}>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2, display: "block" }}>
                     Changing your email will require re-verification
                   </span>
                 </div>
@@ -1160,8 +1162,8 @@ function SettingsContent() {
                     padding: "10px 24px",
                     borderRadius: 9,
                     border: "none",
-                    background: profileChanged ? gradientBg : "#e6e9ef",
-                    color: profileChanged ? "#fff" : "#8d95a3",
+                    background: profileChanged ? gradientBg : "var(--border-default)",
+                    color: profileChanged ? "#fff" : "var(--text-muted)",
                     fontSize: 13,
                     fontWeight: 700,
                     cursor: profileChanged ? "pointer" : "not-allowed",
@@ -1181,9 +1183,9 @@ function SettingsContent() {
 
             {/* Password / Auth Provider */}
             <div style={{ ...cardStyle, marginBottom: 16 }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: "#1b2434", margin: "0 0 8px" }}>Password</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 8px" }}>Password</h3>
               {authProvider ? (
-                <p style={{ fontSize: 13, color: "#5a6578", margin: 0 }}>
+                <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: 0 }}>
                   You signed in with <strong style={{ textTransform: "capitalize" }}>{authProvider}</strong>. Password is
                   managed by {authProvider}.
                 </p>
@@ -1224,7 +1226,7 @@ function SettingsContent() {
                 >
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     <div>
-                      <label style={{ fontSize: 12, fontWeight: 600, color: "#5a6578", display: "block", marginBottom: 4 }}>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: 4 }}>
                         Current password
                       </label>
                       <input
@@ -1236,7 +1238,7 @@ function SettingsContent() {
                       />
                     </div>
                     <div>
-                      <label style={{ fontSize: 12, fontWeight: 600, color: "#5a6578", display: "block", marginBottom: 4 }}>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: 4 }}>
                         New password
                       </label>
                       <input
@@ -1250,7 +1252,7 @@ function SettingsContent() {
                       />
                     </div>
                     <div>
-                      <label style={{ fontSize: 12, fontWeight: 600, color: "#5a6578", display: "block", marginBottom: 4 }}>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: 4 }}>
                         Confirm new password
                       </label>
                       <input
@@ -1290,7 +1292,7 @@ function SettingsContent() {
                   </div>
                 </form>
               ) : (
-                <p style={{ fontSize: 13, color: "#5a6578", margin: 0 }}>
+                <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: 0 }}>
                   Password management is not available for your auth method.
                 </p>
               )}
@@ -1306,7 +1308,7 @@ function SettingsContent() {
               }}
             >
               <div style={{ fontSize: 14, fontWeight: 700, color: "#ef4444", marginBottom: 6 }}>Delete Account</div>
-              <p style={{ fontSize: 13, color: "#5a6578", margin: "0 0 12px", lineHeight: 1.6 }}>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 12px", lineHeight: 1.6 }}>
                 Permanently delete your account and all associated data. This action cannot be undone.
               </p>
               <button
@@ -1330,8 +1332,8 @@ function SettingsContent() {
 
           {/* ── SECTION: INTEGRATIONS ── */}
           <section id="section-integrations">
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: "0 0 4px" }}>Integrations</h2>
-            <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 8px" }}>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px" }}>Integrations</h2>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 8px" }}>
               Connect your business tools for a more accurate Revenue Health Score. More connections = better insights.
             </p>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 7, background: "rgba(67,97,238,0.06)", fontSize: 12, fontWeight: 600, color: "#4361ee", marginBottom: 20 }}>
@@ -1340,15 +1342,15 @@ function SettingsContent() {
 
             {integrationsLoading ? (
               <div style={{ ...cardStyle, textAlign: "center", padding: 32 }}>
-                <Loader2 style={{ width: 20, height: 20, color: "#8d95a3", animation: "spin 1s linear infinite", margin: "0 auto 8px" }} />
-                <p style={{ fontSize: 13, color: "#8d95a3", margin: 0 }}>Loading integrations...</p>
+                <Loader2 style={{ width: 20, height: 20, color: "var(--text-muted)", animation: "spin 1s linear infinite", margin: "0 auto 8px" }} />
+                <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>Loading integrations...</p>
               </div>
             ) : (
               <>
                 {/* Connected integrations */}
                 {connectedIntegrations.length > 0 && (
                   <div style={{ marginBottom: 20 }}>
-                    <h3 style={{ fontSize: 14, fontWeight: 700, color: "#1b2434", margin: "0 0 10px" }}>Connected</h3>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 10px" }}>Connected</h3>
                     {connectedIntegrations.map((intg) => {
                       const catalog = PROVIDER_CATALOG.find((p) => p.id === intg.provider);
                       const statusColor = intg.status === "connected" ? "#10b981" : intg.status === "syncing" ? "#f59e0b" : "#ef4444";
@@ -1360,11 +1362,11 @@ function SettingsContent() {
                             <img
                               src={`https://www.google.com/s2/favicons?domain=${catalog?.icon || intg.provider}&sz=64`}
                               alt={`${catalog?.name || intg.provider} logo`}
-                              style={{ width: 40, height: 40, borderRadius: 10, background: "#f4f5f8" }}
+                              style={{ width: 40, height: 40, borderRadius: 10, background: "var(--bg-subtle)" }}
                             />
                             <div style={{ flex: 1 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                <span style={{ fontSize: 16, fontWeight: 700, color: "#1b2434" }}>{catalog?.name || intg.provider}</span>
+                                <span style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>{catalog?.name || intg.provider}</span>
                                 <span style={{
                                   display: "inline-flex", alignItems: "center", gap: 4,
                                   fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 10,
@@ -1374,7 +1376,7 @@ function SettingsContent() {
                                   {statusLabel}
                                 </span>
                               </div>
-                              <div style={{ fontSize: 12, color: "#8d95a3", marginTop: 2 }}>
+                              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
                                 {intg.lastSyncAt
                                   ? `Last synced: ${new Date(intg.lastSyncAt).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })} at ${new Date(intg.lastSyncAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`
                                   : "Never synced \u2014 first sync pending"
@@ -1444,7 +1446,7 @@ function SettingsContent() {
                             return (
                               <div style={{
                                 marginTop: 10, padding: "12px 14px", borderRadius: 8,
-                                background: "#fafbfd", border: "1px solid #e6e9ef",
+                                background: "var(--bg-elevated)", border: "1px solid var(--border-default)",
                               }}>
                                 {gaError && (
                                   <div style={{
@@ -1457,7 +1459,7 @@ function SettingsContent() {
                                   </div>
                                 )}
 
-                                <div style={{ fontSize: 12, fontWeight: 700, color: "#1b2434", marginBottom: 6 }}>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>
                                   {hasDropdown ? "Select a GA4 property to sync:" : "Enter your GA4 Property ID:"}
                                 </div>
 
@@ -1484,8 +1486,8 @@ function SettingsContent() {
                                       }}
                                       style={{
                                         padding: "8px 16px", borderRadius: 8,
-                                        border: "none", background: gaPropertySelect ? "#4361ee" : "#e6e9ef",
-                                        color: gaPropertySelect ? "#fff" : "#8d95a3",
+                                        border: "none", background: gaPropertySelect ? "#4361ee" : "var(--border-default)",
+                                        color: gaPropertySelect ? "#fff" : "var(--text-muted)",
                                         fontSize: 12, fontWeight: 600,
                                         cursor: gaPropertySelect ? "pointer" : "not-allowed",
                                         fontFamily: "inherit", whiteSpace: "nowrap",
@@ -1497,7 +1499,7 @@ function SettingsContent() {
                                   </div>
                                 ) : (
                                   <>
-                                    <div style={{ fontSize: 11, color: "#5a6578", marginBottom: 6, lineHeight: 1.5 }}>
+                                    <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 6, lineHeight: 1.5 }}>
                                       Find it in Google Analytics: Admin &rarr; Property Settings &rarr; Property ID (numeric, e.g. 301234567).
                                     </div>
                                     <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -1516,8 +1518,8 @@ function SettingsContent() {
                                         style={{
                                           padding: "8px 16px", borderRadius: 8,
                                           border: "none",
-                                          background: gaManualPropertyId.trim() ? "#4361ee" : "#e6e9ef",
-                                          color: gaManualPropertyId.trim() ? "#fff" : "#8d95a3",
+                                          background: gaManualPropertyId.trim() ? "#4361ee" : "var(--border-default)",
+                                          color: gaManualPropertyId.trim() ? "#fff" : "var(--text-muted)",
                                           fontSize: 12, fontWeight: 600,
                                           cursor: gaManualPropertyId.trim() ? "pointer" : "not-allowed",
                                           fontFamily: "inherit", whiteSpace: "nowrap",
@@ -1554,21 +1556,21 @@ function SettingsContent() {
                       onClick={() => setIntgExpanded((prev) => ({ ...prev, [catIdx]: !prev[catIdx] }))}
                       style={{
                         width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-                        padding: "12px 16px", background: "#fff", border: "1px solid #e6e9ef",
+                        padding: "12px 16px", background: "var(--bg-card)", border: "1px solid var(--border-default)",
                         borderRadius: intgExpanded[catIdx] ? "12px 12px 0 0" : 12,
                         cursor: "pointer", fontFamily: "inherit", transition: "border-radius 0.2s",
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <cat.icon style={{ width: 16, height: 16, color: "#4361ee" }} />
-                        <span style={{ fontSize: 14, fontWeight: 700, color: "#1b2434" }}>{cat.name}</span>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: "#8d95a3", background: "#f4f5f8", padding: "2px 7px", borderRadius: 5 }}>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>{cat.name}</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", background: "var(--bg-subtle)", padding: "2px 7px", borderRadius: 5 }}>
                           {cat.items.length}
                         </span>
                       </div>
                       <ChevronDown
                         size={16}
-                        color="#8d95a3"
+                        color="var(--text-muted)"
                         style={{ transition: "transform 0.25s ease", transform: intgExpanded[catIdx] ? "rotate(180deg)" : "rotate(0deg)" }}
                       />
                     </button>
@@ -1576,10 +1578,10 @@ function SettingsContent() {
                       maxHeight: intgExpanded[catIdx] ? cat.items.length * 200 : 0,
                       overflow: "hidden",
                       transition: "max-height 0.35s ease",
-                      background: "#fff",
-                      borderLeft: "1px solid #e6e9ef",
-                      borderRight: "1px solid #e6e9ef",
-                      borderBottom: intgExpanded[catIdx] ? "1px solid #e6e9ef" : "none",
+                      background: "var(--bg-card)",
+                      borderLeft: "1px solid var(--border-default)",
+                      borderRight: "1px solid var(--border-default)",
+                      borderBottom: intgExpanded[catIdx] ? "1px solid var(--border-default)" : "none",
                       borderRadius: "0 0 12px 12px",
                     }}>
                       {cat.items.map((intg, intgIdx) => {
@@ -1592,23 +1594,23 @@ function SettingsContent() {
                             style={{
                               display: "flex", alignItems: "center", gap: 12,
                               padding: "14px 16px",
-                              borderTop: intgIdx > 0 ? "1px solid #f0f0f0" : "none",
+                              borderTop: intgIdx > 0 ? "1px solid var(--border-light)" : "none",
                             }}
                           >
                             <IntegrationLogo domain={intg.domain} name={intg.name} brandColor={intg.brandColor} />
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                                <span style={{ fontSize: 13, fontWeight: 700, color: "#1b2434" }}>{intg.name}</span>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{intg.name}</span>
                                 {isConnected && (
                                   <span style={{ fontSize: 10, fontWeight: 600, color: "#10b981", background: "rgba(16,185,129,0.08)", padding: "1px 6px", borderRadius: 4 }}>
                                     Connected
                                   </span>
                                 )}
                               </div>
-                              <div style={{ fontSize: 11, color: "#5a6578", lineHeight: 1.5, marginBottom: 4 }}>{intg.description}</div>
+                              <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: 4 }}>{intg.description}</div>
                               <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
                                 {intg.pillars.map((p) => {
-                                  const c = PILLAR_BADGE_COLORS[p] || { bg: "#f4f5f8", text: "#6b7280" };
+                                  const c = PILLAR_BADGE_COLORS[p] || { bg: "var(--bg-subtle)", text: "var(--text-muted)" };
                                   return (
                                     <span key={p} style={{ fontSize: 9, fontWeight: 600, padding: "1px 6px", borderRadius: 3, background: c.bg, color: c.text }}>
                                       {p}
@@ -1641,8 +1643,8 @@ function SettingsContent() {
                                   disabled
                                   style={{
                                     padding: "6px 14px", borderRadius: 7,
-                                    border: "1px solid #e6e9ef", background: "#f4f5f8",
-                                    color: "#8d95a3", fontSize: 11, fontWeight: 600,
+                                    border: "1px solid var(--border-default)", background: "var(--bg-subtle)",
+                                    color: "var(--text-muted)", fontSize: 11, fontWeight: 600,
                                     cursor: "not-allowed", fontFamily: "inherit",
                                     whiteSpace: "nowrap",
                                   }}
@@ -1659,9 +1661,9 @@ function SettingsContent() {
                 ))}
 
                 {/* Bottom note */}
-                <div style={{ textAlign: "center", marginTop: 16, padding: "16px", background: "#fff", borderRadius: 12, border: "1px solid #e6e9ef" }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#1b2434", margin: "0 0 3px" }}>Want an integration we don&apos;t have?</p>
-                  <p style={{ fontSize: 12, color: "#8d95a3", margin: 0 }}>
+                <div style={{ textAlign: "center", marginTop: 16, padding: "16px", background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-default)" }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 3px" }}>Want an integration we don&apos;t have?</p>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0 }}>
                     Let us know at{" "}
                     <a href="mailto:support@fixworkflow.com" style={{ color: "#4361ee", textDecoration: "none", fontWeight: 600 }}>support@fixworkflow.com</a>
                   </p>
@@ -1672,13 +1674,13 @@ function SettingsContent() {
 
           {/* ── SECTION 2: SUBSCRIPTION & BILLING ── */}
           <section id="section-billing">
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: "0 0 4px" }}>Subscription & Billing</h2>
-            <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 20px" }}>Manage your plan and payment information.</p>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px" }}>Subscription & Billing</h2>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 20px" }}>Manage your plan and payment information.</p>
 
             {/* Current Plan */}
             <div style={{ ...cardStyle, marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: "#1b2434", margin: 0 }}>Current Plan</h3>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>Current Plan</h3>
                 {isPremium ? (
                   <span
                     style={{
@@ -1700,8 +1702,8 @@ function SettingsContent() {
                       fontWeight: 700,
                       padding: "3px 10px",
                       borderRadius: 6,
-                      background: "#f0f2f6",
-                      color: "#8d95a3",
+                      background: "var(--border-light)",
+                      color: "var(--text-muted)",
                     }}
                   >
                     FREE
@@ -1710,12 +1712,12 @@ function SettingsContent() {
               </div>
 
               {isPremium && isAdminAccount ? (
-                <p style={{ fontSize: 13, color: "#5a6578", margin: 0, lineHeight: 1.6 }}>
+                <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
                   Admin Account &mdash; Pro features enabled. No Stripe subscription required.
                 </p>
               ) : isPremium ? (
                 <>
-                  <p style={{ fontSize: 13, color: "#5a6578", margin: "0 0 16px" }}>
+                  <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 16px" }}>
                     You are on the Pro plan.
                     {cancellationDate && (
                       <span style={{ color: "#f59e0b" }}>
@@ -1751,7 +1753,7 @@ function SettingsContent() {
                           background: "none",
                           border: "none",
                           fontSize: 12,
-                          color: "#8d95a3",
+                          color: "var(--text-muted)",
                           cursor: "pointer",
                           textDecoration: "none",
                           fontFamily: "inherit",
@@ -1767,20 +1769,20 @@ function SettingsContent() {
                 </>
               ) : (
                 <>
-                  <p style={{ fontSize: 13, color: "#5a6578", margin: "0 0 16px", lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 16px", lineHeight: 1.6 }}>
                     You are on the free plan. Upgrade to Pro to unlock AI summaries, full playbooks, score projections,
                     and deep reasoning.
                   </p>
                   <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14, marginBottom: 16 }}>
-                    <div style={{ padding: 14, borderRadius: 10, background: "#fafbfd", border: "1px solid #e6e9ef" }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: "#8d95a3", marginBottom: 8 }}>Free</div>
+                    <div style={{ padding: 14, borderRadius: 10, background: "var(--bg-elevated)", border: "1px solid var(--border-default)" }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", marginBottom: 8 }}>Free</div>
                       {[
                         "Revenue Health Score",
                         "Top 2 pillar insights",
                         "2 playbook steps",
                         "1 tool recommendation",
                       ].map((f) => (
-                        <div key={f} style={{ fontSize: 12, color: "#5a6578", marginBottom: 4, display: "flex", gap: 6 }}>
+                        <div key={f} style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 4, display: "flex", gap: 6 }}>
                           <span style={{ color: "#10b981" }}>&#10003;</span> {f}
                         </div>
                       ))}
@@ -1796,7 +1798,7 @@ function SettingsContent() {
                         "Progress tracking",
                         "Deep reasoning",
                       ].map((f) => (
-                        <div key={f} style={{ fontSize: 12, color: "#5a6578", marginBottom: 4, display: "flex", gap: 6 }}>
+                        <div key={f} style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 4, display: "flex", gap: 6 }}>
                           <span style={{ color: "#4361ee" }}>&#10003;</span> {f}
                         </div>
                       ))}
@@ -1827,35 +1829,35 @@ function SettingsContent() {
 
             {/* Billing History */}
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: "#1b2434", margin: "0 0 12px" }}>Billing History</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 12px" }}>Billing History</h3>
               {invoicesLoading ? (
-                <p style={{ fontSize: 13, color: "#8d95a3", margin: 0 }}>Loading billing history...</p>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>Loading billing history...</p>
               ) : invoices.length === 0 ? (
-                <p style={{ fontSize: 13, color: "#8d95a3", margin: 0 }}>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>
                   Billing history will appear here once you subscribe to Pro.
                 </p>
               ) : (
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                     <thead>
-                      <tr style={{ borderBottom: "1px solid #e6e9ef" }}>
-                        <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600, color: "#8d95a3", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Date</th>
-                        <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600, color: "#8d95a3", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Description</th>
-                        <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600, color: "#8d95a3", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Amount</th>
-                        <th style={{ textAlign: "center", padding: "8px 10px", fontWeight: 600, color: "#8d95a3", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Status</th>
-                        <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600, color: "#8d95a3", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Invoice</th>
+                      <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
+                        <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600, color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Date</th>
+                        <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600, color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Description</th>
+                        <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600, color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Amount</th>
+                        <th style={{ textAlign: "center", padding: "8px 10px", fontWeight: 600, color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Status</th>
+                        <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600, color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Invoice</th>
                       </tr>
                     </thead>
                     <tbody>
                       {invoices.map((inv) => (
-                        <tr key={inv.id} style={{ borderBottom: "1px solid #f0f2f6" }}>
-                          <td style={{ padding: "10px 10px", color: "#5a6578" }}>
+                        <tr key={inv.id} style={{ borderBottom: "1px solid var(--border-light)" }}>
+                          <td style={{ padding: "10px 10px", color: "var(--text-secondary)" }}>
                             {inv.date ? new Date(inv.date).toLocaleDateString() : "—"}
                           </td>
-                          <td style={{ padding: "10px 10px", color: "#1b2434" }}>
+                          <td style={{ padding: "10px 10px", color: "var(--text-primary)" }}>
                             {inv.description}
                           </td>
-                          <td style={{ padding: "10px 10px", color: "#1b2434", textAlign: "right", fontWeight: 600 }}>
+                          <td style={{ padding: "10px 10px", color: "var(--text-primary)", textAlign: "right", fontWeight: 600 }}>
                             ${inv.amount}
                           </td>
                           <td style={{ padding: "10px 10px", textAlign: "center" }}>
@@ -1894,8 +1896,8 @@ function SettingsContent() {
 
           {/* ── SECTION 3: NOTIFICATIONS ── */}
           <section id="section-notifications">
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: "0 0 4px" }}>Notifications</h2>
-            <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 20px" }}>Choose what updates you want to receive.</p>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px" }}>Notifications</h2>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 20px" }}>Choose what updates you want to receive.</p>
 
             <div style={cardStyle}>
               {([
@@ -1914,12 +1916,12 @@ function SettingsContent() {
                     justifyContent: "space-between",
                     gap: 16,
                     padding: "14px 0",
-                    borderBottom: i < arr.length - 1 ? "1px solid #f0f2f6" : "none",
+                    borderBottom: i < arr.length - 1 ? "1px solid var(--border-light)" : "none",
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "#1b2434" }}>{item.label}</div>
-                    <div style={{ fontSize: 12, color: "#8d95a3", marginTop: 2 }}>{item.desc}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{item.label}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{item.desc}</div>
                   </div>
                   <Toggle on={notifPrefs[item.key]} onChange={(v) => updateNotif(item.key, v)} />
                 </div>
@@ -1929,8 +1931,8 @@ function SettingsContent() {
 
           {/* ── SECTION 4: PRIVACY & DATA ── */}
           <section id="section-privacy">
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: "0 0 4px" }}>Privacy & Data</h2>
-            <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 20px" }}>Control your data and privacy settings.</p>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px" }}>Privacy & Data</h2>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 20px" }}>Control your data and privacy settings.</p>
 
             {/* Data Usage */}
             <div style={{ ...cardStyle, marginBottom: 16 }}>
@@ -1954,12 +1956,12 @@ function SettingsContent() {
                     justifyContent: "space-between",
                     gap: 16,
                     padding: "14px 0",
-                    borderBottom: i < arr.length - 1 ? "1px solid #f0f2f6" : "none",
+                    borderBottom: i < arr.length - 1 ? "1px solid var(--border-light)" : "none",
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "#1b2434" }}>{item.label}</div>
-                    <div style={{ fontSize: 12, color: "#8d95a3", marginTop: 2 }}>{item.desc}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{item.label}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{item.desc}</div>
                   </div>
                   <Toggle on={privacyPrefs[item.key]} onChange={(v) => updatePrivacy(item.key, v)} />
                 </div>
@@ -1968,8 +1970,8 @@ function SettingsContent() {
 
             {/* Export Data */}
             <div style={{ ...cardStyle, marginBottom: 16 }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: "#1b2434", margin: "0 0 8px" }}>Export Your Data</h3>
-              <p style={{ fontSize: 13, color: "#5a6578", margin: "0 0 14px", lineHeight: 1.6 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 8px" }}>Export Your Data</h3>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 14px", lineHeight: 1.6 }}>
                 Download a copy of all your FixWorkFlow data including your profile, diagnosis answers, metrics, scores,
                 and playbook progress.
               </p>
@@ -1995,8 +1997,8 @@ function SettingsContent() {
 
             {/* Data Retention */}
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: "#1b2434", margin: "0 0 8px" }}>Data Retention</h3>
-              <p style={{ fontSize: 13, color: "#5a6578", lineHeight: 1.7, margin: 0 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 8px" }}>Data Retention</h3>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7, margin: 0 }}>
                 We retain your data for as long as your account is active. If you delete your account, all data is
                 permanently removed within 30 days. We do not sell your personal information to third parties. Your
                 business metrics are used solely to generate your Revenue Health Score and personalized recommendations.
@@ -2006,8 +2008,8 @@ function SettingsContent() {
 
           {/* ── SECTION 5: FAQ & HELP ── */}
           <section id="section-faq">
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: "0 0 4px" }}>Frequently Asked Questions</h2>
-            <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 20px" }}>Quick answers to common questions.</p>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px" }}>Frequently Asked Questions</h2>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 20px" }}>Quick answers to common questions.</p>
 
             <AccordionItem
               q="What is the Revenue Health Score?"
@@ -2042,7 +2044,7 @@ function SettingsContent() {
               a="If you indicated that you use personal credit for business expenses, we may recommend a free credit assessment with our partner. This is entirely optional and is shown because personal credit health directly impacts business financing options, interest rates, and profitability."
             />
 
-            <p style={{ fontSize: 13, color: "#5a6578", marginTop: 16 }}>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 16 }}>
               Still have questions?{" "}
               <a href="mailto:support@fixworkflow.com" style={{ color: "#4361ee", textDecoration: "none", fontWeight: 600 }}>
                 Contact us at support@fixworkflow.com
@@ -2052,8 +2054,8 @@ function SettingsContent() {
 
           {/* ── SECTION 6: LEGAL ── */}
           <section id="section-legal">
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: "0 0 4px" }}>Legal</h2>
-            <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 20px" }}>Terms, policies, and disclosures.</p>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px" }}>Legal</h2>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 20px" }}>Terms, policies, and disclosures.</p>
 
             <LegalAccordion title="Terms of Service">
               <p><strong>1. Account Creation</strong></p>
@@ -2132,7 +2134,7 @@ function SettingsContent() {
           >
             <div
               style={{
-                background: "#fff", borderRadius: 18, padding: 28,
+                background: "var(--bg-card)", borderRadius: 18, padding: 28,
                 maxWidth: 480, width: "100%", margin: "0 16px",
                 boxShadow: "0 16px 48px rgba(0,0,0,0.12)",
               }}
@@ -2142,15 +2144,15 @@ function SettingsContent() {
                 <img
                   src={`https://www.google.com/s2/favicons?domain=${provider.icon}&sz=64`}
                   alt={`${provider.name} logo`}
-                  style={{ width: 40, height: 40, borderRadius: 10, background: "#f4f5f8" }}
+                  style={{ width: 40, height: 40, borderRadius: 10, background: "var(--bg-subtle)" }}
                 />
-                <h3 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: 0 }}>
+                <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: 0 }}>
                   Connect {provider.id === "stripe-data" ? "your Stripe account" : provider.id === "google-analytics" ? "Google Analytics" : `your ${provider.name} store`}
                 </h3>
               </div>
 
               {provider.extraNote && (
-                <p style={{ fontSize: 13, color: "#5a6578", margin: "0 0 16px", lineHeight: 1.6, padding: "8px 12px", background: "#fafbfd", borderRadius: 8, border: "1px solid #e6e9ef" }}>
+                <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 16px", lineHeight: 1.6, padding: "8px 12px", background: "var(--bg-elevated)", borderRadius: 8, border: "1px solid var(--border-default)" }}>
                   {provider.extraNote}
                 </p>
               )}
@@ -2168,7 +2170,7 @@ function SettingsContent() {
               )}
 
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#1b2434", marginBottom: 8 }}>What we access:</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}>What we access:</div>
                 {provider.scopesPlainEnglish.map((scope) => (
                   <div key={scope} style={{ fontSize: 13, color: "#10b981", marginBottom: 4, display: "flex", gap: 6 }}>
                     <span>&#10003;</span> {scope}
@@ -2181,7 +2183,7 @@ function SettingsContent() {
                 )}
               </div>
 
-              <p style={{ fontSize: 12, color: "#8d95a3", margin: "0 0 16px" }}>
+              <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 16px" }}>
                 We request read-only access. We never modify your data.
               </p>
 
@@ -2196,8 +2198,8 @@ function SettingsContent() {
                   onClick={() => { setConnectModalProvider(null); setConnecting(false); }}
                   style={{
                     flex: 1, padding: "10px 18px", borderRadius: 9,
-                    border: "1px solid #e6e9ef", background: "#fff",
-                    color: "#5a6578", fontSize: 13, fontWeight: 600,
+                    border: "1px solid var(--border-default)", background: "var(--bg-card)",
+                    color: "var(--text-secondary)", fontSize: 13, fontWeight: 600,
                     cursor: "pointer", fontFamily: "inherit",
                   }}
                 >
@@ -2235,14 +2237,14 @@ function SettingsContent() {
         >
           <div
             style={{
-              background: "#fff", borderRadius: 18, padding: 28,
+              background: "var(--bg-card)", borderRadius: 18, padding: 28,
               maxWidth: 400, width: "100%", margin: "0 16px",
               boxShadow: "0 16px 48px rgba(0,0,0,0.12)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: "0 0 8px" }}>Disconnect integration?</h3>
-            <p style={{ fontSize: 13, color: "#5a6578", lineHeight: 1.7, margin: "0 0 16px" }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 8px" }}>Disconnect integration?</h3>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7, margin: "0 0 16px" }}>
               This will stop auto-syncing data from this service. Your existing data and scores will remain, but will no longer be updated automatically.
             </p>
             <div style={{ display: "flex", gap: 10 }}>
@@ -2250,8 +2252,8 @@ function SettingsContent() {
                 onClick={() => setDisconnectConfirm(null)}
                 style={{
                   flex: 1, padding: "10px 18px", borderRadius: 9,
-                  border: "1px solid #e6e9ef", background: "#fff",
-                  color: "#5a6578", fontSize: 13, fontWeight: 600,
+                  border: "1px solid var(--border-default)", background: "var(--bg-card)",
+                  color: "var(--text-secondary)", fontSize: 13, fontWeight: 600,
                   cursor: "pointer", fontFamily: "inherit",
                 }}
               >

@@ -16,7 +16,7 @@ export default function LoadingSpinner({ fullPage = false, size = 24, text }: Lo
         fill="none"
         style={{ animation: "spin-smooth 0.8s linear infinite" }}
       >
-        <circle cx="12" cy="12" r="10" stroke="#e6e9ef" strokeWidth="3" />
+        <circle cx="12" cy="12" r="10" stroke="var(--border-default)" strokeWidth="3" />
         <path
           d="M12 2a10 10 0 0 1 10 10"
           stroke="#4361ee"
@@ -25,7 +25,7 @@ export default function LoadingSpinner({ fullPage = false, size = 24, text }: Lo
         />
       </svg>
       {text && (
-        <span style={{ fontSize: 13, color: "#5a6578", fontWeight: 500 }}>{text}</span>
+        <span style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 500 }}>{text}</span>
       )}
     </div>
   );
@@ -37,7 +37,7 @@ export default function LoadingSpinner({ fullPage = false, size = 24, text }: Lo
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#fafafa",
+        background: "var(--bg-page)",
       }}>
         {spinner}
       </div>

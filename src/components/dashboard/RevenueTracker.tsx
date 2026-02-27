@@ -137,10 +137,10 @@ function TrendChart({
   const rangePills = [4, 8, 12] as const;
 
   return (
-    <div style={{ background: "#fff", border: "1px solid #f0f2f6", borderRadius: 12, padding: isMobile ? 12 : 16, boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
+    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-light)", borderRadius: 12, padding: isMobile ? 12 : 16, boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
       {/* Header row */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
           Revenue Trend
         </span>
         <div style={{ display: "flex", gap: 4 }}>
@@ -152,9 +152,9 @@ function TrendChart({
                 padding: "3px 10px",
                 borderRadius: 6,
                 border: "1px solid",
-                borderColor: range === r ? "#4361ee" : "#e6e9ef",
-                background: range === r ? "rgba(67,97,238,0.06)" : "#fff",
-                color: range === r ? "#4361ee" : "#8d95a3",
+                borderColor: range === r ? "#4361ee" : "var(--border-default)",
+                background: range === r ? "rgba(67,97,238,0.06)" : "var(--bg-card)",
+                color: range === r ? "#4361ee" : "var(--text-muted)",
                 fontSize: 11,
                 fontWeight: 600,
                 cursor: "pointer",
@@ -168,8 +168,8 @@ function TrendChart({
 
       {tooFew ? (
         <div style={{ height: H, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          <BarChart3 size={28} style={{ color: "#d1d5db" }} />
-          <span style={{ fontSize: 13, color: "#8d95a3" }}>Log a few more weeks to see your trend line.</span>
+          <BarChart3 size={28} style={{ color: "var(--text-faint)" }} />
+          <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Log a few more weeks to see your trend line.</span>
         </div>
       ) : (
         <svg
@@ -190,8 +190,8 @@ function TrendChart({
           {/* Grid lines */}
           {gridLines.map((g, i) => (
             <g key={i}>
-              <line x1={padL} y1={g.y} x2={W - padR} y2={g.y} stroke="#f0f2f6" strokeWidth={1} />
-              <text x={padL - 8} y={g.y + 3} textAnchor="end" fontSize={9} fill="#b4bac5" fontFamily="sans-serif">
+              <line x1={padL} y1={g.y} x2={W - padR} y2={g.y} stroke="var(--border-light)" strokeWidth={1} />
+              <text x={padL - 8} y={g.y + 3} textAnchor="end" fontSize={9} fill="var(--text-faint)" fontFamily="sans-serif">
                 {g.val >= 1000 ? `$${(g.val / 1000).toFixed(g.val >= 10000 ? 0 : 1)}k` : `$${Math.round(g.val)}`}
               </text>
             </g>
@@ -200,8 +200,8 @@ function TrendChart({
           {/* Target dashed line */}
           {weeklyTarget != null && (
             <g>
-              <line x1={padL} y1={yOf(weeklyTarget)} x2={W - padR} y2={yOf(weeklyTarget)} stroke="#b4bac5" strokeWidth={1} strokeDasharray="6,4" />
-              <text x={W - padR + 4} y={yOf(weeklyTarget) + 3} fontSize={9} fill="#b4bac5" fontFamily="sans-serif">
+              <line x1={padL} y1={yOf(weeklyTarget)} x2={W - padR} y2={yOf(weeklyTarget)} stroke="var(--text-faint)" strokeWidth={1} strokeDasharray="6,4" />
+              <text x={W - padR + 4} y={yOf(weeklyTarget) + 3} fontSize={9} fill="var(--text-faint)" fontFamily="sans-serif">
                 Target
               </text>
             </g>
@@ -228,7 +228,7 @@ function TrendChart({
                 cx={p.x}
                 cy={p.y}
                 r={hoveredIdx === i ? 5 : 3.5}
-                fill={hoveredIdx === i ? "#4361ee" : "#fff"}
+                fill={hoveredIdx === i ? "#4361ee" : "var(--bg-card)"}
                 stroke="#4361ee"
                 strokeWidth={2}
                 style={{ transition: "r 0.15s" }}
@@ -245,7 +245,7 @@ function TrendChart({
                 width={84}
                 height={24}
                 rx={6}
-                fill="#1b2434"
+                fill="var(--tooltip-bg)"
                 opacity={0.92}
               />
               <text
@@ -254,7 +254,7 @@ function TrendChart({
                 textAnchor="middle"
                 fontSize={11}
                 fontWeight="700"
-                fill="#fff"
+                fill="var(--tooltip-text)"
                 fontFamily="sans-serif"
               >
                 {fmtDollar(sorted[hoveredIdx].revenue)}
@@ -264,7 +264,7 @@ function TrendChart({
 
           {/* X-axis labels */}
           {sorted.map((d, i) => (
-            <text key={i} x={points[i].x} y={H - 4} textAnchor="middle" fontSize={9} fill="#8d95a3" fontFamily="sans-serif">
+            <text key={i} x={points[i].x} y={H - 4} textAnchor="middle" fontSize={9} fill="var(--text-muted)" fontFamily="sans-serif">
               {fmtDate(d.weekOf)}
             </text>
           ))}
@@ -396,8 +396,8 @@ export default function RevenueTracker({
 
   return (
     <div style={{
-      background: "#fff",
-      border: "1px solid #e6e9ef",
+      background: "var(--bg-card)",
+      border: "1px solid var(--border-default)",
       borderRadius: 14,
       overflow: "hidden",
       boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
@@ -421,35 +421,35 @@ export default function RevenueTracker({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <BarChart3 style={{ width: 15, height: 15, color: "#8d95a3" }} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          <BarChart3 style={{ width: 15, height: 15, color: "var(--text-muted)" }} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
             Revenue Tracker
           </span>
           <ProBadge small />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {!isMobile && (
-            <span style={{ fontSize: 11, color: "#b4bac5" }}>Log your weekly numbers to sharpen your score.</span>
+            <span style={{ fontSize: 11, color: "var(--text-faint)" }}>Log your weekly numbers to sharpen your score.</span>
           )}
           <ChevronDown
             size={16}
-            style={{ color: "#8d95a3", transition: "transform 0.15s", transform: open ? "rotate(180deg)" : "none" }}
+            style={{ color: "var(--text-muted)", transition: "transform 0.15s", transform: open ? "rotate(180deg)" : "none" }}
           />
         </div>
       </button>
 
       {open && (
-        <div style={{ borderTop: "1px solid #f0f2f6" }}>
+        <div style={{ borderTop: "1px solid var(--border-light)" }}>
           {!isPremium ? (
             /* ── Free user: locked ── */
-            <div style={{ padding: "48px 24px", textAlign: "center", background: "linear-gradient(180deg, #fafbfd 0%, #fff 100%)" }}>
+            <div style={{ padding: "48px 24px", textAlign: "center", background: "linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%)" }}>
               <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(67,97,238,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
                 <BarChart3 size={22} style={{ color: "#4361ee" }} />
               </div>
-              <p style={{ fontSize: 15, fontWeight: 600, color: "#1b2434", margin: "0 0 6px" }}>
+              <p style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 6px" }}>
                 Track your real revenue weekly
               </p>
-              <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 24px", maxWidth: 340, marginLeft: "auto", marginRight: "auto" }}>
+              <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 24px", maxWidth: 340, marginLeft: "auto", marginRight: "auto" }}>
                 Log weekly numbers and watch your Revenue Health Score update automatically. See trends, margins, and targets at a glance.
               </p>
               <Link
@@ -484,7 +484,7 @@ export default function RevenueTracker({
                   {/* Revenue */}
                   <InputCell label="REVENUE" required>
                     <div style={{ position: "relative" }}>
-                      <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 18, fontWeight: 600, color: "#b4bac5", pointerEvents: "none" }}>$</span>
+                      <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 18, fontWeight: 600, color: "var(--text-faint)", pointerEvents: "none" }}>$</span>
                       <input
                         type="number"
                         placeholder="0"
@@ -497,7 +497,7 @@ export default function RevenueTracker({
                           borderRadius: 8,
                           fontSize: 20,
                           fontWeight: 700,
-                          color: "#1b2434",
+                          color: "var(--text-primary)",
                           background: "transparent",
                           outline: "none",
                           boxSizing: "border-box",
@@ -520,7 +520,7 @@ export default function RevenueTracker({
                         borderRadius: 8,
                         fontSize: 20,
                         fontWeight: 700,
-                        color: "#1b2434",
+                        color: "var(--text-primary)",
                         background: "transparent",
                         outline: "none",
                         boxSizing: "border-box",
@@ -531,7 +531,7 @@ export default function RevenueTracker({
                   {/* Expenses */}
                   <InputCell label="EXPENSES">
                     <div style={{ position: "relative" }}>
-                      <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 18, fontWeight: 600, color: "#b4bac5", pointerEvents: "none" }}>$</span>
+                      <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 18, fontWeight: 600, color: "var(--text-faint)", pointerEvents: "none" }}>$</span>
                       <input
                         type="number"
                         placeholder="0"
@@ -544,7 +544,7 @@ export default function RevenueTracker({
                           borderRadius: 8,
                           fontSize: 20,
                           fontWeight: 700,
-                          color: "#1b2434",
+                          color: "var(--text-primary)",
                           background: "transparent",
                           outline: "none",
                           boxSizing: "border-box",
@@ -560,7 +560,7 @@ export default function RevenueTracker({
                     style={{
                       padding: isMobile ? "12px 20px" : "12px 24px",
                       borderRadius: 10,
-                      background: submitting ? "#b4bac5" : "linear-gradient(135deg, #4361ee, #6366f1)",
+                      background: submitting ? "var(--text-faint)" : "linear-gradient(135deg, #4361ee, #6366f1)",
                       color: "#fff",
                       fontSize: 14,
                       fontWeight: 700,
@@ -589,16 +589,16 @@ export default function RevenueTracker({
                   gap: 12,
                   marginTop: 14,
                   paddingBottom: 20,
-                  borderBottom: "1px solid #f0f2f6",
+                  borderBottom: "1px solid var(--border-light)",
                 }}>
                   <button
                     onClick={() => setSelectedWeek(addWeeks(selectedWeek, -1))}
-                    style={{ background: "none", border: "1px solid #e6e9ef", borderRadius: 6, padding: "4px 6px", cursor: "pointer", display: "flex", alignItems: "center", color: "#8d95a3" }}
+                    style={{ background: "none", border: "1px solid var(--border-default)", borderRadius: 6, padding: "4px 6px", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--text-muted)" }}
                     title="Previous week"
                   >
                     <ChevronLeft size={14} />
                   </button>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: isSameWeek(selectedWeek, new Date()) ? "#4361ee" : "#5a6578" }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: isSameWeek(selectedWeek, new Date()) ? "#4361ee" : "var(--text-secondary)" }}>
                     Week of {fmtWeekLabel(selectedWeek)}
                     {isSameWeek(selectedWeek, new Date()) && (
                       <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#4361ee", background: "rgba(67,97,238,0.08)", padding: "2px 6px", borderRadius: 4 }}>
@@ -609,7 +609,7 @@ export default function RevenueTracker({
                   <button
                     onClick={() => canGoForward && setSelectedWeek(addWeeks(selectedWeek, 1))}
                     disabled={!canGoForward}
-                    style={{ background: "none", border: "1px solid #e6e9ef", borderRadius: 6, padding: "4px 6px", cursor: canGoForward ? "pointer" : "not-allowed", display: "flex", alignItems: "center", color: canGoForward ? "#8d95a3" : "#e6e9ef" }}
+                    style={{ background: "none", border: "1px solid var(--border-default)", borderRadius: 6, padding: "4px 6px", cursor: canGoForward ? "pointer" : "not-allowed", display: "flex", alignItems: "center", color: canGoForward ? "var(--text-muted)" : "var(--border-default)" }}
                     title="Next week"
                   >
                     <ChevronRight size={14} />
@@ -620,17 +620,17 @@ export default function RevenueTracker({
               {/* ═══ PART 2: Weekly History ═══ */}
               <div style={{ paddingTop: 20 }}>
                 {loading ? (
-                  <div style={{ textAlign: "center", padding: 32, color: "#8d95a3", fontSize: 13 }}>
+                  <div style={{ textAlign: "center", padding: 32, color: "var(--text-muted)", fontSize: 13 }}>
                     <Loader2 size={18} style={{ animation: "spin 1s linear infinite", display: "inline-block", marginRight: 8, verticalAlign: "middle" }} />
                     Loading history…
                   </div>
                 ) : logs.length === 0 ? (
                   <div style={{ textAlign: "center", padding: "32px 16px" }}>
-                    <div style={{ width: 48, height: 48, borderRadius: 12, background: "#f8f9fb", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-                      <BarChart3 size={22} style={{ color: "#d1d5db" }} />
+                    <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--bg-input)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+                      <BarChart3 size={22} style={{ color: "var(--text-faint)" }} />
                     </div>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: "#5a6578", margin: "0 0 4px" }}>No entries yet</p>
-                    <p style={{ fontSize: 13, color: "#8d95a3", margin: 0 }}>Log your first week to start tracking trends.</p>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", margin: "0 0 4px" }}>No entries yet</p>
+                    <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>Log your first week to start tracking trends.</p>
                   </div>
                 ) : (
                   <>
@@ -645,10 +645,10 @@ export default function RevenueTracker({
                                 padding: "10px 12px",
                                 fontSize: 10,
                                 fontWeight: 700,
-                                color: "#8d95a3",
+                                color: "var(--text-muted)",
                                 textTransform: "uppercase",
                                 letterSpacing: "0.05em",
-                                borderBottom: "2px solid #f0f2f6",
+                                borderBottom: "2px solid var(--border-light)",
                               }}>
                                 {h}
                               </th>
@@ -669,31 +669,31 @@ export default function RevenueTracker({
                                 onMouseEnter={() => setHoveredRow(log.id)}
                                 onMouseLeave={() => setHoveredRow(null)}
                                 style={{
-                                  background: isHovered ? "#f8f9fd" : "transparent",
+                                  background: isHovered ? "var(--bg-card-hover)" : "transparent",
                                   borderLeft: isCurrentWeek ? "4px solid #4361ee" : "4px solid transparent",
                                   transition: "background 0.15s",
                                 }}
                               >
-                                <td style={{ padding: "11px 12px", fontWeight: 600, color: "#5a6578" }}>
+                                <td style={{ padding: "11px 12px", fontWeight: 600, color: "var(--text-secondary)" }}>
                                   {fmtDate(log.weekOf)}
                                   {isCurrentWeek && (
                                     <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, color: "#4361ee", background: "rgba(67,97,238,0.08)", padding: "1px 5px", borderRadius: 3, verticalAlign: "middle" }}>NOW</span>
                                   )}
                                 </td>
-                                <td style={{ padding: "11px 12px", fontSize: 15, fontWeight: 700, color: "#1b2434" }}>
+                                <td style={{ padding: "11px 12px", fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
                                   {fmtDollar(log.revenue)}
                                 </td>
-                                <td style={{ padding: "11px 12px", color: "#5a6578" }}>{log.orders ?? "—"}</td>
-                                <td style={{ padding: "11px 12px", color: "#5a6578" }}>{log.aov != null ? fmtDollar(Math.round(log.aov)) : "—"}</td>
-                                <td style={{ padding: "11px 12px", color: "#5a6578" }}>{log.expenses != null ? fmtDollar(Math.round(log.expenses)) : "—"}</td>
-                                <td style={{ padding: "11px 12px", fontWeight: 600, color: log.profit != null ? (log.profit >= 0 ? "#10b981" : "#ef4444") : "#b4bac5" }}>
+                                <td style={{ padding: "11px 12px", color: "var(--text-secondary)" }}>{log.orders ?? "—"}</td>
+                                <td style={{ padding: "11px 12px", color: "var(--text-secondary)" }}>{log.aov != null ? fmtDollar(Math.round(log.aov)) : "—"}</td>
+                                <td style={{ padding: "11px 12px", color: "var(--text-secondary)" }}>{log.expenses != null ? fmtDollar(Math.round(log.expenses)) : "—"}</td>
+                                <td style={{ padding: "11px 12px", fontWeight: 600, color: log.profit != null ? (log.profit >= 0 ? "#10b981" : "#ef4444") : "var(--text-faint)" }}>
                                   {log.profit != null ? fmtDollar(Math.round(log.profit)) : "—"}
                                 </td>
                                 <td style={{ padding: "11px 12px" }}>
                                   {log.margin != null ? (
                                     <MarginPill value={log.margin} />
                                   ) : (
-                                    <span style={{ color: "#b4bac5" }}>—</span>
+                                    <span style={{ color: "var(--text-faint)" }}>—</span>
                                   )}
                                 </td>
                                 <td style={{ padding: "11px 12px" }}>
@@ -702,7 +702,7 @@ export default function RevenueTracker({
                                   ) : vsTarget === "below" ? (
                                     <Pill bg="rgba(239,68,68,0.08)" color="#ef4444">Below</Pill>
                                   ) : (
-                                    <span style={{ color: "#b4bac5", fontSize: 12 }}>—</span>
+                                    <span style={{ color: "var(--text-faint)", fontSize: 12 }}>—</span>
                                   )}
                                 </td>
                                 <td style={{ padding: "11px 8px", textAlign: "center" }}>
@@ -714,7 +714,7 @@ export default function RevenueTracker({
                                       background: "none",
                                       border: "none",
                                       cursor: "pointer",
-                                      color: isHovered ? "#8d95a3" : "transparent",
+                                      color: isHovered ? "var(--text-muted)" : "transparent",
                                       padding: 4,
                                       borderRadius: 4,
                                       display: "inline-flex",
@@ -764,7 +764,7 @@ export default function RevenueTracker({
                           value={monthly.targetPct != null ? `${monthly.targetPct}%` : "—"}
                           sub={monthly.monthlyTarget ? `of ${fmtDollar(Math.round(monthly.monthlyTarget))}` : "No target set"}
                           valueColor={
-                            monthly.targetPct == null ? "#8d95a3"
+                            monthly.targetPct == null ? "var(--text-muted)"
                               : monthly.targetPct >= 80 ? "#10b981"
                               : monthly.targetPct >= 50 ? "#f59e0b"
                               : "#ef4444"
@@ -785,7 +785,7 @@ export default function RevenueTracker({
                           label="Trend"
                           value={monthly.trend === "up" ? "Up" : monthly.trend === "down" ? "Down" : "—"}
                           sub={monthly.trend ? "vs last month" : "Need more data"}
-                          valueColor={monthly.trend === "up" ? "#10b981" : monthly.trend === "down" ? "#ef4444" : "#8d95a3"}
+                          valueColor={monthly.trend === "up" ? "#10b981" : monthly.trend === "down" ? "#ef4444" : "var(--text-muted)"}
                         />
                       </div>
                     )}
@@ -794,8 +794,8 @@ export default function RevenueTracker({
               </div>
 
               {/* Integration hint */}
-              <div style={{ marginTop: 16, padding: "10px 14px", background: "#fafbfd", borderRadius: 8, border: "1px solid #f0f2f6", textAlign: "center" }}>
-                <span style={{ fontSize: 12, color: "#8d95a3" }}>
+              <div style={{ marginTop: 16, padding: "10px 14px", background: "var(--bg-elevated)", borderRadius: 8, border: "1px solid var(--border-light)", textAlign: "center" }}>
+                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
                   Want this to fill automatically?{" "}
                   <Link href="/settings" style={{ color: "#4361ee", fontWeight: 600, textDecoration: "none" }}>
                     Connect Shopify or Stripe in Settings
@@ -823,15 +823,15 @@ function InputCell({
 }) {
   return (
     <div style={{
-      background: "#f8f9fb",
+      background: "var(--bg-input)",
       borderRadius: 10,
       padding: "10px 12px 6px",
-      border: "1px solid #f0f2f6",
+      border: "1px solid var(--border-light)",
     }}>
       <div style={{
         fontSize: 11,
         fontWeight: 600,
-        color: "#8d95a3",
+        color: "var(--text-muted)",
         textTransform: "uppercase",
         letterSpacing: "0.5px",
         marginBottom: 2,
@@ -858,7 +858,7 @@ function SummaryCard({
   label,
   value,
   sub,
-  valueColor = "#1b2434",
+  valueColor = "var(--text-primary)",
   bgTint,
 }: {
   label: string;
@@ -869,17 +869,17 @@ function SummaryCard({
 }) {
   return (
     <div style={{
-      background: bgTint || "#fff",
-      border: "1px solid #f0f2f6",
+      background: bgTint || "var(--bg-card)",
+      border: "1px solid var(--border-light)",
       borderRadius: 12,
       padding: "14px 16px",
       boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
     }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
         {label}
       </div>
       <div style={{ fontSize: 22, fontWeight: 800, color: valueColor, lineHeight: 1.1 }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: "#b4bac5", marginTop: 4 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 4 }}>{sub}</div>}
     </div>
   );
 }

@@ -2,12 +2,12 @@ import Skeleton from "@/components/Skeleton";
 
 export default function PricingLoading() {
   return (
-    <div style={{ minHeight: "100vh", background: "#fafafa" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-page)" }}>
       {/* Nav bar */}
       <div style={{
         height: 56,
-        background: "#fff",
-        borderBottom: "1px solid #e6e9ef",
+        background: "var(--bg-card)",
+        borderBottom: "1px solid var(--border-default)",
         display: "flex",
         alignItems: "center",
         padding: "0 24px",
@@ -27,8 +27,8 @@ export default function PricingLoading() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           {[false, true].map((isPro, idx) => (
             <div key={idx} style={{
-              background: "#fff",
-              border: isPro ? "2px solid #4361ee" : "1px solid #e6e9ef",
+              background: "var(--bg-card)",
+              border: isPro ? "2px solid #4361ee" : "1px solid var(--border-default)",
               borderRadius: 16,
               padding: 32,
               textAlign: "left",

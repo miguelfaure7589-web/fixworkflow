@@ -24,13 +24,13 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center px-4 py-6">
+    <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center px-4 py-6">
       <div className="w-full max-w-md">
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 sm:p-8 shadow-sm">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 text-center">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-2xl p-6 sm:p-8 shadow-sm">
+          <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] mb-2 text-center">
             Forgot your password?
           </h1>
-          <p className="text-gray-500 mb-8 text-center">
+          <p className="text-[var(--text-muted)] mb-8 text-center">
             Enter your email and we&apos;ll send you a link to reset your password.
           </p>
 
@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
                   Email
                 </label>
                 <input
@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                   placeholder="you@example.com"
                 />
               </div>
@@ -65,14 +65,14 @@ export default function ForgotPasswordPage() {
             </form>
           )}
 
-          <p className="mt-6 text-center text-sm text-gray-500">
+          <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
             <Link href="/login" className="text-indigo-600 hover:text-indigo-700 font-medium">
               Back to login
             </Link>
           </p>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
+        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-[var(--text-muted)]">
           <Shield className="w-3.5 h-3.5" />
           <span>Your data stays private. We never share your business metrics.</span>
         </div>

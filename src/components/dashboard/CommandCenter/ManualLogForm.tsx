@@ -45,15 +45,15 @@ function InputCell({
 }) {
   return (
     <div style={{
-      background: "#f8f9fb",
+      background: "var(--bg-input)",
       borderRadius: 10,
       padding: "10px 12px 6px",
-      border: "1px solid #f0f2f6",
+      border: "1px solid var(--border-light)",
     }}>
       <div style={{
         fontSize: 11,
         fontWeight: 600,
-        color: "#8d95a3",
+        color: "var(--text-muted)",
         textTransform: "uppercase",
         letterSpacing: "0.5px",
         marginBottom: 2,
@@ -110,7 +110,7 @@ export default function ManualLogForm({
     borderRadius: 8,
     fontSize: 20,
     fontWeight: 700,
-    color: "#1b2434",
+    color: "var(--text-primary)",
     background: "transparent",
     outline: "none",
     boxSizing: "border-box",
@@ -127,7 +127,7 @@ export default function ManualLogForm({
         {/* Revenue */}
         <InputCell label="REVENUE" required>
           <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 18, fontWeight: 600, color: "#b4bac5", pointerEvents: "none" }}>$</span>
+            <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 18, fontWeight: 600, color: "var(--text-faint)", pointerEvents: "none" }}>$</span>
             <input
               type="number"
               placeholder="0"
@@ -152,7 +152,7 @@ export default function ManualLogForm({
         {/* Expenses */}
         <InputCell label="EXPENSES">
           <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 18, fontWeight: 600, color: "#b4bac5", pointerEvents: "none" }}>$</span>
+            <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 18, fontWeight: 600, color: "var(--text-faint)", pointerEvents: "none" }}>$</span>
             <input
               type="number"
               placeholder="0"
@@ -170,7 +170,7 @@ export default function ManualLogForm({
           style={{
             padding: isMobile ? "12px 20px" : "12px 24px",
             borderRadius: 10,
-            background: submitting ? "#b4bac5" : "linear-gradient(135deg, #4361ee, #6366f1)",
+            background: submitting ? "var(--text-faint)" : "linear-gradient(135deg, #4361ee, #6366f1)",
             color: "#fff",
             fontSize: 14,
             fontWeight: 700,
@@ -199,16 +199,16 @@ export default function ManualLogForm({
         gap: 12,
         marginTop: 14,
         paddingBottom: 20,
-        borderBottom: "1px solid #f0f2f6",
+        borderBottom: "1px solid var(--border-light)",
       }}>
         <button
           onClick={() => setSelectedWeek(addWeeks(selectedWeek, -1))}
-          style={{ background: "none", border: "1px solid #e6e9ef", borderRadius: 6, padding: "4px 6px", cursor: "pointer", display: "flex", alignItems: "center", color: "#8d95a3" }}
+          style={{ background: "none", border: "1px solid var(--border-default)", borderRadius: 6, padding: "4px 6px", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--text-muted)" }}
           title="Previous week"
         >
           <ChevronLeft size={14} />
         </button>
-        <span style={{ fontSize: 13, fontWeight: 600, color: isSameWeek(selectedWeek, new Date()) ? "#4361ee" : "#5a6578" }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: isSameWeek(selectedWeek, new Date()) ? "#4361ee" : "var(--text-secondary)" }}>
           Week of {fmtWeekLabel(selectedWeek)}
           {isSameWeek(selectedWeek, new Date()) && (
             <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#4361ee", background: "rgba(67,97,238,0.08)", padding: "2px 6px", borderRadius: 4 }}>
@@ -219,7 +219,7 @@ export default function ManualLogForm({
         <button
           onClick={() => canGoForward && setSelectedWeek(addWeeks(selectedWeek, 1))}
           disabled={!canGoForward}
-          style={{ background: "none", border: "1px solid #e6e9ef", borderRadius: 6, padding: "4px 6px", cursor: canGoForward ? "pointer" : "not-allowed", display: "flex", alignItems: "center", color: canGoForward ? "#8d95a3" : "#e6e9ef" }}
+          style={{ background: "none", border: "1px solid var(--border-default)", borderRadius: 6, padding: "4px 6px", cursor: canGoForward ? "pointer" : "not-allowed", display: "flex", alignItems: "center", color: canGoForward ? "var(--text-muted)" : "var(--border-default)" }}
           title="Next week"
         >
           <ChevronRight size={14} />

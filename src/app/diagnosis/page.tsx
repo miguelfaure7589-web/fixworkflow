@@ -131,8 +131,8 @@ function OptionCard({
       onClick={onClick}
       className={`w-full text-left p-4 rounded-[11px] border transition-all duration-200 ${
         selected
-          ? "border-[#4361ee] bg-[rgba(67,97,238,0.07)] text-gray-900"
-          : "border-[#e6e9ef] bg-white text-gray-600 hover:border-gray-300"
+          ? "border-[#4361ee] bg-[rgba(67,97,238,0.07)] text-[var(--text-primary)]"
+          : "border-[var(--border-default)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[var(--border-default)]"
       }`}
     >
       {children}
@@ -305,8 +305,8 @@ function DiagnosisForm() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-[#f4f5f8] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+      <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-[var(--text-muted)] animate-spin" />
       </div>
     );
   }
@@ -319,11 +319,11 @@ function DiagnosisForm() {
     const gaugeColor = calculatedScore >= 70 ? "#10b981" : calculatedScore >= 50 ? "#4361ee" : calculatedScore >= 35 ? "#f59e0b" : "#ef4444";
 
     return (
-      <div className={`${outfit.className} min-h-screen bg-[#f4f5f8] flex items-center justify-center p-4`}>
+      <div className={`${outfit.className} min-h-screen bg-[var(--bg-page)] flex items-center justify-center p-4`}>
         <div className="text-center">
           <div className="relative w-40 h-40 mx-auto mb-6">
             <svg className="w-40 h-40 -rotate-90" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="54" fill="none" stroke="#e5e7eb" strokeWidth="8" />
+              <circle cx="60" cy="60" r="54" fill="none" stroke="var(--border-default)" strokeWidth="8" />
               <circle
                 cx="60" cy="60" r="54" fill="none"
                 stroke={gaugeColor}
@@ -334,12 +334,12 @@ function DiagnosisForm() {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-4xl font-extrabold text-gray-900 tabular-nums">{animatedScore}</span>
-              <span className="text-xs text-gray-400">/ 100</span>
+              <span className="text-4xl font-extrabold text-[var(--text-primary)] tabular-nums">{animatedScore}</span>
+              <span className="text-xs text-[var(--text-muted)]">/ 100</span>
             </div>
           </div>
-          <h2 className="text-xl font-bold text-gray-900">Your Revenue Health Score</h2>
-          <p className="text-sm text-gray-400 mt-2">Redirecting to your dashboard...</p>
+          <h2 className="text-xl font-bold text-[var(--text-primary)]">Your Revenue Health Score</h2>
+          <p className="text-sm text-[var(--text-muted)] mt-2">Redirecting to your dashboard...</p>
         </div>
       </div>
     );
@@ -349,7 +349,7 @@ function DiagnosisForm() {
 
   if (submitting) {
     return (
-      <div className={`${outfit.className} min-h-screen bg-[#f4f5f8] flex items-center justify-center p-4`}>
+      <div className={`${outfit.className} min-h-screen bg-[var(--bg-page)] flex items-center justify-center p-4`}>
         <div className="text-center">
           <div className="relative w-20 h-20 mx-auto mb-6">
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500 to-violet-500 animate-pulse" />
@@ -357,8 +357,8 @@ function DiagnosisForm() {
               <Activity className="w-9 h-9 text-white" />
             </div>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Calculating your score...</h2>
-          <p className="text-sm text-gray-400">Analyzing your business profile across 5 pillars</p>
+          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Calculating your score...</h2>
+          <p className="text-sm text-[var(--text-muted)]">Analyzing your business profile across 5 pillars</p>
         </div>
       </div>
     );
@@ -367,15 +367,15 @@ function DiagnosisForm() {
   const progress = (step / TOTAL_STEPS) * 100;
 
   return (
-    <div className={`${outfit.className} min-h-screen bg-[#f4f5f8] flex items-center justify-center p-4`}>
+    <div className={`${outfit.className} min-h-screen bg-[var(--bg-page)] flex items-center justify-center p-4`}>
       <div className="w-full max-w-2xl">
         {/* Progress bar */}
         <div className="mb-8">
-          <div className="flex justify-between text-sm text-gray-400 mb-2">
+          <div className="flex justify-between text-sm text-[var(--text-muted)] mb-2">
             <span>{isEditMode ? "Edit Business Profile" : "Business Diagnosis"}</span>
             <span>Step {step} of {TOTAL_STEPS}</span>
           </div>
-          <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-1 bg-[var(--border-default)] rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{ width: `${progress}%`, background: "linear-gradient(90deg, #6366f1, #4361ee)" }}
@@ -385,11 +385,11 @@ function DiagnosisForm() {
 
         {/* ── Step 1: Business Type ── */}
         {step === 1 && (
-          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-5 sm:p-8 shadow-sm">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-[var(--text-primary)] mb-2">
               What type of business do you run?
             </h2>
-            <p className="text-gray-400 mb-6">
+            <p className="text-[var(--text-muted)] mb-6">
               This determines how we weight your score.
             </p>
             <div className="space-y-3">
@@ -403,12 +403,12 @@ function DiagnosisForm() {
                     onClick={() => { setBusinessType(bt.value); setTimeout(() => goToStep(2), 350); }}
                   >
                     <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${selected ? "bg-blue-100" : "bg-gray-100"}`}>
-                        <Icon className={`w-5 h-5 ${selected ? "text-blue-600" : "text-gray-400"}`} />
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${selected ? "bg-blue-100 dark:bg-blue-500/15" : "bg-[var(--bg-subtle)]"}`}>
+                        <Icon className={`w-5 h-5 ${selected ? "text-blue-600" : "text-[var(--text-muted)]"}`} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium">{bt.label}</div>
-                        <div className="text-sm text-gray-400 mt-0.5">{bt.description}</div>
+                        <div className="text-sm text-[var(--text-muted)] mt-0.5">{bt.description}</div>
                       </div>
                       {selected && <CheckCircle2 className="w-5 h-5 text-[#4361ee] flex-shrink-0" />}
                     </div>
@@ -421,11 +421,11 @@ function DiagnosisForm() {
 
         {/* ── Step 2: Friction Areas (multi-select, max 3) ── */}
         {step === 2 && (
-          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-5 sm:p-8 shadow-sm">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-[var(--text-primary)] mb-2">
               Where does your business feel stuck?
             </h2>
-            <p className="text-gray-400 mb-6">
+            <p className="text-[var(--text-muted)] mb-6">
               Pick up to 3 areas where you feel the most friction.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -438,15 +438,15 @@ function DiagnosisForm() {
                     onClick={() => !disabled && toggleFriction(opt.value)}
                     className={`text-left p-3.5 rounded-[11px] border transition-all duration-200 ${
                       selected
-                        ? "border-[#4361ee] bg-[rgba(67,97,238,0.07)] text-gray-900"
+                        ? "border-[#4361ee] bg-[rgba(67,97,238,0.07)] text-[var(--text-primary)]"
                         : disabled
-                          ? "border-[#e6e9ef] bg-gray-50 text-gray-300 cursor-not-allowed"
-                          : "border-[#e6e9ef] bg-white text-gray-600 hover:border-gray-300"
+                          ? "border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-muted)] cursor-not-allowed"
+                          : "border-[var(--border-default)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[var(--border-default)]"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-5 h-5 rounded-[5px] border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                        selected ? "border-[#4361ee] bg-[#4361ee]" : "border-gray-300 bg-white"
+                        selected ? "border-[#4361ee] bg-[#4361ee]" : "border-[var(--border-default)] bg-[var(--bg-card)]"
                       }`}>
                         {selected && (
                           <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -464,7 +464,7 @@ function DiagnosisForm() {
             {validationError && <p className="mt-3 text-sm text-red-500">{validationError}</p>}
 
             <div className="flex items-center justify-between mt-6">
-              <button onClick={() => goToStep(1)} className="flex items-center gap-1.5 text-[13px] text-[#5a6578] hover:text-gray-900 transition-colors">
+              <button onClick={() => goToStep(1)} className="flex items-center gap-1.5 text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
                 <ChevronLeft className="w-4 h-4" /> Back
               </button>
               <button
@@ -475,7 +475,7 @@ function DiagnosisForm() {
                 className={`px-6 py-3 rounded-[10px] font-semibold text-white transition-all duration-150 ${
                   frictionAreas.length > 0
                     ? "bg-[#4361ee] hover:bg-[#3a56d4] hover:-translate-y-px hover:shadow-md"
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-[var(--border-default)] text-[var(--text-muted)] cursor-not-allowed"
                 }`}
               >
                 Continue
@@ -486,11 +486,11 @@ function DiagnosisForm() {
 
         {/* ── Step 3: Primary Goal ── */}
         {step === 3 && (
-          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-5 sm:p-8 shadow-sm">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-[var(--text-primary)] mb-2">
               What is your #1 goal right now?
             </h2>
-            <p className="text-gray-400 mb-6">
+            <p className="text-[var(--text-muted)] mb-6">
               This shapes the playbooks we recommend.
             </p>
             <div className="space-y-3">
@@ -510,7 +510,7 @@ function DiagnosisForm() {
                 );
               })}
             </div>
-            <button onClick={() => goToStep(2)} className="flex items-center gap-1.5 mt-6 text-[13px] text-[#5a6578] hover:text-gray-900 transition-colors">
+            <button onClick={() => goToStep(2)} className="flex items-center gap-1.5 mt-6 text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
           </div>
@@ -518,11 +518,11 @@ function DiagnosisForm() {
 
         {/* ── Step 4: Monthly Revenue ── */}
         {step === 4 && (
-          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-5 sm:p-8 shadow-sm">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-[var(--text-primary)] mb-2">
               What is your approximate monthly revenue?
             </h2>
-            <p className="text-gray-400 mb-6">
+            <p className="text-[var(--text-muted)] mb-6">
               Pick the range that is closest.
             </p>
             <div className="space-y-3">
@@ -542,7 +542,7 @@ function DiagnosisForm() {
                 );
               })}
             </div>
-            <button onClick={() => goToStep(3)} className="flex items-center gap-1.5 mt-6 text-[13px] text-[#5a6578] hover:text-gray-900 transition-colors">
+            <button onClick={() => goToStep(3)} className="flex items-center gap-1.5 mt-6 text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
           </div>
@@ -550,11 +550,11 @@ function DiagnosisForm() {
 
         {/* ── Step 5: Gross Margin ── */}
         {step === 5 && (
-          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-5 sm:p-8 shadow-sm">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-[var(--text-primary)] mb-2">
               What is your estimated gross margin?
             </h2>
-            <p className="text-gray-400 mb-6">
+            <p className="text-[var(--text-muted)] mb-6">
               Revenue minus direct costs (materials, COGS, direct labor). If unsure, take your best guess.
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -574,7 +574,7 @@ function DiagnosisForm() {
                 );
               })}
             </div>
-            <button onClick={() => goToStep(4)} className="flex items-center gap-1.5 mt-6 text-[13px] text-[#5a6578] hover:text-gray-900 transition-colors">
+            <button onClick={() => goToStep(4)} className="flex items-center gap-1.5 mt-6 text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
           </div>
@@ -582,11 +582,11 @@ function DiagnosisForm() {
 
         {/* ── Step 6: Conversion Rate ── */}
         {step === 6 && (
-          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-5 sm:p-8 shadow-sm">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-[var(--text-primary)] mb-2">
               What percentage of leads or visitors become paying customers?
             </h2>
-            <p className="text-gray-400 mb-6">
+            <p className="text-[var(--text-muted)] mb-6">
               Your conversion rate from inquiry/visit to sale.
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -606,7 +606,7 @@ function DiagnosisForm() {
                 );
               })}
             </div>
-            <button onClick={() => goToStep(5)} className="flex items-center gap-1.5 mt-6 text-[13px] text-[#5a6578] hover:text-gray-900 transition-colors">
+            <button onClick={() => goToStep(5)} className="flex items-center gap-1.5 mt-6 text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
           </div>
@@ -614,11 +614,11 @@ function DiagnosisForm() {
 
         {/* ── Step 7: Personal Credit ── */}
         {step === 7 && (
-          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-5 sm:p-8 shadow-sm">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-[var(--text-primary)] mb-2">
               Do you use personal credit for business expenses?
             </h2>
-            <p className="text-gray-400 mb-6">
+            <p className="text-[var(--text-muted)] mb-6">
               This helps us identify hidden costs affecting your profitability.
             </p>
             <div className="space-y-3">
@@ -633,7 +633,7 @@ function DiagnosisForm() {
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-medium">{opt.label}</div>
-                        <div className="text-sm text-gray-400 mt-0.5">{opt.description}</div>
+                        <div className="text-sm text-[var(--text-muted)] mt-0.5">{opt.description}</div>
                       </div>
                       {selected && <CheckCircle2 className="w-5 h-5 text-[#4361ee] flex-shrink-0 ml-3" />}
                     </div>
@@ -641,7 +641,7 @@ function DiagnosisForm() {
                 );
               })}
             </div>
-            <button onClick={() => goToStep(6)} className="flex items-center gap-1.5 mt-6 text-[13px] text-[#5a6578] hover:text-gray-900 transition-colors">
+            <button onClick={() => goToStep(6)} className="flex items-center gap-1.5 mt-6 text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
           </div>
@@ -649,11 +649,11 @@ function DiagnosisForm() {
 
         {/* ── Step 8: Free Text (optional) ── */}
         {step === 8 && (
-          <div className="bg-white border border-[#e6e9ef] rounded-[14px] p-5 sm:p-8 shadow-sm">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-5 sm:p-8 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-semibold text-[var(--text-primary)] mb-2">
               Anything else we should know about your business?
             </h2>
-            <p className="text-gray-400 mb-6">
+            <p className="text-[var(--text-muted)] mb-6">
               Optional \u2014 helps us personalize your recommendations.
             </p>
             <div className="relative">
@@ -662,15 +662,15 @@ function DiagnosisForm() {
                 onChange={(e) => { if (e.target.value.length <= 500) setFreeText(e.target.value); }}
                 placeholder="e.g. I spend 3 hours a day on manual invoicing..."
                 rows={4}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#4361ee] focus:bg-white focus:ring-1 focus:ring-[#4361ee] transition-all resize-none"
+                className="w-full px-4 py-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-primary)] placeholder-[var(--text-faint)] focus:outline-none focus:border-[#4361ee] focus:bg-[var(--bg-card)] focus:ring-1 focus:ring-[#4361ee] transition-all resize-none"
               />
-              <span className="absolute bottom-3 right-4 text-xs text-gray-400">{freeText.length}/500</span>
+              <span className="absolute bottom-3 right-4 text-xs text-[var(--text-muted)]">{freeText.length}/500</span>
             </div>
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => handleSubmit(true)}
                 disabled={submitting}
-                className="flex-1 px-6 py-3 rounded-[10px] border-2 border-gray-200 text-gray-600 font-medium hover:border-gray-300 hover:bg-gray-50 transition-all duration-150 disabled:opacity-50"
+                className="flex-1 px-6 py-3 rounded-[10px] border-2 border-[var(--border-default)] text-[var(--text-secondary)] font-medium hover:border-[var(--border-default)] hover:bg-[var(--bg-card-hover)] transition-all duration-150 disabled:opacity-50"
               >
                 Skip
               </button>
@@ -683,14 +683,14 @@ function DiagnosisForm() {
                 {isEditMode ? "Save Changes" : "Finish"}
               </button>
             </div>
-            <button onClick={() => goToStep(7)} className="flex items-center gap-1.5 mt-6 text-[13px] text-[#5a6578] hover:text-gray-900 transition-colors">
+            <button onClick={() => goToStep(7)} className="flex items-center gap-1.5 mt-6 text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
           </div>
         )}
 
         {/* Privacy note */}
-        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
+        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-[var(--text-muted)]">
           <Shield className="w-3.5 h-3.5" />
           <span>Your data stays private. We never share your business metrics.</span>
         </div>
@@ -703,8 +703,8 @@ export default function DiagnosisPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#f4f5f8] flex items-center justify-center">
-          <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+        <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
+          <Loader2 className="w-6 h-6 text-[var(--text-muted)] animate-spin" />
         </div>
       }
     >

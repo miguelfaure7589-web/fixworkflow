@@ -78,7 +78,7 @@ export default function AiChat() {
     <>
       {/* Chat window */}
       {open && (
-        <div className="fixed bottom-24 right-6 w-[380px] max-h-[520px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-50 overflow-hidden">
+        <div className="fixed bottom-24 right-6 w-[380px] max-h-[520px] rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden bg-[var(--bg-card)] border border-[var(--border-default)]">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -123,14 +123,14 @@ export default function AiChat() {
                     className={`max-w-[78%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                       msg.role === "user"
                         ? "bg-gradient-to-r from-blue-600 to-violet-600 text-white rounded-br-md"
-                        : "bg-gray-100 text-gray-700 rounded-bl-md"
+                        : "bg-[var(--bg-subtle)] text-[var(--text-secondary)] rounded-bl-md"
                     }`}
                   >
                     {msg.content}
                   </div>
                   {msg.role === "user" && (
-                    <div className="w-7 h-7 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-xs font-bold">U</span>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 bg-[var(--bg-subtle)]">
+                      <span className="text-[var(--text-muted)] text-xs font-bold">U</span>
                     </div>
                   )}
                 </div>
@@ -139,7 +139,7 @@ export default function AiChat() {
                   <div className="flex justify-end mt-1 mr-9">
                     <div className="flex items-center gap-1">
                       <CheckCheck className="w-3.5 h-3.5 text-blue-500" />
-                      <span className="text-[10px] text-gray-400">Delivered</span>
+                      <span className="text-[10px] text-[var(--text-faint)]">Delivered</span>
                     </div>
                   </div>
                 )}
@@ -150,11 +150,11 @@ export default function AiChat() {
                 <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-violet-500 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-xs font-bold">M</span>
                 </div>
-                <div className="bg-gray-100 px-5 py-3.5 rounded-2xl rounded-bl-md">
+                <div className="px-5 py-3.5 rounded-2xl rounded-bl-md bg-[var(--bg-subtle)]">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-[typing_1.4s_ease-in-out_infinite]" />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-[typing_1.4s_ease-in-out_0.2s_infinite]" />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-[typing_1.4s_ease-in-out_0.4s_infinite]" />
+                    <span className="w-2 h-2 rounded-full animate-[typing_1.4s_ease-in-out_infinite] bg-[var(--text-faint)]" />
+                    <span className="w-2 h-2 rounded-full animate-[typing_1.4s_ease-in-out_0.2s_infinite] bg-[var(--text-faint)]" />
+                    <span className="w-2 h-2 rounded-full animate-[typing_1.4s_ease-in-out_0.4s_infinite] bg-[var(--text-faint)]" />
                   </div>
                   <style jsx>{`
                     @keyframes typing {
@@ -170,17 +170,17 @@ export default function AiChat() {
 
           {/* Prefill banner */}
           {prefillMeta && (
-            <div className="border-t border-blue-100 bg-blue-50 px-4 py-2">
+            <div className="border-t border-blue-100 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-900 px-4 py-2">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-blue-700">Prompt: {prefillMeta.title}</p>
-                <button onClick={() => { setPrefillMeta(null); setInput(""); }} className="text-xs text-blue-500 hover:text-blue-700">Clear</button>
+                <p className="text-xs font-medium text-blue-700 dark:text-blue-300">Prompt: {prefillMeta.title}</p>
+                <button onClick={() => { setPrefillMeta(null); setInput(""); }} className="text-xs text-blue-500 hover:text-blue-700 dark:hover:text-blue-300">Clear</button>
               </div>
-              <p className="text-[10px] text-blue-500 mt-0.5">Review the prompt below, then hit send.</p>
+              <p className="text-[10px] text-blue-500 dark:text-blue-400 mt-0.5">Review the prompt below, then hit send.</p>
             </div>
           )}
 
           {/* Input */}
-          <div className="border-t border-gray-100 px-4 py-3">
+          <div className="border-t px-4 py-3 border-[var(--border-light)]">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -194,7 +194,7 @@ export default function AiChat() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   rows={3}
-                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all resize-none"
+                  className="flex-1 px-4 py-2.5 rounded-xl text-xs transition-all resize-none bg-[var(--bg-input)] border border-[var(--border-default)] text-[var(--text-secondary)] placeholder-[var(--text-faint)] focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
                 />
               ) : (
                 <input
@@ -202,7 +202,7 @@ export default function AiChat() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all"
+                  className="flex-1 px-4 py-2.5 rounded-full text-sm transition-all bg-[var(--bg-input)] border border-[var(--border-default)] text-[var(--text-secondary)] placeholder-[var(--text-faint)] focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
                 />
               )}
               <button
@@ -220,7 +220,7 @@ export default function AiChat() {
       {/* Floating button */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-blue-600 to-violet-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-200 hover:from-blue-500 hover:to-violet-500 transition-all z-50 group"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-blue-600 to-violet-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-200 dark:shadow-blue-900/30 hover:from-blue-500 hover:to-violet-500 transition-all z-50 group"
       >
         {open ? (
           <X className="w-6 h-6" />

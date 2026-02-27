@@ -23,13 +23,13 @@ function getInitials(name?: string | null, email?: string | null): string {
 }
 
 const base: React.CSSProperties = {
-  display: 'block', padding: '8px 16px', fontSize: 13, color: '#1b2434',
+  display: 'block', padding: '8px 16px', fontSize: 13, color: 'var(--text-primary)',
   textDecoration: 'none', cursor: 'pointer', transition: 'background 0.15s',
 };
 
 function MenuItem({ href, onClick, children, muted }: { href?: string; onClick?: () => void; children: React.ReactNode; muted?: boolean }) {
   const [hov, setHov] = useState(false);
-  const style: React.CSSProperties = { ...base, background: hov ? '#fafbfd' : 'transparent', ...(muted ? { color: '#8d95a3' } : {}) };
+  const style: React.CSSProperties = { ...base, background: hov ? 'var(--bg-elevated)' : 'transparent', ...(muted ? { color: 'var(--text-muted)' } : {}) };
 
   if (href) {
     return <Link href={href} onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={style}>{children}</Link>;
@@ -79,17 +79,17 @@ export default function UserAvatarDropdown({ user }: UserAvatarDropdownProps) {
       {open && (
         <div style={{
           position: 'absolute', top: 'calc(100% + 8px)', right: 0, minWidth: 200,
-          background: '#fff', borderRadius: 10, border: '1px solid #e6e9ef',
+          background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border-default)',
           boxShadow: '0 8px 24px rgba(0,0,0,0.08)', padding: '12px 0', zIndex: 200,
         }}>
           <div style={{ padding: '8px 16px' }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#1b2434' }}>{user.name || 'User'}</div>
-            {user.email && <div style={{ fontSize: 11, color: '#8d95a3', marginTop: 1 }}>{user.email}</div>}
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{user.name || 'User'}</div>
+            {user.email && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{user.email}</div>}
           </div>
-          <div style={{ height: 1, background: '#f0f2f6', margin: '6px 0' }} />
+          <div style={{ height: 1, background: 'var(--border-light)', margin: '6px 0' }} />
           <MenuItem href="/dashboard" onClick={() => setOpen(false)}>Dashboard</MenuItem>
           <MenuItem href="/settings" onClick={() => setOpen(false)}>Settings</MenuItem>
-          <div style={{ height: 1, background: '#f0f2f6', margin: '6px 0' }} />
+          <div style={{ height: 1, background: 'var(--border-light)', margin: '6px 0' }} />
           <MenuItem muted onClick={() => signOut({ callbackUrl: '/' })}>Sign Out</MenuItem>
         </div>
       )}

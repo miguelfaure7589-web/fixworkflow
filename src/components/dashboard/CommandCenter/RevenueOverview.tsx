@@ -11,6 +11,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
+import { useTheme } from "@/components/ThemeProvider";
 import SourceBadge from "./SourceBadge";
 import type { WeeklyLogEntry, MonthlySummary } from "./types";
 
@@ -31,26 +32,26 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
   if (!active || !payload?.length || !label) return null;
   return (
     <div style={{
-      background: "#1b2434", color: "#fff", padding: "8px 14px", borderRadius: 8,
+      background: "var(--tooltip-bg)", color: "var(--tooltip-text)", padding: "8px 14px", borderRadius: 8,
       fontSize: 12, fontWeight: 700, boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
     }}>
       <div style={{ fontSize: 16 }}>{fmtDollarFull(payload[0].value)}</div>
-      <div style={{ fontSize: 10, fontWeight: 500, color: "#b4bac5", marginTop: 2 }}>{label}</div>
+      <div style={{ fontSize: 10, fontWeight: 500, color: "var(--text-faint)", marginTop: 2 }}>{label}</div>
     </div>
   );
 }
 
-function SummaryCard({ label, value, sub, valueColor = "#1b2434", bgTint }: {
+function SummaryCard({ label, value, sub, valueColor = "var(--text-primary)", bgTint }: {
   label: string; value: string; sub?: string; valueColor?: string; bgTint?: string;
 }) {
   return (
     <div style={{
-      background: bgTint || "#fff", border: "1px solid #f0f2f6", borderRadius: 12,
-      padding: "14px 16px", boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+      background: bgTint || "var(--bg-card)", border: "1px solid var(--border-light)", borderRadius: 12,
+      padding: "14px 16px", boxShadow: "var(--shadow-card)",
     }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 20, fontWeight: 800, color: valueColor, lineHeight: 1.1 }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: "#b4bac5", marginTop: 4 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 4 }}>{sub}</div>}
     </div>
   );
 }
@@ -72,6 +73,7 @@ export default function RevenueOverview({
   isMobile: boolean;
   isTablet: boolean;
 }) {
+  const { isDark } = useTheme();
   const ranges = [
     { label: "4w", weeks: 4 },
     { label: "8w", weeks: 8 },
@@ -96,16 +98,21 @@ export default function RevenueOverview({
     : null;
   const isUp = monthly.trend === "up";
 
+  const tickColor = isDark ? "#9ca0b0" : "#8d95a3";
+  const faintTickColor = isDark ? "#6b6f82" : "#b4bac5";
+  const axisStroke = isDark ? "#252838" : "#f0f2f6";
+  const cursorStroke = isDark ? "#303548" : "#e6e9ef";
+
   return (
     <div style={{ marginBottom: 28 }}>
       {/* ── Big Revenue Header ── */}
       <div style={{
-        background: "#fff", border: "1px solid #f0f2f6", borderRadius: 14,
+        background: "var(--bg-card)", border: "1px solid var(--border-light)", borderRadius: 14,
         padding: isMobile ? "20px 16px" : "24px 28px",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.04)", marginBottom: 16,
+        boxShadow: "var(--shadow-card)", marginBottom: 16,
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
             Revenue Overview
           </div>
           {revenueSource && <SourceBadge source={revenueSource} />}
@@ -113,10 +120,10 @@ export default function RevenueOverview({
 
         {/* Big number + delta */}
         <div style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap" }}>
-          <span style={{ fontSize: isMobile ? 32 : isTablet ? 36 : 44, fontWeight: 800, color: "#1b2434", lineHeight: 1 }}>
+          <span style={{ fontSize: isMobile ? 32 : isTablet ? 36 : 44, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1 }}>
             {fmtDollarFull(totalRevenue)}
           </span>
-          <span style={{ fontSize: 13, color: "#8d95a3", fontWeight: 500 }}>this month</span>
+          <span style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>this month</span>
           {vsLastMonth && (
             <span style={{
               display: "inline-flex", alignItems: "center", gap: 4,
@@ -140,9 +147,9 @@ export default function RevenueOverview({
                   onClick={() => setRangeIdx(i)}
                   style={{
                     padding: "3px 10px", borderRadius: 6, border: "1px solid",
-                    borderColor: rangeIdx === i ? "#4361ee" : "#e6e9ef",
-                    background: rangeIdx === i ? "rgba(67,97,238,0.06)" : "#fff",
-                    color: rangeIdx === i ? "#4361ee" : "#8d95a3",
+                    borderColor: rangeIdx === i ? "#4361ee" : "var(--border-default)",
+                    background: rangeIdx === i ? "rgba(67,97,238,0.06)" : "var(--bg-card)",
+                    color: rangeIdx === i ? "#4361ee" : "var(--text-muted)",
                     fontSize: 11, fontWeight: 600, cursor: "pointer",
                   }}
                 >
@@ -154,8 +161,8 @@ export default function RevenueOverview({
 
           {tooFew ? (
             <div style={{ height: 180, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
-              <BarChart3 size={28} style={{ color: "#d1d5db" }} />
-              <span style={{ fontSize: 13, color: "#8d95a3" }}>Log a few more weeks to see your trend line.</span>
+              <BarChart3 size={28} style={{ color: "var(--text-faint)" }} />
+              <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Log a few more weeks to see your trend line.</span>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={isMobile ? 160 : 200}>
@@ -166,19 +173,19 @@ export default function RevenueOverview({
                     <stop offset="100%" stopColor="#4361ee" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#8d95a3" }} tickLine={false} axisLine={{ stroke: "#f0f2f6" }} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: tickColor }} tickLine={false} axisLine={{ stroke: axisStroke }} />
                 <YAxis
                   tickFormatter={(v: number) => fmtDollar(v)}
-                  tick={{ fontSize: 10, fill: "#b4bac5" }} tickLine={false} axisLine={false} width={48}
+                  tick={{ fontSize: 10, fill: faintTickColor }} tickLine={false} axisLine={false} width={48}
                 />
-                <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#e6e9ef" }} />
+                <Tooltip content={<CustomTooltip />} cursor={{ stroke: cursorStroke }} />
                 {weeklyTargetLine != null && (
-                  <ReferenceLine y={weeklyTargetLine} stroke="#b4bac5" strokeDasharray="6 4"
-                    label={{ value: "Target", position: "right", fontSize: 9, fill: "#b4bac5" }} />
+                  <ReferenceLine y={weeklyTargetLine} stroke={faintTickColor} strokeDasharray="6 4"
+                    label={{ value: "Target", position: "right", fontSize: 9, fill: faintTickColor }} />
                 )}
                 <Area type="monotone" dataKey="revenue" stroke="#4361ee" strokeWidth={2.5} fill="url(#ccAreaGrad)"
-                  dot={{ r: 3.5, fill: "#fff", stroke: "#4361ee", strokeWidth: 2 }}
-                  activeDot={{ r: 5, fill: "#4361ee", stroke: "#fff", strokeWidth: 2 }} />
+                  dot={{ r: 3.5, fill: isDark ? "#1a1d28" : "#fff", stroke: "#4361ee", strokeWidth: 2 }}
+                  activeDot={{ r: 5, fill: "#4361ee", stroke: isDark ? "#1a1d28" : "#fff", strokeWidth: 2 }} />
               </AreaChart>
             </ResponsiveContainer>
           )}
@@ -196,7 +203,7 @@ export default function RevenueOverview({
           label="vs Target"
           value={monthly.targetPct != null ? `${monthly.targetPct}%` : "\u2014"}
           sub={monthly.monthlyTarget ? `of ${fmtDollarFull(Math.round(monthly.monthlyTarget))}` : "No target set"}
-          valueColor={monthly.targetPct == null ? "#8d95a3" : monthly.targetPct >= 80 ? "#10b981" : monthly.targetPct >= 50 ? "#f59e0b" : "#ef4444"}
+          valueColor={monthly.targetPct == null ? "var(--text-muted)" : monthly.targetPct >= 80 ? "#10b981" : monthly.targetPct >= 50 ? "#f59e0b" : "#ef4444"}
           bgTint={monthly.targetPct == null ? undefined : monthly.targetPct >= 80 ? "rgba(16,185,129,0.04)" : monthly.targetPct >= 50 ? "rgba(245,158,11,0.04)" : "rgba(239,68,68,0.04)"}
         />
         <SummaryCard
@@ -208,7 +215,7 @@ export default function RevenueOverview({
           label="Last Month"
           value={monthly.lastMonthRevenue > 0 ? fmtDollarFull(Math.round(monthly.lastMonthRevenue)) : "\u2014"}
           sub={monthly.trend ? `Trending ${monthly.trend}` : "Need more data"}
-          valueColor={monthly.trend === "up" ? "#10b981" : monthly.trend === "down" ? "#ef4444" : "#8d95a3"}
+          valueColor={monthly.trend === "up" ? "#10b981" : monthly.trend === "down" ? "#ef4444" : "var(--text-muted)"}
         />
       </div>
     </div>

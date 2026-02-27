@@ -25,12 +25,12 @@ export function ScoreRing({ size, score, animated }: { size: number; score: numb
   return (
     <div style={{ position: 'relative', width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#f0f2f6" strokeWidth={size * 0.052} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--border-light)" strokeWidth={size * 0.052} />
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#4361ee" strokeWidth={size * 0.052}
           strokeLinecap="round" strokeDasharray={c} strokeDashoffset={off}
           style={{ transition: 'stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
       </svg>
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.29, fontWeight: 900, color: '#1b2434' }}>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.29, fontWeight: 900, color: 'var(--text-primary)' }}>
         {val}
       </div>
     </div>
@@ -43,10 +43,10 @@ export function PillarBars({ barHeight = 3 }: { barHeight?: number }) {
       {pillars.map((p) => (
         <div key={p.name}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-            <span style={{ fontSize: 12, color: '#5a6578' }}>{p.name}</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#1b2434' }}>{p.score}</span>
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{p.name}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>{p.score}</span>
           </div>
-          <div style={{ height: barHeight, borderRadius: 2, background: '#f0f2f6' }}>
+          <div style={{ height: barHeight, borderRadius: 2, background: 'var(--border-light)' }}>
             <div style={{ height: barHeight, borderRadius: 2, background: p.color, width: `${p.score}%`,
               transition: 'width 1.5s cubic-bezier(0.4, 0, 0.2, 1)', transitionDelay: '0.6s' }} />
           </div>
@@ -58,8 +58,8 @@ export function PillarBars({ barHeight = 3 }: { barHeight?: number }) {
 
 export default function ScorePreviewCard() {
   return (
-    <div style={{ background: '#ffffff', borderRadius: 18, border: '1px solid #e6e9ef', boxShadow: '0 8px 32px rgba(0,0,0,0.06)', padding: '24px 22px' }}>
-      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.6, color: '#8d95a3', textTransform: 'uppercase' as const, marginBottom: 16 }}>
+    <div style={{ background: 'var(--bg-card)', borderRadius: 18, border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-card)', padding: '24px 22px' }}>
+      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.6, color: 'var(--text-muted)', textTransform: 'uppercase' as const, marginBottom: 16 }}>
         Revenue Health Score
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>

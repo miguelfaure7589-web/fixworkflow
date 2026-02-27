@@ -103,7 +103,7 @@ export default function IntegrationStreams({
 
   return (
     <div style={{ marginBottom: 28 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>
         Integration Data Streams
       </div>
       <div style={{
@@ -118,14 +118,14 @@ export default function IntegrationStreams({
 
           return (
             <div key={stream.id} style={{
-              background: "#fff", border: "1px solid #f0f2f6", borderRadius: 12,
-              padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+              background: "var(--bg-card)", border: "1px solid var(--border-light)", borderRadius: 12,
+              padding: 16, boxShadow: "var(--shadow-card)",
             }}>
               {/* Header */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <SourceBadge source={stream.provider} />
-                  <span style={{ fontSize: 11, color: "#b4bac5" }}>{timeAgo(stream.lastSyncAt)}</span>
+                  <span style={{ fontSize: 11, color: "var(--text-faint)" }}>{timeAgo(stream.lastSyncAt)}</span>
                   {stream.status === "error" && (
                     <span style={{ fontSize: 10, fontWeight: 600, color: "#ef4444", background: "rgba(239,68,68,0.08)", padding: "1px 6px", borderRadius: 4 }}>Error</span>
                   )}
@@ -135,8 +135,8 @@ export default function IntegrationStreams({
                   disabled={isSyncing}
                   style={{
                     display: "flex", alignItems: "center", gap: 4,
-                    padding: "4px 10px", borderRadius: 6, border: "1px solid #e6e9ef",
-                    background: "#fff", cursor: isSyncing ? "not-allowed" : "pointer",
+                    padding: "4px 10px", borderRadius: 6, border: "1px solid var(--border-default)",
+                    background: "var(--bg-card)", cursor: isSyncing ? "not-allowed" : "pointer",
                     fontSize: 11, fontWeight: 600, color: "#4361ee",
                   }}
                 >
@@ -149,8 +149,8 @@ export default function IntegrationStreams({
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
                 {Object.entries(cfg.metricLabels).map(([key, label]) => (
                   <div key={key}>
-                    <div style={{ fontSize: 10, color: "#8d95a3", fontWeight: 600 }}>{label}</div>
-                    <div style={{ fontSize: 15, fontWeight: 800, color: "#1b2434", marginTop: 1 }}>
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 600 }}>{label}</div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)", marginTop: 1 }}>
                       {fmtVal(stream.metrics[key], cfg.metricFormat[key])}
                     </div>
                   </div>
@@ -161,7 +161,7 @@ export default function IntegrationStreams({
               {stream.sparkline.length >= 2 && (
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
                   <MiniSparkline data={stream.sparkline} color={cfg.color} />
-                  <span style={{ fontSize: 10, color: "#b4bac5" }}>8-week score trend</span>
+                  <span style={{ fontSize: 10, color: "var(--text-faint)" }}>8-week score trend</span>
                 </div>
               )}
             </div>

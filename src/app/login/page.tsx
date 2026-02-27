@@ -49,38 +49,38 @@ function LoginForm() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-page)" }}>
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: "var(--text-faint)" }} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center px-4 py-6">
+    <div className="min-h-screen flex items-center justify-center px-4 py-6" style={{ background: "var(--bg-page)" }}>
       <div className="w-full max-w-md">
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 sm:p-8 shadow-sm">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 text-center">
+        <div className="rounded-2xl p-6 sm:p-8 shadow-sm" style={{ background: "var(--bg-card)", border: "1px solid var(--border-light)" }}>
+          <h1 className="text-xl sm:text-2xl font-bold mb-2 text-center" style={{ color: "var(--text-primary)" }}>
             Welcome back
           </h1>
-          <p className="text-gray-500 mb-8 text-center">
+          <p className="mb-8 text-center" style={{ color: "var(--text-muted)" }}>
             Log in to your account to continue.
           </p>
 
           {successMsg && (
-            <div className="mb-6 p-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm text-center">
+            <div className="mb-6 p-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm text-center dark:bg-green-950/30 dark:border-green-800 dark:text-green-400">
               {successMsg}
             </div>
           )}
 
           {error && (
-            <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm text-center">
+            <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm text-center dark:bg-red-950/30 dark:border-red-800 dark:text-red-400">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
                 Email
               </label>
               <input
@@ -89,18 +89,19 @@ function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                style={{ background: "var(--bg-input)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }}
                 placeholder="you@example.com"
               />
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="password" className="block text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
                   Password
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium dark:text-indigo-400"
                 >
                   Forgot password?
                 </Link>
@@ -111,7 +112,8 @@ function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                style={{ background: "var(--bg-input)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }}
                 placeholder="Enter your password"
               />
             </div>
@@ -126,14 +128,15 @@ function LoginForm() {
           </form>
 
           <div className="my-6 flex items-center gap-3">
-            <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-xs text-gray-400 font-medium">or</span>
-            <div className="flex-1 h-px bg-gray-200" />
+            <div className="flex-1 h-px" style={{ background: "var(--border-default)" }} />
+            <span className="text-xs font-medium" style={{ color: "var(--text-faint)" }}>or</span>
+            <div className="flex-1 h-px" style={{ background: "var(--border-default)" }} />
           </div>
 
           <button
             onClick={() => signIn("google", { callbackUrl: "/diagnosis" })}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 transition-all duration-150"
+            className="w-full flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl font-medium transition-all duration-150"
+            style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", color: "var(--text-secondary)" }}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -144,15 +147,15 @@ function LoginForm() {
             Continue with Google
           </button>
 
-          <p className="mt-6 text-center text-sm text-gray-500">
+          <p className="mt-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="text-indigo-600 hover:text-indigo-700 font-medium">
+            <Link href="/signup" className="text-indigo-600 hover:text-indigo-700 font-medium dark:text-indigo-400">
               Sign up
             </Link>
           </p>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
+        <div className="mt-6 flex items-center justify-center gap-2 text-xs" style={{ color: "var(--text-faint)" }}>
           <Shield className="w-3.5 h-3.5" />
           <span>Your data stays private. We never share your business metrics.</span>
         </div>
@@ -165,8 +168,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
-          <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+        <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-page)" }}>
+          <Loader2 className="w-6 h-6 animate-spin" style={{ color: "var(--text-faint)" }} />
         </div>
       }
     >

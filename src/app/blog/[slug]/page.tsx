@@ -34,29 +34,29 @@ export default async function BlogPostPage({
   const related = getRelatedPosts(slug, 3);
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-[var(--bg-page)]">
       {/* Navigation */}
-      <nav className="bg-white border-b border-gray-100">
+      <nav className="bg-[var(--bg-card)] border-b border-[var(--border-default)]">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
               <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="text-lg sm:text-xl font-bold text-gray-900">FixWorkFlow</span>
+            <span className="text-lg sm:text-xl font-bold text-[var(--text-primary)]">FixWorkFlow</span>
           </Link>
           <div className="flex items-center gap-3 sm:gap-6">
-            <Link href="/blog" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+            <Link href="/blog" className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
               Blog
             </Link>
-            <Link href="/reviews" className="text-sm text-gray-500 hover:text-gray-900 transition-colors hidden sm:inline">
+            <Link href="/reviews" className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors hidden sm:inline">
               Reviews
             </Link>
-            <Link href="/pricing" className="text-sm text-gray-500 hover:text-gray-900 transition-colors hidden sm:inline">
+            <Link href="/pricing" className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors hidden sm:inline">
               Pricing
             </Link>
             <Link
               href="/signup"
-              className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gray-900 text-white text-xs sm:text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
+              className="px-4 sm:px-5 py-2 sm:py-2.5 bg-[var(--text-primary)] text-white text-xs sm:text-sm font-medium rounded-full hover:opacity-90 transition-colors"
             >
               Start Free Diagnosis
             </Link>
@@ -68,7 +68,7 @@ export default async function BlogPostPage({
       <article className="max-w-3xl mx-auto px-4 pt-12 pb-16">
         <Link
           href="/blog"
-          className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 transition-colors mb-8"
+          className="inline-flex items-center gap-1 text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to blog
@@ -78,22 +78,22 @@ export default async function BlogPostPage({
           <span className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
             {post.category}
           </span>
-          <span className="flex items-center gap-1 text-xs text-gray-400">
+          <span className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
             <Clock className="w-3 h-3" />
             {post.readTime}
           </span>
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+        <h1 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4 leading-tight">
           {post.title}
         </h1>
 
-        <div className="flex items-center gap-4 text-sm text-gray-400 mb-10 pb-8 border-b border-gray-100">
+        <div className="flex items-center gap-4 text-sm text-[var(--text-muted)] mb-10 pb-8 border-b border-[var(--border-default)]">
           <span>By {post.author}</span>
           <span>{post.date}</span>
         </div>
 
-        <div className="prose prose-gray max-w-none prose-headings:text-gray-900 prose-headings:font-semibold prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3 prose-p:text-gray-600 prose-p:leading-relaxed prose-strong:text-gray-900 prose-li:text-gray-600 prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline">
+        <div className="prose prose-gray max-w-none prose-headings:text-[var(--text-primary)] prose-headings:font-semibold prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3 prose-p:text-[var(--text-secondary)] prose-p:leading-relaxed prose-strong:text-[var(--text-primary)] prose-li:text-[var(--text-secondary)] prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline">
           {post.content.split("\n\n").map((block, i) => {
             if (block.startsWith("## ")) {
               return (
@@ -125,11 +125,11 @@ export default async function BlogPostPage({
               const rows = block.split("\n").filter((r) => !r.startsWith("|--") && !r.startsWith("| --"));
               return (
                 <div key={i} className="overflow-x-auto my-6">
-                  <table className="w-full text-sm border border-gray-200 rounded-lg">
+                  <table className="w-full text-sm border border-[var(--border-default)] rounded-lg">
                     <thead>
-                      <tr className="bg-gray-50">
+                      <tr className="bg-[var(--bg-subtle)]">
                         {rows[0]?.split("|").filter(Boolean).map((cell, j) => (
-                          <th key={j} className="px-4 py-2 text-left font-medium text-gray-700 border-b border-gray-200">
+                          <th key={j} className="px-4 py-2 text-left font-medium text-[var(--text-secondary)] border-b border-[var(--border-default)]">
                             {cell.trim()}
                           </th>
                         ))}
@@ -137,9 +137,9 @@ export default async function BlogPostPage({
                     </thead>
                     <tbody>
                       {rows.slice(1).map((row, j) => (
-                        <tr key={j} className="border-b border-gray-100">
+                        <tr key={j} className="border-b border-[var(--border-default)]">
                           {row.split("|").filter(Boolean).map((cell, k) => (
-                            <td key={k} className="px-4 py-2 text-gray-600">
+                            <td key={k} className="px-4 py-2 text-[var(--text-secondary)]">
                               {cell.trim()}
                             </td>
                           ))}
@@ -183,7 +183,7 @@ export default async function BlogPostPage({
 
       {/* Related Posts */}
       <section className="max-w-6xl mx-auto px-4 pb-20">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6">
           Related articles
         </h2>
         <div className="grid md:grid-cols-3 gap-6">
@@ -191,33 +191,33 @@ export default async function BlogPostPage({
             <Link
               key={rp.slug}
               href={`/blog/${rp.slug}`}
-              className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md hover:border-gray-200 transition-all duration-300"
+              className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] p-6 hover:shadow-md hover:border-[var(--border-default)] transition-all duration-300"
             >
               <span className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
                 {rp.category}
               </span>
-              <h3 className="text-lg font-semibold text-gray-900 mt-3 mb-2">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)] mt-3 mb-2">
                 {rp.title}
               </h3>
-              <p className="text-sm text-gray-500 line-clamp-2">{rp.excerpt}</p>
+              <p className="text-sm text-[var(--text-muted)] line-clamp-2">{rp.excerpt}</p>
             </Link>
           ))}
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between text-sm text-gray-400">
+      <footer className="bg-[var(--bg-card)] border-t border-[var(--border-default)]">
+        <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between text-sm text-[var(--text-muted)]">
           <Link href="/" className="flex items-center gap-2.5 mb-4 md:mb-0">
             <div className="w-7 h-7 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-lg flex items-center justify-center">
               <Zap className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="text-gray-600 font-medium">FixWorkFlow</span>
+            <span className="text-[var(--text-secondary)] font-medium">FixWorkFlow</span>
           </Link>
           <div className="flex items-center gap-6">
-            <Link href="/blog" className="hover:text-gray-700 transition-colors">Blog</Link>
-            <Link href="/reviews" className="hover:text-gray-700 transition-colors">Reviews</Link>
-            <Link href="/pricing" className="hover:text-gray-700 transition-colors">Pricing</Link>
+            <Link href="/blog" className="hover:text-[var(--text-secondary)] transition-colors">Blog</Link>
+            <Link href="/reviews" className="hover:text-[var(--text-secondary)] transition-colors">Reviews</Link>
+            <Link href="/pricing" className="hover:text-[var(--text-secondary)] transition-colors">Pricing</Link>
           </div>
         </div>
       </footer>

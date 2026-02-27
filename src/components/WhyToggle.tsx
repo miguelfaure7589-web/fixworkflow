@@ -41,12 +41,12 @@ export function WhyToggle({ text, potential, locked = false }: WhyToggleProps) {
       </button>
       {open && (
         <div
-          className="mt-1.5 p-2.5 bg-violet-50/70 border border-violet-100 rounded-lg"
+          className="mt-1.5 p-2.5 bg-violet-50/70 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20 rounded-lg"
           style={{ animation: "fadeSlide 0.2s ease" }}
         >
-          <p className="text-xs text-gray-600 leading-relaxed">{text}</p>
+          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{text}</p>
           {potential && (
-            <div className="mt-2 p-2 bg-emerald-50 border border-emerald-100 rounded-md">
+            <div className="mt-2 p-2 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-md">
               <p className="text-xs text-emerald-700 font-medium">&#8599; {potential}</p>
             </div>
           )}

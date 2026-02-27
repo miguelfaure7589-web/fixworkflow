@@ -14,6 +14,7 @@ import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import UserAvatarDropdown from "@/components/UserAvatarDropdown";
+import ThemeToggle from "@/components/ThemeToggle";
 import {
   Zap,
   AlertTriangle,
@@ -156,41 +157,113 @@ interface DashboardData {
   } | null;
 }
 
-const BAND_COLORS: Record<string, string> = {
-  "Highly Efficient": "text-emerald-600",
-  "Stable but Optimizable": "text-blue-600",
-  "Revenue Constrained": "text-amber-600",
-  "Structural Revenue Risk": "text-red-600",
-};
 
-const BAND_GAUGE_COLORS: Record<string, string> = {
-  "Highly Efficient": "stroke-emerald-500",
-  "Stable but Optimizable": "stroke-blue-500",
-  "Revenue Constrained": "stroke-amber-500",
-  "Structural Revenue Risk": "stroke-red-500",
-};
+const GAUGE_ZONES = [
+  { min: 0, max: 20, color: "#ef4444", label: "Critical" },
+  { min: 20, max: 40, color: "#f97316", label: "Needs Work" },
+  { min: 40, max: 60, color: "#eab308", label: "Fair" },
+  { min: 60, max: 80, color: "#22c55e", label: "Good" },
+  { min: 80, max: 100, color: "#10b981", label: "Excellent" },
+];
 
-function ScoreGauge({ score, band }: { score: number; band: string }) {
-  const circumference = 2 * Math.PI * 54;
-  const offset = circumference - (score / 100) * circumference;
-  const colorClass = BAND_GAUGE_COLORS[band] || "stroke-gray-400";
+/* ── Credit-Karma-style semicircular gauge ──
+ *
+ *  Geometry (viewBox 0 0 300 200):
+ *    Center of arc circle: (150, 160)
+ *    Radius: 120
+ *    Arc sweeps 180° from left (30,160) through top (150,40) to right (270,160)
+ *
+ *  Score mapping:
+ *    score 0  → left  endpoint (angle 180° in standard math)
+ *    score 100 → right endpoint (angle 0°)
+ *    Point on arc: x = cx + r·cos(π·(1 − s/100))
+ *                  y = cy − r·sin(π·(1 − s/100))
+ *
+ *  Needle rotation (CSS, clockwise from right):
+ *    score 0 → 180°  (pointing left)
+ *    score 50 → 270° (pointing up)
+ *    score 100 → 360° (pointing right)
+ *    formula: 180 + (score/100) × 180
+ */
+function ScoreGauge({ score }: { score: number }) {
+  const [animated, setAnimated] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setAnimated(true), 120);
+    return () => clearTimeout(t);
+  }, []);
+
+  const cx = 150, cy = 160, r = 120, sw = 16;
+
+  // Convert score (0-100) to (x,y) on the semicircular arc
+  function scoreToXY(s: number) {
+    const a = Math.PI * (1 - s / 100);          // standard-math radians
+    return {
+      x: +(cx + r * Math.cos(a)).toFixed(1),
+      y: +(cy - r * Math.sin(a)).toFixed(1),    // minus → SVG y-flip
+    };
+  }
+
+  // SVG arc path between two score values (sweep-flag 1 = clockwise on screen → upper arc)
+  function arcPath(s1: number, s2: number) {
+    const p1 = scoreToXY(s1), p2 = scoreToXY(s2);
+    return `M ${p1.x} ${p1.y} A ${r} ${r} 0 0 1 ${p2.x} ${p2.y}`;
+  }
+
+  const clamped = Math.min(Math.max(score, 0), 100);
+  const zone = GAUGE_ZONES.find(z => clamped <= z.max) || GAUGE_ZONES[4];
+  const needleAngle = 180 + (clamped / 100) * 180;   // CSS rotate degrees
 
   return (
-    <div className="relative w-36 h-36">
-      <svg className="w-36 h-36 -rotate-90" viewBox="0 0 120 120">
-        <circle cx="60" cy="60" r="54" fill="none" stroke="#e5e7eb" strokeWidth="8" />
-        <circle
-          cx="60" cy="60" r="54" fill="none"
-          className={colorClass}
-          strokeWidth="8" strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          style={{ transition: "stroke-dashoffset 1s ease" }}
-        />
+    <div style={{ textAlign: "center", width: "100%", maxWidth: 280 }}>
+      <svg viewBox="0 0 300 200" style={{ width: "100%", height: "auto" }}>
+        {/* 5 colored arc segments – each 36° of the semicircle */}
+        {GAUGE_ZONES.map((z, i) => {
+          const gap = 0.4;   // tiny score-unit gap between segments
+          const s1 = z.min + (i > 0 ? gap : 0);
+          const s2 = z.max - (i < 4 ? gap : 0);
+          return (
+            <path key={i} d={arcPath(s1, s2)}
+              fill="none" stroke={z.color} strokeWidth={sw} strokeLinecap="butt" />
+          );
+        })}
+
+        {/* Needle – line from center pivot toward the arc */}
+        <g style={{
+          transform: `rotate(${animated ? needleAngle : 180}deg)`,
+          transformOrigin: `${cx}px ${cy}px`,
+          transition: animated ? "transform 1s ease-out" : "none",
+        }}>
+          <line x1={cx + 12} y1={cy} x2={cx + r - 18} y2={cy}
+            stroke="var(--text-primary)" strokeWidth="3" strokeLinecap="round" />
+        </g>
+
+        {/* Pivot dot at needle base */}
+        <circle cx={cx} cy={cy} r="6" fill="var(--text-primary)" />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold text-gray-900">{score}</span>
-        <span className="text-xs text-gray-400">/ 100</span>
+
+      {/* Score number (below the arc) */}
+      <div style={{ marginTop: -12 }}>
+        <span style={{ fontSize: 44, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1 }}>
+          {score}
+        </span>
+        <span style={{ fontSize: 16, color: "var(--text-muted)", marginLeft: 3, fontWeight: 500 }}>
+          /100
+        </span>
+      </div>
+
+      {/* Zone label in matching color */}
+      <div style={{ fontSize: 15, fontWeight: 700, color: zone.color, marginTop: 6 }}>
+        {zone.label}
+      </div>
+
+      {/* Legend: 5 colored dots with labels */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
+        {GAUGE_ZONES.map(z => (
+          <div key={z.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <div style={{ width: 7, height: 7, borderRadius: "50%", background: z.color }} />
+            <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 500 }}>{z.label}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -205,16 +278,16 @@ function ComponentBar({ label, value }: { label: string; value: number }) {
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-gray-500 w-20 sm:w-28 text-right capitalize truncate">
+      <span className="text-xs text-[var(--text-muted)] w-20 sm:w-28 text-right capitalize truncate">
         {label.replace(/([A-Z])/g, " $1").trim()}
       </span>
-      <div className="flex-1 bg-gray-100 rounded-full h-2">
+      <div className="flex-1 bg-[var(--bg-subtle)] rounded-full h-2">
         <div
           className={`h-2 rounded-full ${barColor}`}
           style={{ width: `${width}%`, transition: "width 0.8s ease" }}
         />
       </div>
-      <span className="text-xs font-medium text-gray-700 w-8">{value}</span>
+      <span className="text-xs font-medium text-[var(--text-secondary)] w-8">{value}</span>
     </div>
   );
 }
@@ -245,10 +318,10 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-3">
-        <span className="text-xs font-medium text-gray-600 w-20 sm:w-28 text-right truncate">
+        <span className="text-xs font-medium text-[var(--text-secondary)] w-20 sm:w-28 text-right truncate">
           {PILLAR_LABELS[name] || name}
         </span>
-        <div className="flex-1 bg-gray-100 rounded-full h-3">
+        <div className="flex-1 bg-[var(--bg-subtle)] rounded-full h-3">
           <div
             className={`h-3 rounded-full ${barColor}`}
             style={{
@@ -258,7 +331,7 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
             }}
           />
         </div>
-        <span className="text-sm font-bold text-gray-800 w-10 tabular-nums">{pillar.score}</span>
+        <span className="text-sm font-bold text-[var(--text-primary)] w-10 tabular-nums">{pillar.score}</span>
         {delta !== undefined && delta !== 0 && (
           <span className={`text-[10px] font-semibold ${delta > 0 ? "text-emerald-600" : "text-red-500"}`}>
             {delta > 0 ? `+${delta}` : delta}
@@ -308,16 +381,16 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
         <div className="ml-0 sm:ml-32 space-y-0.5 pl-2 sm:pl-0">
           {isPro || isTopOrBottom ? (
             pillar.reasons.map((r, i) => (
-              <p key={i} className="text-xs text-gray-400">{r}</p>
+              <p key={i} className="text-xs text-[var(--text-muted)]">{r}</p>
             ))
           ) : (
             <div style={{ position: "relative", overflow: "hidden", borderRadius: 4 }}>
-              <div style={{ fontSize: 11, color: "#8d95a3", filter: "blur(4px)", userSelect: "none" }}>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", filter: "blur(4px)", userSelect: "none" }}>
                 {pillar.reasons[0] || "Insight details locked for this pillar"}
               </div>
               <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
                 <ProBadge small />
-                <span style={{ fontSize: 10, fontWeight: 600, color: "#5a6578" }}>Unlock insights</span>
+                <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-secondary)" }}>Unlock insights</span>
               </div>
             </div>
           )}
@@ -342,12 +415,12 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
               {estimatedDetails.fields.map((f) => (
                 <div key={f.field} style={{
                   display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8,
-                  padding: "6px 8px", borderRadius: 6, background: "white",
-                  border: "1px solid #f0f2f6",
+                  padding: "6px 8px", borderRadius: 6, background: "var(--bg-card)",
+                  border: "1px solid var(--border-light)",
                 }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "#1b2434", minWidth: 100 }}>{f.label}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", minWidth: 100 }}>{f.label}</span>
                   <span style={{ fontSize: 11, color: "#d97706", fontWeight: 600 }}>{f.assumedValue}</span>
-                  <span style={{ fontSize: 10, color: "#8d95a3", flex: 1, minWidth: 120 }}>{f.reason}</span>
+                  <span style={{ fontSize: 10, color: "var(--text-muted)", flex: 1, minWidth: 120 }}>{f.reason}</span>
                 </div>
               ))}
             </div>
@@ -397,18 +470,18 @@ function CollapsibleSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className={`bg-white border border-gray-100 rounded-[14px] shadow-sm overflow-hidden ${className}`}>
+    <div className={`bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] shadow-sm overflow-hidden ${className}`}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50/50 transition-colors duration-150"
+        className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-[var(--bg-card-hover)] transition-colors duration-150"
       >
         <div className="flex items-center gap-2">
           {icon}
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{title}</h2>
+          <h2 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{title}</h2>
           {badge}
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-gray-400 transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+          className={`w-4 h-4 text-[var(--text-muted)] transition-transform duration-150 ${open ? "rotate-180" : ""}`}
         />
       </button>
       {open && <div className="px-6 pb-6">{children}</div>}
@@ -613,9 +686,9 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
 
   if (loading) {
     return (
-      <div className="bg-white border border-gray-100 rounded-[14px] p-8 shadow-sm text-center">
-        <Loader2 className="w-5 h-5 text-gray-400 animate-spin mx-auto" />
-        <p className="text-xs text-gray-400 mt-2">Loading Revenue Health Score...</p>
+      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-8 shadow-sm text-center">
+        <Loader2 className="w-5 h-5 text-[var(--text-muted)] animate-spin mx-auto" />
+        <p className="text-xs text-[var(--text-muted)] mt-2">Loading Revenue Health Score...</p>
       </div>
     );
   }
@@ -625,8 +698,8 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
     return (
       <div className="bg-gradient-to-br from-blue-50 to-violet-50 border border-blue-100 rounded-[14px] p-8 shadow-sm text-center">
         <Activity className="w-8 h-8 text-blue-500 mx-auto mb-3" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Get Your Revenue Health Score</h3>
-        <p className="text-sm text-gray-500 mb-5 max-w-md mx-auto">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Get Your Revenue Health Score</h3>
+        <p className="text-sm text-[var(--text-muted)] mb-5 max-w-md mx-auto">
           Complete your business profile to receive a personalized score across 5 pillars:
           Revenue, Profitability, Retention, Acquisition, and Operations.
         </p>
@@ -644,33 +717,33 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
   // Profile form
   if (showForm) {
     return (
-      <div className="bg-white border border-gray-100 rounded-[14px] p-6 shadow-sm">
-        <h3 className="text-sm font-semibold text-gray-900 mb-1">Business Profile</h3>
-        <p className="text-xs text-gray-400 mb-5">Fill in what you know — missing fields are handled gracefully.</p>
+      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-6 shadow-sm">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Business Profile</h3>
+        <p className="text-xs text-[var(--text-muted)] mb-5">Fill in what you know — missing fields are handled gracefully.</p>
         <div className="mb-5">
-          <label className="block text-xs font-medium text-gray-500 mb-1">Business Type</label>
+          <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Business Type</label>
           <select
             value={businessType}
             onChange={(e) => setBusinessType(e.target.value)}
-            className="w-full max-w-xs px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full max-w-xs px-3 py-2 border border-[var(--border-default)] rounded-lg text-sm text-[var(--text-primary)] bg-[var(--bg-card)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             {BUSINESS_TYPE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
-          <p className="text-xs text-gray-400 mt-1">Scoring weights adapt to your business type.</p>
+          <p className="text-xs text-[var(--text-muted)] mt-1">Scoring weights adapt to your business type.</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {PROFILE_FIELDS.map((f) => (
             <div key={f.key}>
-              <label className="block text-xs font-medium text-gray-500 mb-1">{f.label}</label>
+              <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">{f.label}</label>
               <input
                 type="number"
                 step="any"
                 placeholder={f.placeholder}
                 value={formValues[f.key] ?? ""}
                 onChange={(e) => setFormValues((prev) => ({ ...prev, [f.key]: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-[var(--border-default)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           ))}
@@ -689,7 +762,7 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
           </button>
           <button
             onClick={() => setShowForm(false)}
-            className="px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700"
+            className="px-4 py-2.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
           >
             Cancel
           </button>
@@ -719,14 +792,14 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
       {/* Score + Risk + Lever */}
       <div className="grid md:grid-cols-3 gap-6">
         {/* Score Ring */}
-        <div className="bg-white border border-gray-100 rounded-[14px] p-6 shadow-sm flex flex-col items-center">
-          <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-6 shadow-sm flex flex-col items-center">
+          <h2 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-4 flex items-center gap-1.5">
             <Activity className="w-3.5 h-3.5" />
             Revenue Health Score
           </h2>
           <div className="relative w-36 h-36">
             <svg className="w-36 h-36 -rotate-90" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="54" fill="none" stroke="#e5e7eb" strokeWidth="8" />
+              <circle cx="60" cy="60" r="54" fill="none" stroke="var(--border-default)" strokeWidth="8" />
               <circle
                 cx="60" cy="60" r="54" fill="none"
                 className={gaugeColor}
@@ -738,7 +811,7 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className={`text-3xl font-extrabold tabular-nums ${scoreColor}`}>{healthData.score}</span>
-              <span className="text-xs text-gray-400">/ 100</span>
+              <span className="text-xs text-[var(--text-muted)]">/ 100</span>
             </div>
             {previousScore !== null && healthData.score - previousScore !== 0 && (
               <span className={`absolute -top-2 -right-2 text-xs font-bold rounded-full px-2 py-0.5 ${
@@ -751,7 +824,7 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
             )}
           </div>
           {savedBusinessType ? (
-            <p className="text-xs text-gray-500 mt-2 font-medium">
+            <p className="text-xs text-[var(--text-muted)] mt-2 font-medium">
               {BUSINESS_TYPE_LABELS[savedBusinessType] || savedBusinessType}
             </p>
           ) : (
@@ -760,10 +833,10 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
             </p>
           )}
           {scoreChangeReason && (
-            <p className="text-xs text-gray-400 mt-1 text-center max-w-[200px]">{scoreChangeReason}</p>
+            <p className="text-xs text-[var(--text-muted)] mt-1 text-center max-w-[200px]">{scoreChangeReason}</p>
           )}
           {updatedAt && (
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-[var(--text-muted)] mt-1">
               Updated {new Date(updatedAt).toLocaleDateString()} {new Date(updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </p>
           )}
@@ -774,11 +847,11 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
             >
               Update Profile
             </button>
-            <span className="text-gray-300 hidden sm:inline">|</span>
+            <span className="text-[var(--text-muted)] hidden sm:inline">|</span>
             <button
               onClick={handleRecalculate}
               disabled={recalculating}
-              className="text-[11px] sm:text-xs text-gray-400 hover:text-blue-500 disabled:opacity-50 flex items-center gap-1"
+              className="text-[11px] sm:text-xs text-[var(--text-muted)] hover:text-blue-500 disabled:opacity-50 flex items-center gap-1"
             >
               {recalculating && (
                 <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -788,17 +861,17 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
               )}
               {recalculating ? "Recalculating..." : "Recalculate"}
             </button>
-            <span className="text-gray-300 hidden sm:inline">|</span>
+            <span className="text-[var(--text-muted)] hidden sm:inline">|</span>
             <Link
               href="/diagnosis?edit=true"
-              className="text-[11px] sm:text-xs text-gray-400 hover:text-blue-500"
+              className="text-[11px] sm:text-xs text-[var(--text-muted)] hover:text-blue-500"
             >
               Edit Diagnosis
             </Link>
-            <span className="text-gray-300 hidden sm:inline">|</span>
+            <span className="text-[var(--text-muted)] hidden sm:inline">|</span>
             <Link
               href="/diagnosis?edit=true"
-              className="text-[11px] sm:text-xs text-gray-400 hover:text-blue-500"
+              className="text-[11px] sm:text-xs text-[var(--text-muted)] hover:text-blue-500"
             >
               Edit Metrics
             </Link>
@@ -831,12 +904,12 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
         </div>
 
         {/* Primary Risk */}
-        <div className="bg-white border border-gray-100 rounded-[14px] p-6 shadow-sm hover:shadow-md transition-shadow duration-150">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-6 shadow-sm hover:shadow-md transition-shadow duration-150">
           <h2 className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5" />
             Primary Risk
           </h2>
-          <p className="text-sm font-semibold text-gray-800 leading-relaxed">{healthData.primaryRisk}</p>
+          <p className="text-sm font-semibold text-[var(--text-primary)] leading-relaxed">{healthData.primaryRisk}</p>
           <WhyToggle text={generateRiskReasoning(healthData.pillars as Record<string, { score: number; reasons: string[]; levers: string[] }>, savedBusinessType || "service_agency")} />
           {(() => {
             const weakest = Object.entries(healthData.pillars)
@@ -844,8 +917,8 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
             if (!weakest) return null;
             const [wName, wPillar] = weakest;
             return (
-              <p className="text-xs text-gray-400 mt-2 leading-relaxed">
-                {PILLAR_LABELS[wName] || wName} is your weakest pillar at <span className="font-semibold text-gray-500 tabular-nums">{(wPillar as PillarData).score}/100</span>
+              <p className="text-xs text-[var(--text-muted)] mt-2 leading-relaxed">
+                {PILLAR_LABELS[wName] || wName} is your weakest pillar at <span className="font-semibold text-[var(--text-muted)] tabular-nums">{(wPillar as PillarData).score}/100</span>
                 {healthData.missingData.length > 0 && (
                   <> — {healthData.missingData.length} missing field{healthData.missingData.length > 1 ? "s" : ""} may be hiding a clearer picture</>
                 )}
@@ -855,12 +928,12 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
         </div>
 
         {/* Fastest Lever */}
-        <div className="bg-white border border-gray-100 rounded-[14px] p-6 shadow-sm hover:shadow-md transition-shadow duration-150">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-6 shadow-sm hover:shadow-md transition-shadow duration-150">
           <h2 className="text-xs font-medium text-emerald-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
             <TrendingUp className="w-3.5 h-3.5" />
             Fastest Lever
           </h2>
-          <p className="text-sm font-semibold text-gray-800 leading-relaxed">{healthData.fastestLever}</p>
+          <p className="text-sm font-semibold text-[var(--text-primary)] leading-relaxed">{healthData.fastestLever}</p>
           {(() => {
             const lr = generateLeverReasoning(healthData.pillars as Record<string, { score: number; reasons: string[]; levers: string[] }>, savedBusinessType || "service_agency");
             return <WhyToggle text={lr.text} potential={lr.potential} />;
@@ -873,7 +946,7 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
             if (acqPillar && acqPillar.score < 70) {
               const potentialLift = Math.round((70 - acqPillar.score) * 0.3);
               return (
-                <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+                <p className="text-xs text-[var(--text-muted)] mt-2 leading-relaxed">
                   A <span className="font-semibold text-emerald-600">+{potentialLift} pt</span> improvement in Acquisition could compound across your revenue funnel
                 </p>
               );
@@ -881,7 +954,7 @@ function RevenueHealthSection({ isPremium, onScoreChange, onMissingData }: { isP
             if (revPillar && revPillar.score < 70) {
               const potentialLift = Math.round((70 - revPillar.score) * 0.3);
               return (
-                <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+                <p className="text-xs text-[var(--text-muted)] mt-2 leading-relaxed">
                   Boosting Revenue pillar by <span className="font-semibold text-emerald-600">+{potentialLift} pts</span> is your fastest path to a higher overall score
                 </p>
               );
@@ -975,7 +1048,7 @@ function AskAiButton({
       {rationale && rationale.length > 0 && (
         <button
           onClick={() => setShowRationale(!showRationale)}
-          className="inline-flex items-center gap-0.5 px-2 py-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          className="inline-flex items-center gap-0.5 px-2 py-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
           title="Why this?"
         >
           <Info className="w-3 h-3" />
@@ -985,23 +1058,23 @@ function AskAiButton({
       <div className="relative">
         <button
           onClick={() => setShowMenu(!showMenu)}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-violet-50 border border-violet-100 text-violet-600 rounded-lg text-xs font-medium hover:bg-violet-100 transition-colors"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20 text-violet-600 rounded-lg text-xs font-medium hover:bg-violet-100 dark:hover:bg-violet-500/15 transition-colors"
         >
           <Sparkles className="w-3 h-3" />
           Ask AI
         </button>
         {showMenu && (
-          <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-30 py-1">
+          <div className="absolute right-0 top-full mt-1 w-48 bg-[var(--bg-card)] border border-[var(--border-default)] rounded-lg shadow-lg z-30 py-1">
             {prompts.map((p) => (
               <button
                 key={p.slug}
                 onClick={() => handleAskAi(p.slug)}
                 disabled={loadingSlug === p.slug}
-                className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 flex items-center justify-between gap-2 disabled:opacity-50"
+                className="w-full text-left px-3 py-2 text-xs hover:bg-[var(--bg-card-hover)] flex items-center justify-between gap-2 disabled:opacity-50"
               >
                 <span className="truncate">{p.label}</span>
                 {p.visibility === "PREMIUM" && !isPremium ? (
-                  <Lock className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                  <Lock className="w-3 h-3 text-[var(--text-muted)] flex-shrink-0" />
                 ) : p.visibility === "PREMIUM" ? (
                   <Sparkles className="w-3 h-3 text-violet-400 flex-shrink-0" />
                 ) : null}
@@ -1009,7 +1082,7 @@ function AskAiButton({
             ))}
             <button
               onClick={() => setShowMenu(false)}
-              className="w-full text-left px-3 py-1.5 text-xs text-gray-400 hover:bg-gray-50 border-t border-gray-100 mt-1"
+              className="w-full text-left px-3 py-1.5 text-xs text-[var(--text-muted)] hover:bg-[var(--bg-card-hover)] border-t border-[var(--border-default)] mt-1"
             >
               Cancel
             </button>
@@ -1017,19 +1090,19 @@ function AskAiButton({
         )}
       </div>
       {showRationale && rationale && (
-        <div className="absolute right-0 top-full mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-30 p-3">
-          <p className="text-xs font-medium text-gray-700 mb-1.5 flex items-center gap-1">
+        <div className="absolute right-0 top-full mt-1 w-64 bg-[var(--bg-card)] border border-[var(--border-default)] rounded-lg shadow-lg z-30 p-3">
+          <p className="text-xs font-medium text-[var(--text-secondary)] mb-1.5 flex items-center gap-1">
             <MessageSquare className="w-3 h-3" /> Why this recommendation?
           </p>
           <ul className="space-y-1">
             {rationale.map((r, i) => (
-              <li key={i} className="text-xs text-gray-500 flex items-start gap-1.5">
+              <li key={i} className="text-xs text-[var(--text-muted)] flex items-start gap-1.5">
                 <span className="w-1 h-1 rounded-full bg-violet-400 mt-1.5 flex-shrink-0" />
                 {r}
               </li>
             ))}
           </ul>
-          <button onClick={() => setShowRationale(false)} className="text-xs text-gray-400 mt-2 hover:text-gray-600">
+          <button onClick={() => setShowRationale(false)} className="text-xs text-[var(--text-muted)] mt-2 hover:text-[var(--text-secondary)]">
             Close
           </button>
         </div>
@@ -1108,34 +1181,34 @@ function WhyDrawer({
         onClick={onClose}
       />
       {/* Drawer */}
-      <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 overflow-y-auto">
+      <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-[var(--bg-card)] shadow-2xl z-50 overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-[var(--bg-card)] border-b border-[var(--border-default)] px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Lightbulb className="w-4 h-4 text-amber-500" />
-            <h2 className="text-sm font-semibold text-gray-900">Why this matters</h2>
+            <h2 className="text-sm font-semibold text-[var(--text-primary)]">Why this matters</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-subtle)] transition-colors"
           >
-            <X className="w-4 h-4 text-gray-400" />
+            <X className="w-4 h-4 text-[var(--text-muted)]" />
           </button>
         </div>
 
         <div className="p-5 space-y-5">
           {/* Item title */}
           <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+            <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">
               {selected.itemType === "focus" ? "Focus Area" : "Tool"}
             </p>
-            <p className="text-base font-medium text-gray-900">{selected.title}</p>
+            <p className="text-base font-medium text-[var(--text-primary)]">{selected.title}</p>
           </div>
 
           {loading && (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
-              <span className="text-sm text-gray-400 ml-2">Analyzing...</span>
+              <Loader2 className="w-5 h-5 text-[var(--text-muted)] animate-spin" />
+              <span className="text-sm text-[var(--text-muted)] ml-2">Analyzing...</span>
             </div>
           )}
 
@@ -1147,7 +1220,7 @@ function WhyDrawer({
 
           {!loading && !error && !preview && (
             <div className="py-8 text-center">
-              <p className="text-sm text-gray-500">No insight returned.</p>
+              <p className="text-sm text-[var(--text-muted)]">No insight returned.</p>
             </div>
           )}
 
@@ -1156,42 +1229,42 @@ function WhyDrawer({
             <div className="space-y-4">
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
                 <p className="text-xs font-medium text-blue-600 uppercase tracking-wider mb-2">Why</p>
-                <p className="text-sm text-gray-700 leading-relaxed">{preview.why}</p>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{preview.why}</p>
               </div>
 
-              <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+              <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-xl p-4">
                 <p className="text-xs font-medium text-emerald-600 uppercase tracking-wider mb-2">
                   First Step
                 </p>
-                <p className="text-sm text-gray-700 leading-relaxed">{preview.firstStep}</p>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{preview.firstStep}</p>
               </div>
             </div>
           )}
 
           {/* Full Plan — Premium */}
           {isPremium && full && !loading && !error && (
-            <div className="space-y-4 border-t border-gray-100 pt-5">
+            <div className="space-y-4 border-t border-[var(--border-default)] pt-5">
               <p className="text-xs font-medium text-violet-600 uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3 h-3" />
                 Full Action Plan
               </p>
 
               {/* Deep Why */}
-              <div className="bg-gray-50 rounded-xl p-4">
-                <p className="text-sm text-gray-700 leading-relaxed">{full.whyDeep}</p>
+              <div className="bg-[var(--bg-subtle)] rounded-xl p-4">
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{full.whyDeep}</p>
               </div>
 
               {/* Steps */}
               {full.steps.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-gray-500 mb-2">Action Steps</p>
+                  <p className="text-xs font-medium text-[var(--text-muted)] mb-2">Action Steps</p>
                   <ol className="space-y-2">
                     {full.steps.map((step, i) => (
                       <li key={i} className="flex items-start gap-2.5">
                         <span className="flex-shrink-0 w-5 h-5 bg-violet-100 rounded text-xs font-medium text-violet-600 flex items-center justify-center mt-0.5">
                           {i + 1}
                         </span>
-                        <span className="text-sm text-gray-700">{step}</span>
+                        <span className="text-sm text-[var(--text-secondary)]">{step}</span>
                       </li>
                     ))}
                   </ol>
@@ -1201,12 +1274,12 @@ function WhyDrawer({
               {/* Success Metrics */}
               {full.successMetrics.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-gray-500 mb-2">Success Metrics</p>
+                  <p className="text-xs font-medium text-[var(--text-muted)] mb-2">Success Metrics</p>
                   <div className="flex flex-wrap gap-1.5">
                     {full.successMetrics.map((m, i) => (
                       <span
                         key={i}
-                        className="px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-lg text-xs text-emerald-700"
+                        className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-lg text-xs text-emerald-700"
                       >
                         {m}
                       </span>
@@ -1218,10 +1291,10 @@ function WhyDrawer({
               {/* Pitfalls */}
               {full.pitfalls.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-gray-500 mb-2">Common Pitfalls</p>
+                  <p className="text-xs font-medium text-[var(--text-muted)] mb-2">Common Pitfalls</p>
                   <ul className="space-y-1.5">
                     {full.pitfalls.map((p, i) => (
-                      <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
+                      <li key={i} className="text-sm text-[var(--text-secondary)] flex items-start gap-2">
                         <AlertTriangle className="w-3.5 h-3.5 text-amber-400 mt-0.5 flex-shrink-0" />
                         {p}
                       </li>
@@ -1233,7 +1306,7 @@ function WhyDrawer({
               {/* Suggested Tools */}
               {full.suggestedTools.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-gray-500 mb-2">Suggested Tools</p>
+                  <p className="text-xs font-medium text-[var(--text-muted)] mb-2">Suggested Tools</p>
                   <div className="flex flex-wrap gap-1.5">
                     {full.suggestedTools.map((t, i) => (
                       <span
@@ -1251,10 +1324,10 @@ function WhyDrawer({
               {full.promptToExecute && (
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-medium text-gray-500">AI Prompt</p>
+                    <p className="text-xs font-medium text-[var(--text-muted)]">AI Prompt</p>
                     <button
                       onClick={handleCopyPrompt}
-                      className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600"
+                      className="inline-flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
                     >
                       {copied ? (
                         <><Check className="w-3 h-3 text-emerald-500" /> Copied</>
@@ -1276,40 +1349,40 @@ function WhyDrawer({
           {/* Blurred Upgrade CTA for Free Users */}
           {!isPremium && preview && !loading && !error && (
             <div className="relative">
-              <div className="blur-[6px] pointer-events-none select-none space-y-4 border-t border-gray-100 pt-5">
+              <div className="blur-[6px] pointer-events-none select-none space-y-4 border-t border-[var(--border-default)] pt-5">
                 <p className="text-xs font-medium text-violet-600 uppercase tracking-wider">
                   Full Action Plan
                 </p>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-sm text-gray-400">
+                <div className="bg-[var(--bg-subtle)] rounded-xl p-4">
+                  <p className="text-sm text-[var(--text-muted)]">
                     A detailed analysis of why this matters for your specific business context
                     with tailored action steps and metrics...
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-400 mb-2">Action Steps</p>
+                  <p className="text-xs font-medium text-[var(--text-muted)] mb-2">Action Steps</p>
                   <div className="space-y-2">
                     {[1, 2, 3, 4, 5].map((i) => (
-                      <div key={i} className="h-6 bg-gray-100 rounded" />
+                      <div key={i} className="h-6 bg-[var(--bg-subtle)] rounded" />
                     ))}
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-400 mb-2">Success Metrics</p>
+                  <p className="text-xs font-medium text-[var(--text-muted)] mb-2">Success Metrics</p>
                   <div className="flex gap-1.5">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-6 w-28 bg-gray-100 rounded-lg" />
+                      <div key={i} className="h-6 w-28 bg-[var(--bg-subtle)] rounded-lg" />
                     ))}
                   </div>
                 </div>
               </div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-white border border-gray-200 rounded-xl px-6 py-5 shadow-lg text-center max-w-xs">
-                  <Lock className="w-5 h-5 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm font-medium text-gray-900 mb-1">
+                <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl px-6 py-5 shadow-lg text-center max-w-xs">
+                  <Lock className="w-5 h-5 text-[var(--text-muted)] mx-auto mb-2" />
+                  <p className="text-sm font-medium text-[var(--text-primary)] mb-1">
                     Full Plan — Premium Only
                   </p>
-                  <p className="text-xs text-gray-500 mb-3">
+                  <p className="text-xs text-[var(--text-muted)] mb-3">
                     {preview.upgradeHint}
                   </p>
                   <Link
@@ -1347,7 +1420,7 @@ function WhyButton({
   return (
     <button
       onClick={() => onOpen({ itemType, itemKey, pillar, title, description })}
-      className="inline-flex items-center gap-1 px-2 py-1 text-xs text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-md transition-colors"
+      className="inline-flex items-center gap-1 px-2 py-1 text-xs text-[var(--text-muted)] hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 rounded-md transition-colors"
       title="Why this matters"
     >
       <HelpCircle className="w-3.5 h-3.5" />
@@ -1386,17 +1459,17 @@ interface ExpandedPlaybookData {
 }
 
 const PLAYBOOK_EFFORT_COLORS: Record<string, string> = {
-  low: "bg-emerald-50 text-emerald-600 border-emerald-100",
+  low: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border-emerald-100 dark:border-emerald-500/20",
   medium: "bg-amber-50 text-amber-600 border-amber-100",
   high: "bg-red-50 text-red-600 border-red-100",
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
   revenue: "bg-blue-50 text-blue-600 border-blue-100",
-  profitability: "bg-violet-50 text-violet-600 border-violet-100",
-  retention: "bg-emerald-50 text-emerald-600 border-emerald-100",
+  profitability: "bg-violet-50 dark:bg-violet-500/10 text-violet-600 border-violet-100 dark:border-violet-500/20",
+  retention: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border-emerald-100 dark:border-emerald-500/20",
   acquisition: "bg-amber-50 text-amber-600 border-amber-100",
-  ops: "bg-gray-50 text-gray-600 border-gray-100",
+  ops: "bg-[var(--bg-subtle)] text-[var(--text-secondary)] border-[var(--border-default)]",
 };
 
 const EFFORT_ESTIMATE: Record<string, string> = {
@@ -1644,18 +1717,18 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
 
   if (!loading && playbooks.length === 0) {
     return (
-      <div className="bg-white border border-gray-100 rounded-[14px] p-8 shadow-sm text-center">
-        <p className="text-sm text-gray-500">Start your first step to see progress here.</p>
-        <p className="text-xs text-gray-400 mt-1">Playbooks will appear once your Revenue Health Score identifies areas to improve.</p>
+      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-8 shadow-sm text-center">
+        <p className="text-sm text-[var(--text-muted)]">Start your first step to see progress here.</p>
+        <p className="text-xs text-[var(--text-muted)] mt-1">Playbooks will appear once your Revenue Health Score identifies areas to improve.</p>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="bg-white border border-gray-100 rounded-[14px] p-8 shadow-sm text-center">
-        <Loader2 className="w-5 h-5 text-gray-400 animate-spin mx-auto" />
-        <p className="text-xs text-gray-400 mt-2">Finding playbooks for you...</p>
+      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] p-8 shadow-sm text-center">
+        <Loader2 className="w-5 h-5 text-[var(--text-muted)] animate-spin mx-auto" />
+        <p className="text-xs text-[var(--text-muted)] mt-2">Finding playbooks for you...</p>
       </div>
     );
   }
@@ -1674,16 +1747,16 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
         const phase = isActive ? activePhase : 1;
 
         return (
-          <div key={pb.slug} className="bg-white border border-gray-100 rounded-[14px] shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-150">
+          <div key={pb.slug} className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-150">
             {/* Collapsed header */}
             <button
               onClick={() => {
                 if (isActive) { setActiveSlug(null); }
                 else { setActiveSlug(pb.slug); setActivePhase(1); setMetricsUpdated(false); setAfterScore(null); setMetricForm({}); }
               }}
-              className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-gray-50/50 transition-colors duration-150"
+              className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-[var(--bg-card-hover)] transition-colors duration-150"
             >
-              <BookOpen className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <BookOpen className="w-4 h-4 text-[var(--text-muted)] flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${CATEGORY_COLORS[pb.category] || CATEGORY_COLORS.ops}`}>
@@ -1693,22 +1766,22 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                     {pb.effortLevel} effort
                   </span>
                   {completedCount > 0 && (
-                    <span className="px-1.5 py-0.5 bg-emerald-50 border border-emerald-100 rounded text-[10px] font-medium text-emerald-600">
+                    <span className="px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded text-[10px] font-medium text-emerald-600">
                       {completedCount}/{totalSteps} done
                     </span>
                   )}
                 </div>
-                <p className="text-sm font-semibold text-gray-900">{pb.title}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{pb.triggerReason}</p>
+                <p className="text-sm font-semibold text-[var(--text-primary)]">{pb.title}</p>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5">{pb.triggerReason}</p>
               </div>
-              <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${isActive ? "rotate-180" : ""}`} />
+              <ChevronDown className={`w-4 h-4 text-[var(--text-muted)] flex-shrink-0 transition-transform ${isActive ? "rotate-180" : ""}`} />
             </button>
 
             {/* Expanded 3-phase view */}
             {isActive && (
-              <div className="border-t border-gray-100">
+              <div className="border-t border-[var(--border-default)]">
                 {/* Phase tabs */}
-                <div className="flex border-b border-gray-100">
+                <div className="flex border-b border-[var(--border-default)]">
                   {([1, 2, 3] as const).map((p) => {
                     const labels = ["Take Action", "Update Metrics", "See Results"];
                     const isActiveTab = phase === p;
@@ -1722,10 +1795,10 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                         onClick={() => { if (!isLocked) setActivePhase(p); }}
                         className={`flex-1 flex items-center justify-center gap-2 px-3 py-3 text-xs font-medium transition-all duration-150 ${
                           isLocked
-                            ? "text-gray-400 opacity-50 cursor-default"
+                            ? "text-[var(--text-muted)] opacity-50 cursor-default"
                             : isActiveTab
-                              ? "text-violet-700 border-b-2 border-violet-500 bg-violet-50/40"
-                              : "text-gray-400 hover:text-gray-600 hover:bg-gray-50/80"
+                              ? "text-violet-700 border-b-2 border-violet-500 bg-violet-50/40 dark:bg-violet-500/8"
+                              : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-card-hover)]"
                         }`}
                       >
                         {isDone && !isLocked ? (
@@ -1736,7 +1809,7 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                           <span className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold tabular-nums ${
                             isActiveTab && !isLocked
                               ? "bg-violet-600 text-white"
-                              : "bg-gray-200 text-gray-500"
+                              : "bg-[var(--bg-subtle)] text-[var(--text-muted)]"
                           }`}>
                             {p}
                           </span>
@@ -1748,7 +1821,7 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                   })}
                 </div>
                 {!isPremium && (
-                  <p style={{ fontSize: 11, color: "#b4bac5", textAlign: "center", padding: "6px 0 0" }}>
+                  <p style={{ fontSize: 11, color: "var(--text-faint)", textAlign: "center", padding: "6px 0 0" }}>
                     Pro users track metric changes and see score improvements over time.
                   </p>
                 )}
@@ -1774,22 +1847,22 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                       {/* Header info */}
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-xs text-gray-400">Expected impact</p>
-                          <p className="text-sm text-gray-700 font-medium">{pb.baseImpact}</p>
+                          <p className="text-xs text-[var(--text-muted)]">Expected impact</p>
+                          <p className="text-sm text-[var(--text-secondary)] font-medium">{pb.baseImpact}</p>
                         </div>
                       </div>
 
                       {/* Progress bar */}
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs font-semibold text-gray-500 tabular-nums">
+                          <span className="text-xs font-semibold text-[var(--text-muted)] tabular-nums">
                             {isPremium
                               ? `${completedCount}/${totalSteps} steps completed`
                               : `${completedCount}/2 free steps \u00B7 ${Math.max(0, totalSteps - 2)} more with Pro`}
                           </span>
-                          <span className="text-xs font-bold text-gray-700 tabular-nums">{Math.round((completedCount / (isPremium ? totalSteps : 2)) * 100)}%</span>
+                          <span className="text-xs font-bold text-[var(--text-secondary)] tabular-nums">{Math.round((completedCount / (isPremium ? totalSteps : 2)) * 100)}%</span>
                         </div>
-                        <div className="w-full bg-gray-100 rounded-full h-2">
+                        <div className="w-full bg-[var(--bg-subtle)] rounded-full h-2">
                           <div
                             className="h-2 rounded-full bg-gradient-to-r from-violet-500 to-blue-500 transition-all duration-500"
                             style={{ width: `${(completedCount / totalSteps) * 100}%` }}
@@ -1830,8 +1903,8 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                                   <Lock style={{ width: 10, height: 10, color: "#7c3aed" }} />
                                 </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                  <p style={{ fontSize: 13, fontWeight: 600, color: "#5a6578", filter: "blur(2px)", userSelect: "none" }}>{s.title}</p>
-                                  <span style={{ fontSize: 10, color: "#b4bac5" }}>
+                                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", filter: "blur(2px)", userSelect: "none" }}>{s.title}</p>
+                                  <span style={{ fontSize: 10, color: "var(--text-faint)" }}>
                                     {EFFORT_ESTIMATE[pb.effortLevel] || "~45 min"}
                                   </span>
                                 </div>
@@ -1845,21 +1918,21 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                               <button
                                 onClick={() => toggleStep(pb.slug, i)}
                                 className={`w-full flex items-start gap-3 p-3 rounded-[10px] text-left transition-all duration-150 hover:-translate-y-px ${
-                                  done ? "bg-emerald-50/50 border border-emerald-100" : "bg-gray-50 border border-gray-100 hover:border-gray-200 hover:shadow-sm"
+                                  done ? "bg-emerald-50/50 dark:bg-emerald-500/8 border border-emerald-100 dark:border-emerald-500/20" : "bg-[var(--bg-subtle)] border border-[var(--border-default)] hover:border-[var(--border-default)] hover:shadow-sm"
                                 }`}
                               >
                                 <div className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded-md border-2 flex items-center justify-center transition-colors duration-150 ${
-                                  done ? "bg-emerald-500 border-emerald-500" : "border-gray-300"
+                                  done ? "bg-emerald-500 border-emerald-500" : "border-[var(--border-default)]"
                                 }`}>
                                   {done && <Check className="w-3 h-3 text-white" />}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className={`text-sm font-semibold ${done ? "text-gray-400 line-through" : "text-gray-800"}`}>{s.title}</p>
+                                  <p className={`text-sm font-semibold ${done ? "text-[var(--text-muted)] line-through" : "text-[var(--text-primary)]"}`}>{s.title}</p>
                                   {!done && (
-                                    <p className="text-xs mt-0.5 text-gray-500">{s.action}</p>
+                                    <p className="text-xs mt-0.5 text-[var(--text-muted)]">{s.action}</p>
                                   )}
                                   {!done && (
-                                    <span className="inline-block mt-1 text-[10px] text-gray-400">
+                                    <span className="inline-block mt-1 text-[10px] text-[var(--text-muted)]">
                                       {EFFORT_ESTIMATE[pb.effortLevel] || "~45 min"}
                                     </span>
                                   )}
@@ -1896,21 +1969,21 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                                     {isToolOpen && (
                                       <div style={{
                                         marginTop: 6, padding: "10px 12px", borderRadius: 8,
-                                        background: "#fff", border: "1px solid #e6e9ef",
+                                        background: "var(--bg-card)", border: "1px solid var(--border-default)",
                                         animation: "fadeSlide 0.2s ease",
                                       }}>
                                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                                           <LogoImg src={faviconUrl(rec.domain || "", 64)} fallbackEmoji={rec.logo} size={28} radius={7} />
                                           <div>
-                                            <span style={{ fontSize: 13, fontWeight: 700, color: "#1b2434" }}>{rec.name}</span>
+                                            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{rec.name}</span>
                                             {rec.matchLabel && (
                                               <span style={{ fontSize: 9, fontWeight: 700, marginLeft: 6, padding: "2px 6px", borderRadius: 4, background: `${rec.matchColor}14`, color: rec.matchColor }}>{rec.matchLabel}</span>
                                             )}
                                           </div>
                                         </div>
-                                        <p style={{ fontSize: 12, color: "#5a6578", lineHeight: 1.5, marginBottom: 8 }}>{rec.filledReasoning}</p>
+                                        <p style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: 8 }}>{rec.filledReasoning}</p>
                                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                                          <span style={{ fontSize: 11, color: "#8d95a3" }}>{rec.price}</span>
+                                          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{rec.price}</span>
                                           {rec.hasFreeTier && <span style={{ fontSize: 9, fontWeight: 600, padding: "1px 5px", borderRadius: 3, background: "rgba(16,185,129,0.08)", color: "#10b981" }}>Free tier</span>}
                                         </div>
                                         <button
@@ -1936,10 +2009,10 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                           background: "linear-gradient(135deg, rgba(99,102,241,0.04), rgba(67,97,238,0.06))",
                           border: "1px solid rgba(67,97,238,0.15)",
                         }}>
-                          <p style={{ fontSize: 14, fontWeight: 700, color: "#1b2434", marginBottom: 4 }}>
+                          <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
                             Unlock {Math.max(0, totalSteps - 2)} more steps + AI personalized plan
                           </p>
-                          <p style={{ fontSize: 12, color: "#5a6578", marginBottom: 12 }}>
+                          <p style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 12 }}>
                             Complete playbook with reasoning, templates, and guidance tailored to your business.
                           </p>
                           <Link
@@ -1968,7 +2041,7 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
 
                       {/* AI Expansion CTA (premium) */}
                       {isPremium && (
-                        <div className="border-t border-gray-100 pt-4">
+                        <div className="border-t border-[var(--border-default)] pt-4">
                           {!expanded && !isExpanding && (
                             <button
                               onClick={() => handleExpand(pb.slug)}
@@ -1981,7 +2054,7 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                           {isExpanding && (
                             <div className="flex items-center justify-center gap-2 py-4">
                               <Loader2 className="w-4 h-4 text-violet-500 animate-spin" />
-                              <span className="text-sm text-gray-500">Generating your personalized plan...</span>
+                              <span className="text-sm text-[var(--text-muted)]">Generating your personalized plan...</span>
                             </div>
                           )}
                           {expandError && !isExpanding && (
@@ -1994,25 +2067,25 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                             <div className="space-y-3">
                               <p className="text-xs font-semibold text-violet-600 uppercase tracking-wider">Your 7-Day Plan</p>
                               {expanded.personalizedSteps.map((s) => (
-                                <div key={s.day} className="flex items-start gap-2.5 p-2.5 bg-violet-50/30 rounded-lg">
+                                <div key={s.day} className="flex items-start gap-2.5 p-2.5 bg-violet-50/30 dark:bg-violet-500/5 rounded-lg">
                                   <span className="flex-shrink-0 w-7 h-7 bg-violet-100 rounded-lg text-xs font-bold text-violet-600 flex items-center justify-center mt-0.5">D{s.day}</span>
                                   <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-medium text-gray-800">{s.title}</p>
-                                    <p className="text-xs text-gray-600 mt-0.5">{s.action}</p>
+                                    <p className="text-sm font-medium text-[var(--text-primary)]">{s.title}</p>
+                                    <p className="text-xs text-[var(--text-secondary)] mt-0.5">{s.action}</p>
                                     <p className="text-xs text-violet-500 mt-0.5 italic">{s.whyNow}</p>
                                   </div>
                                 </div>
                               ))}
                               {expanded.copyPrompt && (
-                                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                <div className="p-3 bg-[var(--bg-subtle)] rounded-lg border border-[var(--border-default)]">
                                   <div className="flex items-center justify-between mb-1">
-                                    <p className="text-xs font-semibold text-gray-600">AI Execution Prompt</p>
-                                    <button onClick={() => handleCopyPrompt(expanded.copyPrompt)} className="inline-flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-violet-600 hover:bg-violet-50 rounded transition-colors">
+                                    <p className="text-xs font-semibold text-[var(--text-secondary)]">AI Execution Prompt</p>
+                                    <button onClick={() => handleCopyPrompt(expanded.copyPrompt)} className="inline-flex items-center gap-1 px-2 py-1 text-xs text-[var(--text-muted)] hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 rounded transition-colors">
                                       {copiedPrompt ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                                       {copiedPrompt ? "Copied!" : "Copy"}
                                     </button>
                                   </div>
-                                  <p className="text-xs text-gray-500 leading-relaxed">{expanded.copyPrompt}</p>
+                                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">{expanded.copyPrompt}</p>
                                 </div>
                               )}
                             </div>
@@ -2022,7 +2095,7 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
 
 
                       {/* Bottom note */}
-                      <p className="text-[11px] text-gray-400 text-center pt-2">
+                      <p className="text-[11px] text-[var(--text-muted)] text-center pt-2">
                         Completing steps tracks execution but won&apos;t change your health score. Move to Step 2 when you&apos;re ready to update your numbers.
                       </p>
                     </div>
@@ -2032,8 +2105,8 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                   {phase === 2 && (
                     <div className="space-y-5">
                       <div>
-                        <p className="text-sm font-medium text-gray-900 mb-1">Time to measure results</p>
-                        <p className="text-xs text-gray-500">Update your current numbers so we can recalculate your health score with real data.</p>
+                        <p className="text-sm font-medium text-[var(--text-primary)] mb-1">Time to measure results</p>
+                        <p className="text-xs text-[var(--text-muted)]">Update your current numbers so we can recalculate your health score with real data.</p>
                       </div>
 
                       <div className="space-y-3">
@@ -2043,14 +2116,14 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                           return (
                             <div key={m.key}>
                               <div className="flex items-center justify-between mb-1">
-                                <label className="text-xs font-semibold text-gray-600">{m.label}</label>
+                                <label className="text-xs font-semibold text-[var(--text-secondary)]">{m.label}</label>
                                 {prevValues[m.key] !== null && prevValues[m.key] !== undefined && (
-                                  <span className="text-[10px] text-gray-400 tabular-nums">Previous: {isDollar ? "$" : ""}{prevValues[m.key]}{isPct ? "%" : ""}</span>
+                                  <span className="text-[10px] text-[var(--text-muted)] tabular-nums">Previous: {isDollar ? "$" : ""}{prevValues[m.key]}{isPct ? "%" : ""}</span>
                                 )}
                               </div>
                               <div className="relative">
                                 {isDollar && (
-                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">$</span>
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--text-muted)] pointer-events-none">$</span>
                                 )}
                                 <input
                                   type="number"
@@ -2058,10 +2131,10 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                                   placeholder={m.placeholder}
                                   value={metricForm[m.key] ?? ""}
                                   onChange={(e) => setMetricForm((prev) => ({ ...prev, [m.key]: e.target.value }))}
-                                  className={`w-full py-2.5 border border-gray-200 rounded-[10px] text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent tabular-nums ${isDollar ? "pl-7 pr-3" : isPct ? "pl-3 pr-8" : "px-3"}`}
+                                  className={`w-full py-2.5 border border-[var(--border-default)] rounded-[10px] text-sm text-[var(--text-primary)] bg-[var(--bg-card)] focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent tabular-nums ${isDollar ? "pl-7 pr-3" : isPct ? "pl-3 pr-8" : "px-3"}`}
                                 />
                                 {isPct && (
-                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">%</span>
+                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[var(--text-muted)] pointer-events-none">%</span>
                                 )}
                               </div>
                             </div>
@@ -2079,13 +2152,13 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                       </button>
 
                       {metricsUpdated && (
-                        <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
+                        <div className="flex items-center gap-2 p-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-lg">
                           <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                           <p className="text-xs text-emerald-700">Score recalculated! Switch to &quot;See Results&quot; to view the comparison.</p>
                         </div>
                       )}
 
-                      <p className="text-[11px] text-gray-400 text-center">Your execution progress is saved separately.</p>
+                      <p className="text-[11px] text-[var(--text-muted)] text-center">Your execution progress is saved separately.</p>
                     </div>
                   )}
 
@@ -2094,9 +2167,9 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                     <div className="space-y-5">
                       {!afterScore ? (
                         <div className="text-center py-8">
-                          <Activity className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-                          <p className="text-sm font-medium text-gray-700 mb-1">No results yet</p>
-                          <p className="text-xs text-gray-400 mb-4">Update your metrics in Phase 2 to see before/after comparison.</p>
+                          <Activity className="w-8 h-8 text-[var(--text-muted)] mx-auto mb-3" />
+                          <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">No results yet</p>
+                          <p className="text-xs text-[var(--text-muted)] mb-4">Update your metrics in Phase 2 to see before/after comparison.</p>
                           <button
                             onClick={() => setActivePhase(2)}
                             className="text-xs text-violet-600 font-medium hover:underline"
@@ -2108,9 +2181,9 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                         <>
                           {/* Before / After scores */}
                           <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center items-center">
-                            <div className="p-3 sm:p-5 bg-gray-50 rounded-[12px]">
-                              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Before</p>
-                              <p className="text-2xl sm:text-4xl font-extrabold text-gray-400 tabular-nums">{beforeScore?.score ?? "—"}</p>
+                            <div className="p-3 sm:p-5 bg-[var(--bg-subtle)] rounded-[12px]">
+                              <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">Before</p>
+                              <p className="text-2xl sm:text-4xl font-extrabold text-[var(--text-muted)] tabular-nums">{beforeScore?.score ?? "—"}</p>
                             </div>
                             <div className="flex items-center justify-center">
                               <div className={`px-4 py-2 rounded-full text-sm font-bold tabular-nums ${
@@ -2118,13 +2191,13 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                                   ? "bg-emerald-100 text-emerald-700"
                                   : (afterScore.score - (beforeScore?.score ?? 0)) < 0
                                   ? "bg-red-100 text-red-700"
-                                  : "bg-gray-100 text-gray-600"
+                                  : "bg-[var(--bg-subtle)] text-[var(--text-secondary)]"
                               }`}>
                                 {(afterScore.score - (beforeScore?.score ?? 0)) > 0 ? "+" : ""}
                                 {afterScore.score - (beforeScore?.score ?? 0)} pts
                               </div>
                             </div>
-                            <div className="p-3 sm:p-5 bg-violet-50 rounded-[12px]">
+                            <div className="p-3 sm:p-5 bg-violet-50 dark:bg-violet-500/10 rounded-[12px]">
                               <p className="text-[10px] font-semibold text-violet-500 uppercase tracking-wider mb-1">After</p>
                               <p className="text-2xl sm:text-4xl font-extrabold text-violet-600 tabular-nums">{afterScore.score}</p>
                             </div>
@@ -2133,22 +2206,22 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                           {/* Pillar changes */}
                           {beforeScore && (
                             <div>
-                              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Pillar Changes</p>
+                              <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Pillar Changes</p>
                               <div className="space-y-2">
                                 {Object.entries(afterScore.pillars).map(([name, after]) => {
                                   const before = beforeScore.pillars[name];
                                   const diff = (after as PillarData).score - (before?.score ?? 0);
                                   if (diff === 0) return null;
                                   return (
-                                    <div key={name} className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 p-2.5 bg-gray-50 rounded-[10px]">
-                                      <span className="text-xs font-semibold text-gray-600 w-20 sm:w-24">{PILLAR_LABELS[name] || name}</span>
-                                      <span className="text-xs text-gray-400 w-8 sm:w-10 text-right tabular-nums">{before?.score ?? 0}</span>
-                                      <ArrowRight className="w-3 h-3 text-gray-300" />
-                                      <span className="text-xs font-bold text-gray-800 w-8 sm:w-10 tabular-nums">{(after as PillarData).score}</span>
+                                    <div key={name} className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 p-2.5 bg-[var(--bg-subtle)] rounded-[10px]">
+                                      <span className="text-xs font-semibold text-[var(--text-secondary)] w-20 sm:w-24">{PILLAR_LABELS[name] || name}</span>
+                                      <span className="text-xs text-[var(--text-muted)] w-8 sm:w-10 text-right tabular-nums">{before?.score ?? 0}</span>
+                                      <ArrowRight className="w-3 h-3 text-[var(--text-muted)]" />
+                                      <span className="text-xs font-bold text-[var(--text-primary)] w-8 sm:w-10 tabular-nums">{(after as PillarData).score}</span>
                                       <span className={`text-xs font-bold tabular-nums ${diff > 0 ? "text-emerald-600" : "text-red-500"}`}>
                                         {diff > 0 ? "+" : ""}{diff}
                                       </span>
-                                      <span className="text-[10px] text-gray-400 flex-1 hidden sm:inline">
+                                      <span className="text-[10px] text-[var(--text-muted)] flex-1 hidden sm:inline">
                                         {diff > 0
                                           ? `${PILLAR_LABELS[name]} improved from metric updates`
                                           : `${PILLAR_LABELS[name]} decreased — review inputs`}
@@ -2161,7 +2234,7 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                           )}
 
                           {/* Attribution */}
-                          <div className="px-3 py-2 bg-violet-50/50 rounded-lg border border-violet-100">
+                          <div className="px-3 py-2 bg-violet-50/50 dark:bg-violet-500/8 rounded-lg border border-violet-100 dark:border-violet-500/20">
                             <p className="text-xs text-violet-700">
                               <span className="font-semibold">{pb.title}</span>
                               {" "}<ArrowRight className="w-3 h-3 inline" />{" "}
@@ -2170,8 +2243,8 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                           </div>
 
                           {/* What's Next */}
-                          <div className="border-t border-gray-100 pt-4">
-                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">What&apos;s Next</p>
+                          <div className="border-t border-[var(--border-default)] pt-4">
+                            <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">What&apos;s Next</p>
                             {(() => {
                               // Find weakest pillar that isn't this playbook's category
                               const sortedPillars = Object.entries(afterScore.pillars)
@@ -2182,9 +2255,9 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                                 ? playbooks.find((p) => p.category === weakest[0] && p.slug !== pb.slug)
                                 : null;
                               return (
-                                <div className="p-3 bg-gray-50 rounded-[10px]">
+                                <div className="p-3 bg-[var(--bg-subtle)] rounded-[10px]">
                                   {weakest && (
-                                    <p className="text-xs text-gray-600 mb-2">
+                                    <p className="text-xs text-[var(--text-secondary)] mb-2">
                                       Your weakest pillar is now <span className="font-semibold">{PILLAR_LABELS[weakest[0]] || weakest[0]}</span> at <span className="tabular-nums">{(weakest[1] as PillarData).score}/100</span>.
                                     </p>
                                   )}
@@ -2204,7 +2277,7 @@ function PlaybooksSection({ isPremium, hasScore, onScoreRefresh, integrations = 
                                       <ArrowRight className="w-3 h-3" />
                                     </button>
                                   ) : (
-                                    <p className="text-xs text-gray-500">Keep improving your metrics and check back for new triggered playbooks.</p>
+                                    <p className="text-xs text-[var(--text-muted)]">Keep improving your metrics and check back for new triggered playbooks.</p>
                                   )}
                                 </div>
                               );
@@ -2270,22 +2343,22 @@ function AiBusinessSummary({ isPremium }: { isPremium: boolean }) {
         }}>
           <Sparkles style={{ width: 16, height: 16 }} />
         </div>
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#1b2434" }}>Your Business at a Glance</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>Your Business at a Glance</span>
         {isPremium && summary && !loading && (
           <button
             onClick={handleRegenerate}
             disabled={regenerating}
-            style={{ marginLeft: "auto", fontSize: 10, color: "#8d95a3", fontWeight: 500, background: "none", border: "none", cursor: "pointer" }}
+            style={{ marginLeft: "auto", fontSize: 10, color: "var(--text-muted)", fontWeight: 500, background: "none", border: "none", cursor: "pointer" }}
           >
             {regenerating ? "Regenerating..." : "Regenerate"}
           </button>
         )}
       </div>
-      <div style={{ fontSize: 14, color: "#5a6578", lineHeight: 1.7 }}>
+      <div style={{ fontSize: 14, color: "var(--text-primary)", lineHeight: 1.7 }}>
         {isPremium && loading ? (
           <div className="flex items-center gap-2">
-            <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
-            <span className="text-sm text-gray-400">Generating your AI summary...</span>
+            <Loader2 className="w-4 h-4 text-[var(--text-muted)] animate-spin" />
+            <span className="text-sm text-[var(--text-muted)]">Generating your AI summary...</span>
           </div>
         ) : isPremium && summary ? (
           summary
@@ -2298,7 +2371,7 @@ function AiBusinessSummary({ isPremium }: { isPremium: boolean }) {
 
   if (!isPremium) {
     return (
-      <div className="bg-white border border-gray-100 rounded-[14px] shadow-sm overflow-hidden">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] shadow-sm overflow-hidden">
         <LockedOverlay label="AI-Powered Business Summary">
           {cardContent}
         </LockedOverlay>
@@ -2307,7 +2380,7 @@ function AiBusinessSummary({ isPremium }: { isPremium: boolean }) {
   }
 
   return (
-    <div className="bg-white border border-gray-100 rounded-[14px] shadow-sm overflow-hidden">
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] shadow-sm overflow-hidden">
       {cardContent}
     </div>
   );
@@ -2368,7 +2441,7 @@ function LeaveReviewSection() {
   if (loading) return null;
 
   return (
-    <div className="bg-white border border-[#e6e9ef] rounded-[14px] shadow-sm" style={{ padding: "28px 32px" }}>
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[14px] shadow-sm" style={{ padding: "28px 32px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
         <div style={{
           width: 36, height: 36, borderRadius: 10,
@@ -2378,10 +2451,10 @@ function LeaveReviewSection() {
           <Star size={18} color="#4361ee" />
         </div>
         <div>
-          <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1b2434", margin: 0 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", margin: 0 }}>
             {submitted ? "Thanks for your review!" : "How is FixWorkFlow working for you?"}
           </h3>
-          <p style={{ fontSize: 12, color: "#8d95a3", margin: 0 }}>
+          <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0 }}>
             {submitted ? "Your feedback helps us improve." : "Leave a rating and optional comment."}
           </p>
         </div>
@@ -2396,17 +2469,17 @@ function LeaveReviewSection() {
                   key={s}
                   size={22}
                   fill={s <= (existingReview?.rating || rating) ? "#facc15" : "none"}
-                  color={s <= (existingReview?.rating || rating) ? "#facc15" : "#d1d5db"}
+                  color={s <= (existingReview?.rating || rating) ? "#facc15" : "var(--border-default)"}
                   strokeWidth={1.5}
                 />
               ))}
             </div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#1b2434" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
               {existingReview?.rating || rating}/5
             </span>
           </div>
           {existingReview?.comment && (
-            <p style={{ fontSize: 13, color: "#5a6578", lineHeight: 1.6, margin: "0 0 12px", fontStyle: "italic" }}>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, margin: "0 0 12px", fontStyle: "italic" }}>
               &ldquo;{existingReview.comment}&rdquo;
             </p>
           )}
@@ -2440,13 +2513,13 @@ function LeaveReviewSection() {
                 <Star
                   size={28}
                   fill={s <= (hover || rating) ? "#facc15" : "none"}
-                  color={s <= (hover || rating) ? "#facc15" : "#d1d5db"}
+                  color={s <= (hover || rating) ? "#facc15" : "var(--border-default)"}
                   strokeWidth={1.5}
                 />
               </button>
             ))}
             {rating > 0 && (
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#1b2434", alignSelf: "center", marginLeft: 4 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", alignSelf: "center", marginLeft: 4 }}>
                 {rating}/5
               </span>
             )}
@@ -2459,13 +2532,13 @@ function LeaveReviewSection() {
             placeholder="Optional: Tell us what you think..."
             rows={3}
             style={{
-              width: "100%", fontSize: 13, color: "#1b2434",
-              border: "1px solid #e6e9ef", borderRadius: 10, padding: "12px 14px",
+              width: "100%", fontSize: 13, color: "var(--text-primary)",
+              border: "1px solid var(--border-default)", borderRadius: 10, padding: "12px 14px",
               resize: "vertical", outline: "none", fontFamily: "inherit",
-              background: "#fafbfd",
+              background: "var(--bg-elevated)",
             }}
             onFocus={(e) => { e.currentTarget.style.borderColor = "#4361ee"; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = "#e6e9ef"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border-default)"; }}
           />
 
           {/* Submit */}
@@ -2474,7 +2547,7 @@ function LeaveReviewSection() {
             disabled={rating < 1 || submitting}
             style={{
               marginTop: 12, padding: "10px 24px", fontSize: 13, fontWeight: 700,
-              color: "#fff", background: rating < 1 ? "#d1d5db" : "#4361ee",
+              color: "#fff", background: rating < 1 ? "var(--border-default)" : "#4361ee",
               border: "none", borderRadius: 10, cursor: rating < 1 ? "default" : "pointer",
               opacity: submitting ? 0.7 : 1,
               transition: "background 0.15s",
@@ -2505,10 +2578,10 @@ function BottomUpgradeBanner() {
       border: "1px solid rgba(67,97,238,0.15)",
       borderRadius: 14, padding: "32px 36px", textAlign: "center",
     }}>
-      <p style={{ fontSize: 20, fontWeight: 800, color: "#1b2434", marginBottom: 4 }}>
+      <p style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
         Get the full picture
       </p>
-      <p style={{ fontSize: 14, color: "#5a6578", marginBottom: 20 }}>
+      <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 20 }}>
         Unlock every insight, playbook, and AI feature to grow faster.
       </p>
       <div style={{
@@ -2525,7 +2598,7 @@ function BottomUpgradeBanner() {
             }}>
               <CheckCircle2 style={{ width: 14, height: 14, color: "#10b981" }} />
             </span>
-            <span style={{ fontSize: 13, color: "#1b2434", fontWeight: 500, textAlign: "left" }}>{b}</span>
+            <span style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500, textAlign: "left" }}>{b}</span>
           </div>
         ))}
       </div>
@@ -2542,7 +2615,7 @@ function BottomUpgradeBanner() {
       >
         Upgrade to Pro
       </Link>
-      <p style={{ fontSize: 12, color: "#8d95a3", marginTop: 14 }}>
+      <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 14 }}>
         Join 850+ business owners who upgraded their workflow
       </p>
     </div>
@@ -2828,9 +2901,9 @@ export default function RevenueDashboard() {
 
   if (!session?.user) {
     return (
-      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500 mb-4">Sign in to access your revenue dashboard.</p>
+          <p className="text-[var(--text-muted)] mb-4">Sign in to access your revenue dashboard.</p>
           <Link href="/signup" className="text-blue-600 font-medium">
             Sign In
           </Link>
@@ -2841,22 +2914,22 @@ export default function RevenueDashboard() {
 
   if (error && error !== "upgrade") {
     return (
-      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
         <p className="text-red-500 text-sm">Error: {error}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-[var(--bg-page)]">
       {/* Nav */}
-      <nav className="bg-white border-b border-gray-100 relative z-50">
+      <nav className="bg-[var(--bg-card)] border-b border-[var(--border-default)] relative z-50">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
               <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="text-lg sm:text-xl font-bold text-gray-900">FixWorkFlow</span>
+            <span className="text-lg sm:text-xl font-bold text-[var(--text-primary)]">FixWorkFlow</span>
           </Link>
           {/* Desktop nav */}
           <div className="hidden sm:flex items-center gap-3">
@@ -2875,12 +2948,12 @@ export default function RevenueDashboard() {
                 Upgrade to Pro
               </Link>
             )}
-            <Link href="/settings?tab=integrations" style={{ fontSize: 13, color: "#5a6578", textDecoration: "none", fontWeight: 500 }}>
+            <Link href="/settings?tab=integrations" style={{ fontSize: 13, color: "var(--text-secondary)", textDecoration: "none", fontWeight: 500 }}>
               Integrations
             </Link>
             <button
               onClick={() => setFeedbackOpen(true)}
-              style={{ fontSize: 13, color: "#5a6578", background: "none", border: "none", cursor: "pointer", fontWeight: 500, fontFamily: "inherit" }}
+              style={{ fontSize: 13, color: "var(--text-secondary)", background: "none", border: "none", cursor: "pointer", fontWeight: 500, fontFamily: "inherit" }}
             >
               Feedback
             </button>
@@ -2890,12 +2963,13 @@ export default function RevenueDashboard() {
                 <span style={{ fontSize: 9, fontWeight: 800, background: "#7c3aed", color: "#fff", padding: "2px 6px", borderRadius: 4, letterSpacing: 0.5 }}>ADMIN</span>
               </Link>
             )}
+            <ThemeToggle />
             {session?.user && <UserAvatarDropdown user={session.user} />}
           </div>
           {/* Mobile hamburger */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="sm:hidden p-1.5 text-gray-700"
+            className="sm:hidden p-1.5 text-[var(--text-secondary)]"
             aria-label="Toggle menu"
           >
             {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -2905,28 +2979,28 @@ export default function RevenueDashboard() {
 
       {/* Mobile menu overlay */}
       {menuOpen && (
-        <div className="sm:hidden fixed inset-0 top-[52px] z-40 bg-white overflow-y-auto">
+        <div className="sm:hidden fixed inset-0 top-[52px] z-40 bg-[var(--bg-card)] overflow-y-auto">
           <div className="flex flex-col p-4 gap-1">
-            <Link href="/settings" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50">
+            <Link href="/settings" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-medium text-[var(--text-primary)] rounded-lg hover:bg-[var(--bg-card-hover)]">
               Settings
             </Link>
-            <Link href="/settings?tab=integrations" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50">
+            <Link href="/settings?tab=integrations" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-medium text-[var(--text-primary)] rounded-lg hover:bg-[var(--bg-card-hover)]">
               Integrations
             </Link>
-            <button onClick={() => { setFeedbackOpen(true); setMenuOpen(false); }} className="block w-full text-left px-3 py-3.5 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50" style={{ fontFamily: "inherit", background: "none", border: "none", cursor: "pointer" }}>
+            <button onClick={() => { setFeedbackOpen(true); setMenuOpen(false); }} className="block w-full text-left px-3 py-3.5 text-base font-medium text-[var(--text-primary)] rounded-lg hover:bg-[var(--bg-card-hover)]" style={{ fontFamily: "inherit", background: "none", border: "none", cursor: "pointer" }}>
               Feedback
             </button>
             {!isPremium && (
-              <Link href="/pricing" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50">
+              <Link href="/pricing" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-medium text-[var(--text-primary)] rounded-lg hover:bg-[var(--bg-card-hover)]">
                 Upgrade to Pro
               </Link>
             )}
             {!!(session?.user as Record<string, unknown> | undefined)?.isAdmin && (
-              <Link href="/admin" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-semibold text-violet-600 rounded-lg hover:bg-violet-50">
+              <Link href="/admin" onClick={() => setMenuOpen(false)} className="block px-3 py-3.5 text-base font-semibold text-violet-600 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-500/10">
                 Admin
               </Link>
             )}
-            <div className="mt-2 pt-3 border-t border-gray-100">
+            <div className="mt-2 pt-3 border-t border-[var(--border-default)]">
               {session?.user && <UserAvatarDropdown user={session.user} />}
             </div>
           </div>
@@ -2977,11 +3051,11 @@ export default function RevenueDashboard() {
 
         {/* Weekly tracker reminder */}
         {showTrackerReminder && !trackerReminderDismissed && isPremium && (
-          <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl text-sm">
+          <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl text-sm">
             <Activity className="w-4 h-4 text-blue-600 flex-shrink-0" />
-            <span className="text-blue-800 flex-1">
+            <span className="text-blue-800 dark:text-blue-300 flex-1">
               You haven&apos;t logged this week&apos;s numbers yet.{" "}
-              <a href="#revenue-tracker" className="text-indigo-600 font-medium hover:underline">
+              <a href="#revenue-tracker" className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline">
                 Log Now
               </a>
             </span>
@@ -3006,14 +3080,14 @@ export default function RevenueDashboard() {
           const connectedCount = integrations.length;
           const pct = Math.round((connectedCount / 15) * 100);
           return (
-            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e6e9ef", padding: "18px 20px", display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ background: "var(--bg-card)", borderRadius: 14, border: "1px solid var(--border-default)", padding: "18px 20px", display: "flex", alignItems: "center", gap: 16 }}>
               <div style={{ width: 40, height: 40, minWidth: 40, borderRadius: 10, background: "rgba(67,97,238,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Plug size={20} color="#4361ee" />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "#1b2434" }}>Connected Integrations</span>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "#8d95a3" }}>{connectedCount} of 15 tools connected</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Connected Integrations</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>{connectedCount} of 15 tools connected</span>
                 </div>
                 <div style={{ height: 4, borderRadius: 2, background: "#f0f0f0", marginBottom: 6 }}>
                   <div style={{ height: 4, borderRadius: 2, background: "#4361ee", width: `${pct}%`, transition: "width 0.3s ease" }} />
@@ -3027,14 +3101,14 @@ export default function RevenueDashboard() {
                           key={intg.id}
                           src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
                           alt={intg.provider}
-                          style={{ width: 20, height: 20, borderRadius: 4, objectFit: "contain", background: "#fff", border: "1px solid #f0f2f6" }}
+                          style={{ width: 20, height: 20, borderRadius: 4, objectFit: "contain", background: "var(--bg-card)", border: "1px solid var(--border-light)" }}
                         />
                       );
                     })}
-                    <span style={{ fontSize: 12, color: "#8d95a3", marginLeft: 4 }}>connected</span>
+                    <span style={{ fontSize: 12, color: "var(--text-muted)", marginLeft: 4 }}>connected</span>
                   </div>
                 ) : (
-                  <span style={{ fontSize: 12, color: "#8d95a3" }}>Connect your business tools for a more accurate Revenue Health Score</span>
+                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Connect your business tools for a more accurate Revenue Health Score</span>
                 )}
               </div>
               <Link href="/settings?tab=integrations" style={{ padding: "8px 16px", borderRadius: 8, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
@@ -3046,13 +3120,13 @@ export default function RevenueDashboard() {
 
         {/* Admin: Sync My Score card */}
         {!!(session?.user as Record<string, unknown> | undefined)?.isAdmin && (
-          <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e6e9ef", padding: "14px 20px", display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ background: "var(--bg-card)", borderRadius: 14, border: "1px solid var(--border-default)", padding: "14px 20px", display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ width: 36, height: 36, minWidth: 36, borderRadius: 8, background: "rgba(16,185,129,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <RefreshCw size={18} color="#10b981" style={adminSyncing ? { animation: "spin 1s linear infinite" } : undefined} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#1b2434" }}>Admin Score Auto-Sync</span>
-              <span style={{ fontSize: 11, color: "#8d95a3", marginLeft: 8 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>Admin Score Auto-Sync</span>
+              <span style={{ fontSize: 11, color: "var(--text-muted)", marginLeft: 8 }}>
                 {adminLastSync ? `Last synced ${new Date(adminLastSync).toLocaleTimeString()}` : "Not synced yet"}
               </span>
             </div>
@@ -3108,39 +3182,33 @@ export default function RevenueDashboard() {
         {dashData && (
           <div className="space-y-6">
             {/* Top Row: Score + Revenue Opportunity */}
-            <CollapsibleSection title="Revenue Intelligence" icon={<Activity className="w-3.5 h-3.5 text-gray-400" />}>
+            <CollapsibleSection title="Revenue Intelligence" icon={<Activity className="w-3.5 h-3.5 text-[var(--text-muted)]" />}>
               <div className="grid md:grid-cols-3 gap-6">
                 {/* Score Card */}
                 <div className="flex flex-col items-center">
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4">
-                    Score
-                  </p>
-                  <ScoreGauge score={dashData.score.total} band={dashData.score.band} />
-                  <p className={`text-sm font-semibold mt-3 ${BAND_COLORS[dashData.score.band] || "text-gray-600"}`}>
-                    {dashData.score.band}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <ScoreGauge score={dashData.score.total} />
+                  <p className="text-xs text-[var(--text-muted)] mt-2">
                     {new Date(dashData.score.calculatedAt).toLocaleDateString()}
                   </p>
                 </div>
 
                 {/* Revenue Opportunity */}
                 <div>
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4">
+                  <p className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-4">
                     Revenue Opportunity
                   </p>
                   <div className="flex items-baseline gap-1 mb-2">
-                    <span className="text-3xl font-bold text-gray-900">
+                    <span className="text-3xl font-bold text-[var(--text-primary)]">
                       ${dashData.revenueGap.toLocaleString()}
                     </span>
-                    <span className="text-sm text-gray-400">/mo</span>
+                    <span className="text-sm text-[var(--text-muted)]">/mo</span>
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-[var(--text-muted)]">
                     Estimated gap vs benchmark for your business type and stage.
                   </p>
                   {dashData.businessProfile && (
-                    <div className="mt-4 pt-4 border-t border-gray-50">
-                      <p className="text-xs text-gray-400">
+                    <div className="mt-4 pt-4 border-t border-[var(--border-light)]">
+                      <p className="text-xs text-[var(--text-muted)]">
                         {dashData.businessProfile.businessType} &middot; {dashData.businessProfile.revenueStage} &middot; ${dashData.businessProfile.currentRevenue.toLocaleString()}/mo
                       </p>
                     </div>
@@ -3149,26 +3217,26 @@ export default function RevenueDashboard() {
 
                 {/* Primary Bottleneck */}
                 <div>
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4">
+                  <p className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-4">
                     Primary Bottleneck
                   </p>
                   {dashData.bottleneck ? (
                     <>
                       <div className="flex items-center gap-2 mb-2">
                         <AlertTriangle className="w-5 h-5 text-amber-500" />
-                        <span className="text-lg font-semibold text-gray-900">
+                        <span className="text-lg font-semibold text-[var(--text-primary)]">
                           {dashData.bottleneck.primary}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="text-xs text-gray-400">Severity</span>
-                        <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                        <span className="text-xs text-[var(--text-muted)]">Severity</span>
+                        <div className="flex-1 bg-[var(--bg-subtle)] rounded-full h-1.5">
                           <div
                             className="h-1.5 rounded-full bg-amber-500"
                             style={{ width: `${dashData.bottleneck.severity}%` }}
                           />
                         </div>
-                        <span className="text-xs font-medium text-gray-600">
+                        <span className="text-xs font-medium text-[var(--text-secondary)]">
                           {dashData.bottleneck.severity}
                         </span>
                       </div>
@@ -3177,7 +3245,7 @@ export default function RevenueDashboard() {
                           {dashData.bottleneck.secondary.map((b) => (
                             <span
                               key={b}
-                              className="px-2 py-0.5 bg-gray-50 border border-gray-100 rounded text-xs text-gray-500"
+                              className="px-2 py-0.5 bg-[var(--bg-subtle)] border border-[var(--border-default)] rounded text-xs text-[var(--text-muted)]"
                             >
                               {b}
                             </span>
@@ -3186,7 +3254,7 @@ export default function RevenueDashboard() {
                       )}
                     </>
                   ) : (
-                    <p className="text-sm text-gray-400">None detected</p>
+                    <p className="text-sm text-[var(--text-muted)]">None detected</p>
                   )}
                 </div>
               </div>
@@ -3206,7 +3274,7 @@ export default function RevenueDashboard() {
               <>
                 {/* Summary */}
                 <CollapsibleSection title="Revenue Analysis">
-                  <p className="text-sm text-gray-700 leading-relaxed">
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                     {dashData.insight.summary}
                   </p>
                 </CollapsibleSection>
@@ -3216,15 +3284,15 @@ export default function RevenueDashboard() {
                   {/* Weekly Execution Plan */}
                   <CollapsibleSection
                     title="This Week's Directive"
-                    icon={<Target className="w-3.5 h-3.5 text-gray-400" />}
+                    icon={<Target className="w-3.5 h-3.5 text-[var(--text-muted)]" />}
                   >
                     <ol className="space-y-2.5">
                       {dashData.insight.weeklyExecutionPlan.map((step, i) => (
                         <li key={i} className="flex items-start gap-2.5">
-                          <span className="flex-shrink-0 w-5 h-5 bg-gray-100 rounded text-xs font-medium text-gray-500 flex items-center justify-center mt-0.5">
+                          <span className="flex-shrink-0 w-5 h-5 bg-[var(--bg-subtle)] rounded text-xs font-medium text-[var(--text-muted)] flex items-center justify-center mt-0.5">
                             {i + 1}
                           </span>
-                          <span className="text-sm text-gray-700">{step}</span>
+                          <span className="text-sm text-[var(--text-secondary)]">{step}</span>
                         </li>
                       ))}
                     </ol>
@@ -3239,7 +3307,7 @@ export default function RevenueDashboard() {
                       >
                         <ul className="space-y-2">
                           {dashData.insight.riskWarnings.map((w, i) => (
-                            <li key={i} className="text-sm text-gray-700 flex items-start gap-2">
+                            <li key={i} className="text-sm text-[var(--text-secondary)] flex items-start gap-2">
                               <span className="w-1 h-1 rounded-full bg-red-400 mt-2 flex-shrink-0" />
                               {w}
                             </li>
@@ -3255,7 +3323,7 @@ export default function RevenueDashboard() {
                       >
                         <ul className="space-y-2">
                           {dashData.insight.opportunitySignals.map((s, i) => (
-                            <li key={i} className="text-sm text-gray-700 flex items-start gap-2">
+                            <li key={i} className="text-sm text-[var(--text-secondary)] flex items-start gap-2">
                               <span className="w-1 h-1 rounded-full bg-emerald-400 mt-2 flex-shrink-0" />
                               {s}
                             </li>
@@ -3276,13 +3344,13 @@ export default function RevenueDashboard() {
                         return (
                           <div
                             key={i}
-                            className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"
+                            className="flex items-start gap-3 p-3 bg-[var(--bg-subtle)] rounded-lg"
                           >
-                            <span className="text-sm font-medium text-gray-900 capitalize">
+                            <span className="text-sm font-medium text-[var(--text-primary)] capitalize">
                               {slug}
                             </span>
                             {reason && (
-                              <span className="text-xs text-gray-500">{reason}</span>
+                              <span className="text-xs text-[var(--text-muted)]">{reason}</span>
                             )}
                           </div>
                         );
@@ -3296,7 +3364,7 @@ export default function RevenueDashboard() {
         )}
 
         {/* Footer */}
-        <p className="text-center text-[11px] text-gray-400 pt-4 pb-8">
+        <p className="text-center text-[11px] text-[var(--text-muted)] pt-4 pb-8">
           Score recalculated when you update your business profile or complete a metric check-in.
         </p>
       </div>

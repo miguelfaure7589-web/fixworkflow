@@ -16,7 +16,7 @@ export default function BookCover({ isbn, fallbackEmoji, title, width = 52, heig
     return (
       <div style={{
         width, height, borderRadius: 6,
-        background: '#f4f5f8', border: '1px solid #f0f2f6',
+        background: 'var(--bg-subtle)', border: '1px solid var(--border-light)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: Math.min(width, height) * 0.4, flexShrink: 0,
       }}>

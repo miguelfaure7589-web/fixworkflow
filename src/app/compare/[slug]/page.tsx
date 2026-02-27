@@ -96,22 +96,22 @@ export async function generateMetadata({
 
 function ToolColumn({ tool }: { tool: ToolData }) {
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+    <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-2xl p-6 shadow-sm">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-lg flex items-center justify-center text-white font-bold">
           {tool.name.charAt(0)}
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">{tool.name}</h3>
-          <p className="text-sm text-gray-400">{tool.pricing}</p>
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">{tool.name}</h3>
+          <p className="text-sm text-[var(--text-muted)]">{tool.pricing}</p>
         </div>
       </div>
-      <p className="text-gray-600 text-sm mb-4">{tool.description}</p>
+      <p className="text-[var(--text-secondary)] text-sm mb-4">{tool.description}</p>
       <div className="mb-4">
-        <div className="text-sm text-gray-400 mb-2">Key Features:</div>
+        <div className="text-sm text-[var(--text-muted)] mb-2">Key Features:</div>
         <ul className="space-y-1.5">
           {tool.features.map((feature) => (
-            <li key={feature} className="flex items-center gap-2 text-sm text-gray-600">
+            <li key={feature} className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
               <Check className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
               {feature}
             </li>
@@ -119,7 +119,7 @@ function ToolColumn({ tool }: { tool: ToolData }) {
         </ul>
       </div>
       <div className="mb-4">
-        <div className="text-sm text-gray-400 mb-1">Free Tier:</div>
+        <div className="text-sm text-[var(--text-muted)] mb-1">Free Tier:</div>
         <div className="flex items-center gap-1.5 text-sm">
           {tool.hasFreeTier ? (
             <>
@@ -134,14 +134,14 @@ function ToolColumn({ tool }: { tool: ToolData }) {
           )}
         </div>
       </div>
-      <div className="text-sm text-gray-400 mb-4">
+      <div className="text-sm text-[var(--text-muted)] mb-4">
         Rating: <span className="text-amber-500 font-medium">{tool.rating}/5</span>
       </div>
       <a
         href={`/go/${tool.slug}?source=comparison`}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-full text-sm font-medium transition-colors"
+        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-[var(--text-primary)] hover:opacity-90 text-white rounded-full text-sm font-medium transition-colors"
       >
         Try {tool.name}
         <ExternalLink className="w-3.5 h-3.5" />
@@ -166,18 +166,18 @@ export default async function ComparisonPage({
   if (!tool1 || !tool2) notFound();
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
-      <nav className="bg-white border-b border-gray-100">
+    <div className="min-h-screen bg-[var(--bg-page)]">
+      <nav className="bg-[var(--bg-card)] border-b border-[var(--border-default)]">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
               <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="text-lg sm:text-xl font-bold text-gray-900">FixWorkFlow</span>
+            <span className="text-lg sm:text-xl font-bold text-[var(--text-primary)]">FixWorkFlow</span>
           </Link>
           <Link
             href="/signup"
-            className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gray-900 text-white text-xs sm:text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
+            className="px-4 sm:px-5 py-2 sm:py-2.5 bg-[var(--text-primary)] text-white text-xs sm:text-sm font-medium rounded-full hover:opacity-90 transition-colors"
           >
             Start Free
           </Link>
@@ -185,8 +185,8 @@ export default async function ComparisonPage({
       </nav>
 
       <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">{comparison.title}</h1>
-        <p className="text-sm sm:text-base text-gray-500 mb-8 sm:mb-10">{comparison.description}</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-3 sm:mb-4">{comparison.title}</h1>
+        <p className="text-sm sm:text-base text-[var(--text-muted)] mb-8 sm:mb-10">{comparison.description}</p>
 
         {/* Side by side */}
         <div className="grid md:grid-cols-2 gap-6 mb-10">
@@ -196,16 +196,16 @@ export default async function ComparisonPage({
 
         {/* Verdict */}
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 mb-10">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">Our Verdict</h2>
-          <p className="text-gray-600">{comparison.verdict}</p>
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Our Verdict</h2>
+          <p className="text-[var(--text-secondary)]">{comparison.verdict}</p>
         </div>
 
         {/* CTA */}
-        <div className="text-center bg-white border border-gray-100 rounded-2xl p-6 sm:p-8 shadow-sm">
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3">
+        <div className="text-center bg-[var(--bg-card)] border border-[var(--border-default)] rounded-2xl p-6 sm:p-8 shadow-sm">
+          <h3 className="text-lg sm:text-xl font-semibold text-[var(--text-primary)] mb-3">
             Not sure which is right for you?
           </h3>
-          <p className="text-gray-500 mb-6">
+          <p className="text-[var(--text-muted)] mb-6">
             Take our free workflow diagnosis and get a personalized recommendation based on your
             specific situation.
           </p>
@@ -218,7 +218,7 @@ export default async function ComparisonPage({
           </Link>
         </div>
 
-        <p className="text-xs text-gray-300 text-center mt-8">
+        <p className="text-xs text-[var(--text-muted)] text-center mt-8">
           Affiliate Disclosure: FixWorkFlow may earn a commission from purchases made through links
           on this page, at no extra cost to you.
         </p>

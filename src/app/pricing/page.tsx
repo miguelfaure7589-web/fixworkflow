@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { Check, Zap, ArrowRight, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import UserAvatarDropdown from "@/components/UserAvatarDropdown";
+import ThemeToggle from "@/components/ThemeToggle";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 
 const freeFeatures = [
@@ -68,35 +69,39 @@ export default function PricingPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#fafafa", fontFamily: "var(--font-outfit, var(--font-geist-sans)), sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-page)", fontFamily: "var(--font-outfit, var(--font-geist-sans)), sans-serif" }}>
       {/* Nav */}
-      <nav style={{ background: "#fff", borderBottom: "1px solid #e6e9ef" }}>
+      <nav style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border-default)" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto", padding: isMobile ? "12px 16px" : "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
             <div style={{ width: isMobile ? 32 : 36, height: isMobile ? 32 : 36, borderRadius: 10, background: "linear-gradient(135deg, #4361ee, #6366f1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Zap style={{ width: isMobile ? 16 : 20, height: isMobile ? 16 : 20, color: "#fff" }} />
             </div>
-            <span style={{ fontSize: isMobile ? 17 : 20, fontWeight: 700, color: "#1b2434" }}>FixWorkFlow</span>
+            <span style={{ fontSize: isMobile ? 17 : 20, fontWeight: 700, color: "var(--text-primary)" }}>FixWorkFlow</span>
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             {isLoggedIn ? (
               <>
-                <Link href="/dashboard" style={{ fontSize: 13, color: "#5a6578", textDecoration: "none", fontWeight: 500 }}>Dashboard</Link>
+                <Link href="/dashboard" style={{ fontSize: 13, color: "var(--text-secondary)", textDecoration: "none", fontWeight: 500 }}>Dashboard</Link>
                 {isAdmin && (
                   <Link href="/admin" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, color: "#7c3aed", textDecoration: "none", fontWeight: 600 }}>
                     Admin
                     <span style={{ fontSize: 9, fontWeight: 800, background: "#7c3aed", color: "#fff", padding: "2px 6px", borderRadius: 4, letterSpacing: 0.5 }}>ADMIN</span>
                   </Link>
                 )}
+                <ThemeToggle />
                 <UserAvatarDropdown user={session.user!} />
               </>
             ) : (
-              <Link
-                href="/signup"
-                style={{ padding: "8px 20px", borderRadius: 9, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none" }}
-              >
-                Get Your Score
-              </Link>
+              <>
+                <ThemeToggle />
+                <Link
+                  href="/signup"
+                  style={{ padding: "8px 20px", borderRadius: 9, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none" }}
+                >
+                  Get Your Score
+                </Link>
+              </>
             )}
           </div>
         </div>
@@ -105,10 +110,10 @@ export default function PricingPage() {
       <div style={{ maxWidth: 880, margin: "0 auto", padding: isMobile ? "32px 16px" : "64px 24px" }}>
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: isMobile ? 28 : 48 }}>
-          <h1 style={{ fontSize: isMobile ? 26 : 38, fontWeight: 900, color: "#1b2434", margin: "0 0 12px", letterSpacing: -0.5 }}>
+          <h1 style={{ fontSize: isMobile ? 26 : 38, fontWeight: 900, color: "var(--text-primary)", margin: "0 0 12px", letterSpacing: -0.5 }}>
             Simple pricing. Powerful results.
           </h1>
-          <p style={{ fontSize: isMobile ? 15 : 17, color: "#5a6578", margin: 0 }}>
+          <p style={{ fontSize: isMobile ? 15 : 17, color: "var(--text-secondary)", margin: 0 }}>
             Start free. Upgrade when you want the full picture.
           </p>
         </div>
@@ -116,18 +121,18 @@ export default function PricingPage() {
         {/* Plan Cards */}
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 16 : 24 }}>
           {/* Free Plan */}
-          <div style={{ background: "#fff", border: "1px solid #e6e9ef", borderRadius: 16, padding: isMobile ? 24 : 32, order: isMobile ? 2 : 1 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1b2434", margin: "0 0 4px" }}>Free</h2>
-            <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 24px" }}>Everything you need to get started</p>
+          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 16, padding: isMobile ? 24 : 32, order: isMobile ? 2 : 1 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 4px" }}>Free</h2>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 24px" }}>Everything you need to get started</p>
             <div style={{ marginBottom: 24 }}>
-              <span style={{ fontSize: 40, fontWeight: 800, color: "#1b2434" }}>$0</span>
-              <span style={{ fontSize: 14, color: "#8d95a3" }}> /forever</span>
+              <span style={{ fontSize: 40, fontWeight: 800, color: "var(--text-primary)" }}>$0</span>
+              <span style={{ fontSize: 14, color: "var(--text-muted)" }}> /forever</span>
             </div>
             {isLoggedIn && !isPremium ? (
               <div style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
                 padding: "12px 24px", borderRadius: 10,
-                background: "#f4f5f8", color: "#8d95a3",
+                background: "var(--bg-subtle)", color: "var(--text-muted)",
                 fontSize: 14, fontWeight: 600, marginBottom: 32,
               }}>
                 Current Plan
@@ -138,7 +143,7 @@ export default function PricingPage() {
                 style={{
                   display: "block", textAlign: "center",
                   padding: "12px 24px", borderRadius: 10,
-                  background: "#f4f5f8", color: "#1b2434",
+                  background: "var(--bg-subtle)", color: "var(--text-primary)",
                   fontSize: 14, fontWeight: 600, textDecoration: "none", marginBottom: 32,
                   transition: "background 0.15s",
                 }}
@@ -150,8 +155,8 @@ export default function PricingPage() {
             )}
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
               {freeFeatures.map((f) => (
-                <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, color: "#3d4654" }}>
-                  <Check style={{ width: 16, height: 16, color: "#8d95a3", flexShrink: 0, marginTop: 2 }} />
+                <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, color: "var(--text-secondary)" }}>
+                  <Check style={{ width: 16, height: 16, color: "var(--text-muted)", flexShrink: 0, marginTop: 2 }} />
                   {f}
                 </li>
               ))}
@@ -159,7 +164,7 @@ export default function PricingPage() {
           </div>
 
           {/* Pro Plan */}
-          <div style={{ background: "#fff", border: "2px solid #4361ee", borderRadius: 16, padding: isMobile ? 24 : 32, position: "relative", order: isMobile ? 1 : 2 }}>
+          <div style={{ background: "var(--bg-card)", border: "2px solid #4361ee", borderRadius: 16, padding: isMobile ? 24 : 32, position: "relative", order: isMobile ? 1 : 2 }}>
             <div style={{
               position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)",
               padding: "4px 14px", borderRadius: 20,
@@ -168,11 +173,11 @@ export default function PricingPage() {
             }}>
               MOST POPULAR
             </div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1b2434", margin: "0 0 4px" }}>Pro</h2>
-            <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 24px" }}>The full revenue intelligence suite</p>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 4px" }}>Pro</h2>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 24px" }}>The full revenue intelligence suite</p>
             <div style={{ marginBottom: 24 }}>
-              <span style={{ fontSize: 40, fontWeight: 800, color: "#1b2434" }}>$19.99</span>
-              <span style={{ fontSize: 14, color: "#8d95a3" }}> /month</span>
+              <span style={{ fontSize: 40, fontWeight: 800, color: "var(--text-primary)" }}>$19.99</span>
+              <span style={{ fontSize: 14, color: "var(--text-muted)" }}> /month</span>
             </div>
             {isPremium ? (
               <div style={{
@@ -203,7 +208,7 @@ export default function PricingPage() {
             )}
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
               {proFeatures.map((f) => (
-                <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, color: "#3d4654" }}>
+                <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, color: "var(--text-secondary)" }}>
                   <Check style={{ width: 16, height: 16, color: "#4361ee", flexShrink: 0, marginTop: 2 }} />
                   {f}
                 </li>
@@ -214,12 +219,12 @@ export default function PricingPage() {
 
         {/* FAQ */}
         <div style={{ maxWidth: 640, margin: isMobile ? "32px auto 0" : "64px auto 0" }}>
-          <h2 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, color: "#1b2434", textAlign: "center", margin: isMobile ? "0 0 20px" : "0 0 32px" }}>
+          <h2 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, color: "var(--text-primary)", textAlign: "center", margin: isMobile ? "0 0 20px" : "0 0 32px" }}>
             Frequently asked questions
           </h2>
           <div>
             {faqs.map((faq, i) => (
-              <div key={faq.q} style={{ borderBottom: "1px solid #e6e9ef" }}>
+              <div key={faq.q} style={{ borderBottom: "1px solid var(--border-default)" }}>
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                   style={{
@@ -228,17 +233,17 @@ export default function PricingPage() {
                     cursor: "pointer", textAlign: "left", fontFamily: "inherit",
                   }}
                 >
-                  <span style={{ fontSize: 15, fontWeight: 600, color: "#1b2434" }}>{faq.q}</span>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>{faq.q}</span>
                   <ChevronDown
                     style={{
-                      width: 18, height: 18, color: "#8d95a3", flexShrink: 0,
+                      width: 18, height: 18, color: "var(--text-muted)", flexShrink: 0,
                       transform: openFaq === i ? "rotate(180deg)" : "rotate(0)",
                       transition: "transform 0.2s",
                     }}
                   />
                 </button>
                 {openFaq === i && (
-                  <p style={{ fontSize: 14, color: "#5a6578", margin: "0 0 16px", lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 14, color: "var(--text-secondary)", margin: "0 0 16px", lineHeight: 1.6 }}>
                     {faq.a}
                   </p>
                 )}
@@ -249,7 +254,7 @@ export default function PricingPage() {
 
         {/* Bottom CTA */}
         <div style={{ textAlign: "center", marginTop: isMobile ? 32 : 64 }}>
-          <p style={{ fontSize: isMobile ? 15 : 17, color: "#5a6578", margin: "0 0 20px" }}>
+          <p style={{ fontSize: isMobile ? 15 : 17, color: "var(--text-secondary)", margin: "0 0 20px" }}>
             Start with the free plan and upgrade when you are ready.
           </p>
           <Link

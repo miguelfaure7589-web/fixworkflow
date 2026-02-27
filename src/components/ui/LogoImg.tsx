@@ -22,9 +22,9 @@ export default function LogoImg({ src, fallbackEmoji, alt, size = 36, radius = 9
     return (
       <div style={{
         width: size, height: size, borderRadius: radius,
-        background: '#f4f5f8', border: '1px solid #e6e9ef',
+        background: 'var(--bg-subtle)', border: '1px solid var(--border-default)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: size * 0.3, fontWeight: 700, color: '#5a6578',
+        fontSize: size * 0.3, fontWeight: 700, color: 'var(--text-secondary)',
         flexShrink: 0,
       }}>
         {initial}
@@ -39,8 +39,8 @@ export default function LogoImg({ src, fallbackEmoji, alt, size = 36, radius = 9
       onError={() => setErrored(true)}
       style={{
         width: size, height: size, borderRadius: radius,
-        objectFit: 'contain', background: 'white',
-        border: '1px solid #f0f2f6', padding: 4, flexShrink: 0,
+        objectFit: 'contain', background: 'var(--bg-card)',
+        border: '1px solid var(--border-light)', padding: 4, flexShrink: 0,
       }}
     />
   );

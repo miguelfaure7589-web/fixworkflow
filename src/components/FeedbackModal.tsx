@@ -46,32 +46,32 @@ export default function FeedbackModal({ open, onClose, onSuccess }: FeedbackModa
 
   return (
     <div
-      style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)" }}
+      style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--overlay-bg)", backdropFilter: "blur(4px)" }}
       onClick={onClose}
     >
       <div
-        style={{ background: "#fff", borderRadius: 16, padding: 28, maxWidth: 480, width: "100%", margin: "0 16px", boxShadow: "0 16px 48px rgba(0,0,0,0.12)" }}
+        style={{ background: "var(--bg-card)", borderRadius: 16, padding: 28, maxWidth: 480, width: "100%", margin: "0 16px", boxShadow: "0 16px 48px rgba(0,0,0,0.12)" }}
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434", margin: 0 }}>Send Feedback</h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: "#8d95a3" }}>
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: 0 }}>Send Feedback</h2>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: "var(--text-muted)" }}>
             <X size={20} />
           </button>
         </div>
 
-        <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#5a6578", marginBottom: 6 }}>Type</label>
+        <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 6 }}>Type</label>
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
-          style={{ width: "100%", padding: "10px 12px", borderRadius: 9, border: "1px solid #e6e9ef", fontSize: 14, color: "#1b2434", marginBottom: 16, background: "#fff", cursor: "pointer" }}
+          style={{ width: "100%", padding: "10px 12px", borderRadius: 9, border: "1px solid var(--border-default)", fontSize: 14, color: "var(--text-primary)", marginBottom: 16, background: "var(--bg-input)", cursor: "pointer" }}
         >
           {TYPES.map((t) => (
             <option key={t.value} value={t.value}>{t.label}</option>
           ))}
         </select>
 
-        <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#5a6578", marginBottom: 6 }}>
+        <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 6 }}>
           Tell us what&apos;s broken, what&apos;s confusing, or what you&apos;d love to see
         </label>
         <textarea
@@ -80,7 +80,7 @@ export default function FeedbackModal({ open, onClose, onSuccess }: FeedbackModa
           rows={5}
           maxLength={2000}
           placeholder="Your feedback..."
-          style={{ width: "100%", padding: "10px 12px", borderRadius: 9, border: "1px solid #e6e9ef", fontSize: 14, color: "#1b2434", lineHeight: 1.6, resize: "vertical", marginBottom: 20, fontFamily: "inherit" }}
+          style={{ width: "100%", padding: "10px 12px", borderRadius: 9, border: "1px solid var(--border-default)", fontSize: 14, color: "var(--text-primary)", lineHeight: 1.6, resize: "vertical", marginBottom: 20, fontFamily: "inherit", background: "var(--bg-input)" }}
         />
 
         <button
@@ -88,8 +88,8 @@ export default function FeedbackModal({ open, onClose, onSuccess }: FeedbackModa
           disabled={!message.trim() || sending}
           style={{
             width: "100%", padding: "12px 24px", borderRadius: 10, border: "none",
-            background: !message.trim() || sending ? "#e6e9ef" : "#4361ee",
-            color: !message.trim() || sending ? "#8d95a3" : "#fff",
+            background: !message.trim() || sending ? "var(--bg-subtle)" : "#4361ee",
+            color: !message.trim() || sending ? "var(--text-muted)" : "#fff",
             fontSize: 14, fontWeight: 700, cursor: !message.trim() || sending ? "default" : "pointer",
             transition: "background 0.15s",
           }}

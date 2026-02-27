@@ -51,11 +51,11 @@ function ResetPasswordForm() {
 
   if (!token || !email) {
     return (
-      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Invalid reset link</h1>
-            <p className="text-gray-500 mb-6">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-2xl p-8 shadow-sm text-center">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-4">Invalid reset link</h1>
+            <p className="text-[var(--text-muted)] mb-6">
               This password reset link is invalid or has expired.
             </p>
             <Link
@@ -71,13 +71,13 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center px-4 py-6">
+    <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center px-4 py-6">
       <div className="w-full max-w-md">
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 sm:p-8 shadow-sm">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-2xl p-6 sm:p-8 shadow-sm">
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2 text-center">
             Set new password
           </h1>
-          <p className="text-gray-500 mb-8 text-center">
+          <p className="text-[var(--text-muted)] mb-8 text-center">
             Enter your new password below.
           </p>
 
@@ -89,7 +89,7 @@ function ResetPasswordForm() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
                 New password
               </label>
               <input
@@ -99,12 +99,12 @@ function ResetPasswordForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 placeholder="At least 8 characters"
               />
             </div>
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
                 Confirm new password
               </label>
               <input
@@ -114,7 +114,7 @@ function ResetPasswordForm() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={8}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 placeholder="Confirm your password"
               />
             </div>
@@ -128,14 +128,14 @@ function ResetPasswordForm() {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-500">
+          <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
             <Link href="/login" className="text-indigo-600 hover:text-indigo-700 font-medium">
               Back to login
             </Link>
           </p>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
+        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-[var(--text-muted)]">
           <Shield className="w-3.5 h-3.5" />
           <span>Your data stays private. We never share your business metrics.</span>
         </div>
@@ -148,8 +148,8 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
-          <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+        <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
+          <Loader2 className="w-6 h-6 text-[var(--text-muted)] animate-spin" />
         </div>
       }
     >

@@ -74,47 +74,47 @@ export default function AdminReferralsPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
-        <div className="text-gray-400 text-sm">Loading...</div>
+      <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
+        <div className="text-[var(--text-muted)] text-sm">Loading...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
         <p className="text-red-500 text-sm">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-[var(--bg-page)]">
       {/* Nav */}
-      <nav className="bg-white border-b border-gray-100">
+      <nav className="bg-[var(--bg-card)] border-b border-[var(--border-default)]">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2">
             <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-[#4361ee] to-[#6366f1] rounded-xl flex items-center justify-center">
               <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="text-lg sm:text-xl font-bold text-gray-900">Admin</span>
+            <span className="text-lg sm:text-xl font-bold text-[var(--text-primary)]">Admin</span>
           </Link>
         </div>
       </nav>
 
       <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
         <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 18, fontWeight: 800, color: "#1b2434" }} className="sm:!text-[22px]">Credit Referrals</h1>
-          <p style={{ fontSize: 13, color: "#8d95a3", marginTop: 4 }}>{referrals.length} total referrals</p>
+          <h1 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)" }} className="sm:!text-[22px]">Credit Referrals</h1>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>{referrals.length} total referrals</p>
         </div>
 
-        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e6e9ef", overflow: "hidden" }}>
+        <div style={{ background: "var(--bg-card)", borderRadius: 14, border: "1px solid var(--border-default)", overflow: "hidden" }}>
           <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 700 }}>
             <thead>
-              <tr style={{ background: "#fafbfd", borderBottom: "1px solid #e6e9ef" }}>
+              <tr style={{ background: "var(--bg-elevated)", borderBottom: "1px solid var(--border-default)" }}>
                 {["Date", "Name", "Email", "Phone", "Best Time", "Notes", "Status"].map((h) => (
-                  <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>
+                  <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>
                     {h}
                   </th>
                 ))}
@@ -124,15 +124,15 @@ export default function AdminReferralsPage() {
               {referrals.map((r) => {
                 const sc = STATUS_COLORS[r.status] || STATUS_COLORS.pending;
                 return (
-                  <tr key={r.id} style={{ borderBottom: "1px solid #f0f2f6" }}>
-                    <td style={{ padding: "12px 16px", color: "#5a6578", whiteSpace: "nowrap" }}>
+                  <tr key={r.id} style={{ borderBottom: "1px solid var(--border-light)" }}>
+                    <td style={{ padding: "12px 16px", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
                       {new Date(r.createdAt).toLocaleDateString()}
                     </td>
-                    <td style={{ padding: "12px 16px", fontWeight: 600, color: "#1b2434" }}>{r.name}</td>
-                    <td style={{ padding: "12px 16px", color: "#5a6578" }}>{r.email}</td>
-                    <td style={{ padding: "12px 16px", color: "#5a6578" }}>{r.phone}</td>
-                    <td style={{ padding: "12px 16px", color: "#8d95a3" }}>{r.bestTimeToCall || "—"}</td>
-                    <td style={{ padding: "12px 16px", color: "#8d95a3", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <td style={{ padding: "12px 16px", fontWeight: 600, color: "var(--text-primary)" }}>{r.name}</td>
+                    <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>{r.email}</td>
+                    <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>{r.phone}</td>
+                    <td style={{ padding: "12px 16px", color: "var(--text-muted)" }}>{r.bestTimeToCall || "—"}</td>
+                    <td style={{ padding: "12px 16px", color: "var(--text-muted)", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {r.notes || "—"}
                     </td>
                     <td style={{ padding: "12px 16px" }}>
@@ -140,7 +140,7 @@ export default function AdminReferralsPage() {
                         value={r.status}
                         onChange={(e) => handleStatusChange(r.id, e.target.value)}
                         style={{
-                          padding: "4px 8px", borderRadius: 6, border: "1px solid #e6e9ef",
+                          padding: "4px 8px", borderRadius: 6, border: "1px solid var(--border-default)",
                           fontSize: 12, fontWeight: 600, cursor: "pointer",
                           background: sc.bg, color: sc.text,
                         }}
@@ -155,7 +155,7 @@ export default function AdminReferralsPage() {
               })}
               {referrals.length === 0 && (
                 <tr>
-                  <td colSpan={7} style={{ padding: "32px 16px", textAlign: "center", color: "#8d95a3" }}>
+                  <td colSpan={7} style={{ padding: "32px 16px", textAlign: "center", color: "var(--text-muted)" }}>
                     No referrals yet.
                   </td>
                 </tr>

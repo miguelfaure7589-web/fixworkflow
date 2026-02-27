@@ -79,7 +79,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               display: "flex",
               alignItems: "center",
               gap: 12,
-              background: "#fff",
+              background: "var(--bg-card)",
               borderRadius: 10,
               boxShadow: "0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
               padding: "14px 18px",
@@ -106,7 +106,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             >
               {icons[t.type]}
             </span>
-            <span style={{ fontSize: 13, color: "#1b2434", fontWeight: 500, lineHeight: 1.4 }}>
+            <span style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500, lineHeight: 1.4 }}>
               {t.message}
             </span>
             <button
@@ -115,7 +115,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 marginLeft: "auto",
                 background: "none",
                 border: "none",
-                color: "#8d95a3",
+                color: "var(--text-muted)",
                 cursor: "pointer",
                 fontSize: 16,
                 padding: 2,

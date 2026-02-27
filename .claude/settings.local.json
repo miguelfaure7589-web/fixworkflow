@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(curl:*)",
+      "Bash(npx next dev:*)",
+      "Bash(start:*)",
+      "Bash(npx prisma migrate reset:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" npx prisma migrate reset:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm run dev:*)",
+      "Bash(NEXTAUTH_DEBUG=true npm run dev:*)",
+      "Bash(npm ls:*)",
+      "Bash(taskkill:*)",
+      "Bash(stripe listen:*)",
+      "Bash(scoop install:*)",
+      "Bash(cmd //c \"scoop install stripe\")",
+      "Bash(powershell -Command:*)",
+      "Bash(~/scoop/shims/scoop install:*)",
+      "Bash(~/scoop/shims/scoop bucket add stripe https://github.com/nickhudkins/scoop-stripe.git)",
+      "Bash(~/scoop/shims/scoop bucket add:*)",
+      "Bash(~/scoop/shims/stripe listen --forward-to localhost:3000/api/stripe/webhook)",
+      "Bash(npx prisma studio:*)",
+      "Bash(npx prisma:*)",
+      "Bash(npx next build:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(node:*)",
+      "Bash(npx tsx:*)",
+      "Bash(netstat:*)"
+    ]
+  }
+}

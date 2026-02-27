@@ -11,8 +11,8 @@ export default function OnboardingRedirect() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
-      <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+    <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
+      <Loader2 className="w-6 h-6 text-[var(--text-muted)] animate-spin" />
     </div>
   );
 }

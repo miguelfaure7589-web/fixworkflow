@@ -68,17 +68,17 @@ export default function DiagnosticForm({ onComplete, prefilledCategory }: Diagno
   if (!currentQuestion) return null;
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         {/* Progress bar */}
         <div className="mb-8">
-          <div className="flex justify-between text-sm text-gray-400 mb-2">
+          <div className="flex justify-between text-sm text-[var(--text-muted)] mb-2">
             <span>FixWorkFlow Diagnosis</span>
             <span>
               Step {currentIndex + 1} of {visibleQuestions.length}
             </span>
           </div>
-          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-1.5 bg-[var(--border-default)] rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-500"
               style={{ width: `${progress}%` }}
@@ -87,10 +87,10 @@ export default function DiagnosticForm({ onComplete, prefilledCategory }: Diagno
         </div>
 
         {/* Question */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">{currentQuestion.question}</h2>
+        <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-2xl p-8 shadow-sm">
+          <h2 className="text-2xl font-semibold text-[var(--text-primary)] mb-2">{currentQuestion.question}</h2>
           {currentQuestion.subtitle && (
-            <p className="text-gray-400 mb-6">{currentQuestion.subtitle}</p>
+            <p className="text-[var(--text-muted)] mb-6">{currentQuestion.subtitle}</p>
           )}
 
           {/* Single Select */}
@@ -102,15 +102,15 @@ export default function DiagnosticForm({ onComplete, prefilledCategory }: Diagno
                   onClick={() => handleSingleSelect(currentQuestion.id, option.value)}
                   className={`w-full text-left p-4 rounded-xl border transition-all duration-200 ${
                     currentAnswer === option.value
-                      ? "border-blue-500 bg-blue-50 text-gray-900"
-                      : "border-gray-150 bg-gray-50 text-gray-600 hover:border-gray-300 hover:bg-white"
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10 text-[var(--text-primary)]"
+                      : "border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-default)] hover:bg-[var(--bg-card-hover)]"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-medium">{option.label}</div>
                       {option.description && (
-                        <div className="text-sm text-gray-400 mt-1">{option.description}</div>
+                        <div className="text-sm text-[var(--text-muted)] mt-1">{option.description}</div>
                       )}
                     </div>
                     {currentAnswer === option.value && (
@@ -134,14 +134,14 @@ export default function DiagnosticForm({ onComplete, prefilledCategory }: Diagno
                       onClick={() => handleMultiSelect(currentQuestion.id, option.value)}
                       className={`text-left p-4 rounded-xl border transition-all duration-200 ${
                         selected
-                          ? "border-blue-500 bg-blue-50 text-gray-900"
-                          : "border-gray-150 bg-gray-50 text-gray-600 hover:border-gray-300 hover:bg-white"
+                          ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10 text-[var(--text-primary)]"
+                          : "border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-default)] hover:bg-[var(--bg-card-hover)]"
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div
                           className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                            selected ? "border-blue-500 bg-blue-500" : "border-gray-300"
+                            selected ? "border-blue-500 bg-blue-500" : "border-[var(--border-default)]"
                           }`}
                         >
                           {selected && (
@@ -157,7 +157,7 @@ export default function DiagnosticForm({ onComplete, prefilledCategory }: Diagno
                         <div>
                           <div className="font-medium text-sm">{option.label}</div>
                           {option.description && (
-                            <div className="text-xs text-gray-400 mt-0.5">{option.description}</div>
+                            <div className="text-xs text-[var(--text-muted)] mt-0.5">{option.description}</div>
                           )}
                         </div>
                       </div>
@@ -179,7 +179,7 @@ export default function DiagnosticForm({ onComplete, prefilledCategory }: Diagno
                   }
                 }}
                 placeholder="e.g. I want to streamline client onboarding, reduce time spent on manual invoicing, and find a better way to manage my remote team..."
-                className="w-full h-36 p-4 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-400 resize-none focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500 transition-all duration-200"
+                className="w-full h-36 p-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] resize-none focus:outline-none focus:border-blue-500 focus:bg-[var(--bg-card)] focus:ring-1 focus:ring-blue-500 transition-all duration-200"
                 maxLength={currentQuestion.maxLength}
               />
               {currentQuestion.maxLength && (
@@ -187,7 +187,7 @@ export default function DiagnosticForm({ onComplete, prefilledCategory }: Diagno
                   <span className={`text-sm ${
                     ((currentAnswer as string) || "").length > (currentQuestion.maxLength * 0.9)
                       ? "text-amber-500"
-                      : "text-gray-400"
+                      : "text-[var(--text-muted)]"
                   }`}>
                     {((currentAnswer as string) || "").length}/{currentQuestion.maxLength}
                   </span>
@@ -213,8 +213,8 @@ export default function DiagnosticForm({ onComplete, prefilledCategory }: Diagno
                   }}
                   className={`w-14 h-14 rounded-xl border-2 text-lg font-semibold transition-all duration-200 ${
                     currentAnswer === value
-                      ? "border-blue-500 bg-blue-50 text-blue-600"
-                      : "border-gray-200 bg-white text-gray-400 hover:border-gray-300"
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10 text-blue-600"
+                      : "border-[var(--border-default)] bg-[var(--bg-card)] text-[var(--text-muted)] hover:border-[var(--border-default)]"
                   }`}
                 >
                   {value}
@@ -229,7 +229,7 @@ export default function DiagnosticForm({ onComplete, prefilledCategory }: Diagno
           <button
             onClick={handleBack}
             disabled={currentIndex === 0}
-            className="flex items-center gap-2 px-4 py-2 text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             Back
@@ -240,7 +240,7 @@ export default function DiagnosticForm({ onComplete, prefilledCategory }: Diagno
             {(currentQuestion.dependsOn || currentQuestion.type === "text") && !isLastQuestion && (
               <button
                 onClick={handleNext}
-                className="px-4 py-2 text-gray-400 hover:text-gray-600 text-sm transition-colors"
+                className="px-4 py-2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] text-sm transition-colors"
               >
                 Skip
               </button>
@@ -256,7 +256,7 @@ export default function DiagnosticForm({ onComplete, prefilledCategory }: Diagno
                     (Array.isArray(currentAnswer) && currentAnswer.length === 0)
                   )
                 }
-                className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-full font-medium disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                className="flex items-center gap-2 px-6 py-3 bg-[var(--text-primary)] text-white rounded-full font-medium disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 transition-colors"
               >
                 {isLastQuestion ? "Get My Results" : "Continue"}
                 <ChevronRight className="w-4 h-4" />

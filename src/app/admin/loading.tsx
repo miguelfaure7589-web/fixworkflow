@@ -1,20 +1,20 @@
 import Skeleton from "@/components/Skeleton";
 
 const card: React.CSSProperties = {
-  background: "#fff",
+  background: "var(--bg-card)",
   borderRadius: 14,
-  border: "1px solid #e6e9ef",
+  border: "1px solid var(--border-default)",
   padding: 20,
 };
 
 export default function AdminLoading() {
   return (
-    <div style={{ minHeight: "100vh", background: "#fafafa" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-page)" }}>
       {/* Nav bar */}
       <div style={{
         height: 56,
-        background: "#fff",
-        borderBottom: "1px solid #e6e9ef",
+        background: "var(--bg-card)",
+        borderBottom: "1px solid var(--border-default)",
         display: "flex",
         alignItems: "center",
         padding: "0 24px",
@@ -56,7 +56,7 @@ export default function AdminLoading() {
             gridTemplateColumns: "2fr 1fr 1fr 1fr",
             gap: 12,
             padding: "14px 20px",
-            borderBottom: "1px solid #e6e9ef",
+            borderBottom: "1px solid var(--border-default)",
           }}>
             {[1, 2, 3, 4].map((i) => (
               <Skeleton key={i} width={80} height={10} borderRadius={4} />
@@ -69,7 +69,7 @@ export default function AdminLoading() {
               gridTemplateColumns: "2fr 1fr 1fr 1fr",
               gap: 12,
               padding: "12px 20px",
-              borderBottom: i < 5 ? "1px solid #f0f2f5" : "none",
+              borderBottom: i < 5 ? "1px solid var(--border-light)" : "none",
             }}>
               <Skeleton width="70%" height={12} borderRadius={4} />
               <Skeleton width={60} height={12} borderRadius={4} />

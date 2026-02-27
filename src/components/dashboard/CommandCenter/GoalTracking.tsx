@@ -7,7 +7,7 @@ import type { GoalData } from "./types";
 function ProgressBar({ current, target, color }: { current: number; target: number; color: string }) {
   const pct = target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0;
   return (
-    <div style={{ width: "100%", height: 8, borderRadius: 4, background: "#f0f2f6", overflow: "hidden" }}>
+    <div style={{ width: "100%", height: 8, borderRadius: 4, background: "var(--bg-subtle)", overflow: "hidden" }}>
       <div style={{
         width: `${pct}%`, height: "100%", borderRadius: 4,
         background: `linear-gradient(90deg, ${color}, ${color}cc)`,
@@ -56,8 +56,8 @@ export default function GoalTracking({
     <div style={{ marginBottom: 28 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <Target size={14} style={{ color: "#8d95a3" }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          <Target size={14} style={{ color: "var(--text-muted)" }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
             Goal Tracking
           </span>
         </div>
@@ -74,31 +74,31 @@ export default function GoalTracking({
 
       {editing ? (
         <div style={{
-          background: "#fff", border: "1px solid #f0f2f6", borderRadius: 12,
-          padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+          background: "var(--bg-card)", border: "1px solid var(--border-light)", borderRadius: 12,
+          padding: 16, boxShadow: "var(--shadow-card)",
         }}>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 12 }}>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 600, color: "#8d95a3", display: "block", marginBottom: 4 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", display: "block", marginBottom: 4 }}>
                 MONTHLY REVENUE TARGET
               </label>
               <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "#b4bac5" }}>$</span>
+                <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "var(--text-faint)" }}>$</span>
                 <input
                   type="number"
                   value={revenueGoal}
                   onChange={(e) => setRevenueGoal(e.target.value)}
                   placeholder="10000"
                   style={{
-                    width: "100%", padding: "8px 10px 8px 24px", border: "1px solid #e6e9ef",
-                    borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#1b2434", outline: "none",
-                    boxSizing: "border-box",
+                    width: "100%", padding: "8px 10px 8px 24px", border: "1px solid var(--border-default)",
+                    borderRadius: 8, fontSize: 14, fontWeight: 600, color: "var(--text-primary)", outline: "none",
+                    boxSizing: "border-box", background: "var(--bg-input)",
                   }}
                 />
               </div>
             </div>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 600, color: "#8d95a3", display: "block", marginBottom: 4 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", display: "block", marginBottom: 4 }}>
                 GROSS MARGIN TARGET
               </label>
               <div style={{ position: "relative" }}>
@@ -108,12 +108,12 @@ export default function GoalTracking({
                   onChange={(e) => setMarginGoal(e.target.value)}
                   placeholder="40"
                   style={{
-                    width: "100%", padding: "8px 28px 8px 10px", border: "1px solid #e6e9ef",
-                    borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#1b2434", outline: "none",
-                    boxSizing: "border-box",
+                    width: "100%", padding: "8px 28px 8px 10px", border: "1px solid var(--border-default)",
+                    borderRadius: 8, fontSize: 14, fontWeight: 600, color: "var(--text-primary)", outline: "none",
+                    boxSizing: "border-box", background: "var(--bg-input)",
                   }}
                 />
-                <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "#b4bac5" }}>%</span>
+                <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "var(--text-faint)" }}>%</span>
               </div>
             </div>
           </div>
@@ -137,45 +137,45 @@ export default function GoalTracking({
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
           {/* Revenue goal */}
           <div style={{
-            background: "#fff", border: "1px solid #f0f2f6", borderRadius: 12,
-            padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+            background: "var(--bg-card)", border: "1px solid var(--border-light)", borderRadius: 12,
+            padding: 16, boxShadow: "var(--shadow-card)",
           }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", marginBottom: 6 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 6 }}>
               Monthly Revenue
             </div>
             {revTarget ? (
               <>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 8 }}>
-                  <span style={{ fontSize: 20, fontWeight: 800, color: "#1b2434" }}>{fmtDollar(goals.currentRevenue)}</span>
-                  <span style={{ fontSize: 12, color: "#8d95a3" }}>of {fmtDollar(revTarget)}</span>
+                  <span style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>{fmtDollar(goals.currentRevenue)}</span>
+                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>of {fmtDollar(revTarget)}</span>
                 </div>
                 <ProgressBar current={goals.currentRevenue} target={revTarget} color="#4361ee" />
-                <div style={{ fontSize: 11, color: "#b4bac5", marginTop: 6 }}>{revPct}% complete</div>
+                <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 6 }}>{revPct}% complete</div>
               </>
             ) : (
-              <div style={{ fontSize: 13, color: "#b4bac5" }}>No target set</div>
+              <div style={{ fontSize: 13, color: "var(--text-faint)" }}>No target set</div>
             )}
           </div>
 
           {/* Margin goal */}
           <div style={{
-            background: "#fff", border: "1px solid #f0f2f6", borderRadius: 12,
-            padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+            background: "var(--bg-card)", border: "1px solid var(--border-light)", borderRadius: 12,
+            padding: 16, boxShadow: "var(--shadow-card)",
           }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", marginBottom: 6 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 6 }}>
               Gross Margin
             </div>
             {marginTarget ? (
               <>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 8 }}>
-                  <span style={{ fontSize: 20, fontWeight: 800, color: "#1b2434" }}>{goals.currentMargin?.toFixed(1) ?? "0"}%</span>
-                  <span style={{ fontSize: 12, color: "#8d95a3" }}>of {marginTarget}%</span>
+                  <span style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>{goals.currentMargin?.toFixed(1) ?? "0"}%</span>
+                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>of {marginTarget}%</span>
                 </div>
                 <ProgressBar current={goals.currentMargin ?? 0} target={marginTarget} color="#10b981" />
-                <div style={{ fontSize: 11, color: "#b4bac5", marginTop: 6 }}>{marginPct}% complete</div>
+                <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 6 }}>{marginPct}% complete</div>
               </>
             ) : (
-              <div style={{ fontSize: 13, color: "#b4bac5" }}>No target set</div>
+              <div style={{ fontSize: 13, color: "var(--text-faint)" }}>No target set</div>
             )}
           </div>
         </div>

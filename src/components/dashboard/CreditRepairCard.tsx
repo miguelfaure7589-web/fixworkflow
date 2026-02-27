@@ -16,7 +16,7 @@ export default function CreditRepairCard({ usesPersonalCredit }: Props) {
   return (
     <div style={{
       position: 'relative', overflow: 'hidden',
-      background: '#fff', borderRadius: 14, border: '1px solid #e6e9ef',
+      background: 'var(--bg-card)', borderRadius: 14, border: '1px solid var(--border-default)',
       padding: '24px 24px 24px 28px', marginBottom: 18,
     }}>
       {/* Left accent stripe */}
@@ -28,7 +28,7 @@ export default function CreditRepairCard({ usesPersonalCredit }: Props) {
 
       {/* Header badge */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.6, color: '#8d95a3', textTransform: 'uppercase' as const }}>Financial Health</span>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.6, color: 'var(--text-muted)', textTransform: 'uppercase' as const }}>Financial Health</span>
         <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>Recommended for you</span>
       </div>
 
@@ -45,11 +45,11 @@ export default function CreditRepairCard({ usesPersonalCredit }: Props) {
                 <path d="M20 6L9 17l-5-5" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <h3 style={{ fontSize: 17, fontWeight: 800, color: '#1b2434', margin: 0 }}>
+            <h3 style={{ fontSize: 17, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
               You&apos;re all set!
             </h3>
           </div>
-          <p style={{ fontSize: 13, color: '#5a6578', lineHeight: 1.7, marginBottom: 12 }}>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 12 }}>
             A credit specialist from our partner will reach out to you within 24 hours
             {cr.submittedPhone ? ` at ${cr.submittedPhone}` : ''}. No cost, no obligation.
           </p>
@@ -63,13 +63,13 @@ export default function CreditRepairCard({ usesPersonalCredit }: Props) {
       ) : (
         /* ── Default state ── */
         <div>
-          <h3 style={{ fontSize: 16, fontWeight: 800, color: '#1b2434', marginBottom: 4, lineHeight: 1.3 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 4, lineHeight: 1.3 }}>
             Your Credit May Be Costing Your Business
           </h3>
           <p style={{ fontSize: 12, color: '#10b981', fontWeight: 600, marginBottom: 12 }}>
             Free &middot; No obligation &middot; Takes 2 minutes
           </p>
-          <p style={{ fontSize: 13, color: '#5a6578', lineHeight: 1.7, marginBottom: 16 }}>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 16 }}>
             You mentioned using personal credit for business expenses. A credit specialist can review your profile and find ways to lower your rates, improve your terms, and separate personal from business credit.
           </p>
 
@@ -85,7 +85,7 @@ export default function CreditRepairCard({ usesPersonalCredit }: Props) {
 
           {cr.needsPhone ? (
             <div style={{ marginBottom: 12 }}>
-              <p style={{ fontSize: 12, color: '#5a6578', marginBottom: 8 }}>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 8 }}>
                 We need your phone number so a specialist can reach you.
               </p>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -96,19 +96,19 @@ export default function CreditRepairCard({ usesPersonalCredit }: Props) {
                   placeholder="(555) 123-4567"
                   style={{
                     flex: 1, padding: '10px 14px', borderRadius: 9,
-                    border: `1px solid ${cr.phoneError ? '#ef4444' : '#e6e9ef'}`,
-                    fontSize: 14, color: '#1b2434', outline: 'none',
+                    border: `1px solid ${cr.phoneError ? '#ef4444' : 'var(--border-default)'}`,
+                    fontSize: 14, color: 'var(--text-primary)', outline: 'none',
                     transition: 'border-color 0.15s',
                   }}
                   onFocus={(e) => { e.currentTarget.style.borderColor = '#4361ee'; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = cr.phoneError ? '#ef4444' : '#e6e9ef'; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = cr.phoneError ? '#ef4444' : 'var(--border-default)'; }}
                 />
                 <button
                   onClick={cr.handlePhoneSubmit}
                   disabled={cr.submitting}
                   style={{
                     padding: '10px 20px', borderRadius: 9,
-                    background: cr.submitting ? '#8d95a3' : 'linear-gradient(135deg, #4361ee, #6366f1)',
+                    background: cr.submitting ? 'var(--text-muted)' : 'linear-gradient(135deg, #4361ee, #6366f1)',
                     color: '#fff', fontSize: 13, fontWeight: 700,
                     border: 'none', cursor: cr.submitting ? 'default' : 'pointer',
                     whiteSpace: 'nowrap',
@@ -128,7 +128,7 @@ export default function CreditRepairCard({ usesPersonalCredit }: Props) {
                 disabled={cr.submitting}
                 style={{
                   padding: '11px 24px', borderRadius: 9,
-                  background: cr.submitting ? '#8d95a3' : 'linear-gradient(135deg, #4361ee, #6366f1)',
+                  background: cr.submitting ? 'var(--text-muted)' : 'linear-gradient(135deg, #4361ee, #6366f1)',
                   color: '#fff', fontSize: 13, fontWeight: 700,
                   border: 'none', cursor: cr.submitting ? 'default' : 'pointer',
                   transition: 'opacity 0.15s',
@@ -140,7 +140,7 @@ export default function CreditRepairCard({ usesPersonalCredit }: Props) {
                 <button
                   onClick={cr.handleDismiss}
                   style={{
-                    fontSize: 12, color: '#8d95a3', background: 'none',
+                    fontSize: 12, color: 'var(--text-muted)', background: 'none',
                     border: 'none', cursor: 'pointer', padding: 0,
                   }}
                 >

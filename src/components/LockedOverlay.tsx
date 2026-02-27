@@ -23,13 +23,13 @@ export function LockedOverlay({ children, label, compact = false }: LockedOverla
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "rgba(255,255,255,0.6)",
+          background: "var(--overlay-bg)",
           backdropFilter: "blur(1px)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: compact ? 4 : 8 }}>
           <ProBadge />
-          <span style={{ fontSize: 12, fontWeight: 600, color: "#5a6578" }}>{label}</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)" }}>{label}</span>
         </div>
         {!compact && (
           <Link

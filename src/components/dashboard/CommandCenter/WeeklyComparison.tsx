@@ -12,7 +12,7 @@ function fmtDollar(n: number | null): string {
 }
 
 function DeltaCell({ value, format = "dollar" }: { value: number | null; format?: "dollar" | "number" }) {
-  if (value == null || value === 0) return <span style={{ color: "#b4bac5" }}>\u2014</span>;
+  if (value == null || value === 0) return <span style={{ color: "var(--text-faint)" }}>{"\u2014"}</span>;
   const isUp = value > 0;
   const formatted = format === "dollar"
     ? (isUp ? "+" : "") + "$" + Math.abs(Math.round(value)).toLocaleString("en-US")
@@ -38,12 +38,12 @@ export default function WeeklyComparison({
 
   return (
     <div style={{ marginBottom: 28 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>
         Weekly Comparison
       </div>
       <div style={{
-        background: "#fff", border: "1px solid #f0f2f6", borderRadius: 12,
-        overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+        background: "var(--bg-card)", border: "1px solid var(--border-light)", borderRadius: 12,
+        overflow: "hidden", boxShadow: "var(--shadow-card)",
       }}>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: isMobile ? 12 : 13, minWidth: isMobile ? 500 : "auto" }}>
@@ -52,9 +52,9 @@ export default function WeeklyComparison({
                 {["Week", "Revenue", "\u0394", "Orders", "\u0394", "Expenses", "Profit", "Margin"].map((h, i) => (
                   <th key={i} style={{
                     textAlign: "left", padding: isMobile ? "8px 6px" : "10px 12px", fontSize: 10, fontWeight: 700,
-                    color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em",
-                    borderBottom: "2px solid #f0f2f6", whiteSpace: "nowrap",
-                    ...(i === 0 ? { position: "sticky" as const, left: 0, zIndex: 1, background: "#fff", boxShadow: "2px 0 4px rgba(0,0,0,0.04)" } : {}),
+                    color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em",
+                    borderBottom: "2px solid var(--border-light)", whiteSpace: "nowrap",
+                    ...(i === 0 ? { position: "sticky" as const, left: 0, zIndex: 1, background: "var(--bg-card)", boxShadow: "2px 0 4px rgba(0,0,0,0.04)" } : {}),
                   }}>
                     {h}
                   </th>
@@ -68,9 +68,9 @@ export default function WeeklyComparison({
                   borderLeft: i === 0 ? "3px solid #4361ee" : "3px solid transparent",
                 }}>
                   <td style={{
-                    padding: isMobile ? "8px 6px" : "10px 12px", fontWeight: 600, color: "#5a6578", whiteSpace: "nowrap",
+                    padding: isMobile ? "8px 6px" : "10px 12px", fontWeight: 600, color: "var(--text-secondary)", whiteSpace: "nowrap",
                     position: "sticky", left: 0, zIndex: 1,
-                    background: i === 0 ? "rgba(67,97,238,0.02)" : "#fff",
+                    background: i === 0 ? "rgba(67,97,238,0.02)" : "var(--bg-card)",
                     boxShadow: "2px 0 4px rgba(0,0,0,0.04)",
                   }}>
                     {fmtDate(row.weekOf)}
@@ -80,12 +80,12 @@ export default function WeeklyComparison({
                       </span>
                     )}
                   </td>
-                  <td style={{ padding: isMobile ? "8px 6px" : "10px 12px", fontWeight: 700, color: "#1b2434" }}>{fmtDollar(row.revenue)}</td>
+                  <td style={{ padding: isMobile ? "8px 6px" : "10px 12px", fontWeight: 700, color: "var(--text-primary)" }}>{fmtDollar(row.revenue)}</td>
                   <td style={{ padding: isMobile ? "8px 6px" : "10px 12px" }}><DeltaCell value={row.revenueDelta} /></td>
-                  <td style={{ padding: isMobile ? "8px 6px" : "10px 12px", color: "#5a6578" }}>{row.orders ?? "\u2014"}</td>
+                  <td style={{ padding: isMobile ? "8px 6px" : "10px 12px", color: "var(--text-secondary)" }}>{row.orders ?? "\u2014"}</td>
                   <td style={{ padding: isMobile ? "8px 6px" : "10px 12px" }}><DeltaCell value={row.ordersDelta} format="number" /></td>
-                  <td style={{ padding: isMobile ? "8px 6px" : "10px 12px", color: "#5a6578" }}>{fmtDollar(row.expenses)}</td>
-                  <td style={{ padding: isMobile ? "8px 6px" : "10px 12px", fontWeight: 600, color: row.profit != null ? (row.profit >= 0 ? "#10b981" : "#ef4444") : "#b4bac5" }}>
+                  <td style={{ padding: isMobile ? "8px 6px" : "10px 12px", color: "var(--text-secondary)" }}>{fmtDollar(row.expenses)}</td>
+                  <td style={{ padding: isMobile ? "8px 6px" : "10px 12px", fontWeight: 600, color: row.profit != null ? (row.profit >= 0 ? "#10b981" : "#ef4444") : "var(--text-faint)" }}>
                     {fmtDollar(row.profit)}
                   </td>
                   <td style={{ padding: isMobile ? "8px 6px" : "10px 12px" }}>
@@ -97,7 +97,7 @@ export default function WeeklyComparison({
                       }}>
                         {row.margin.toFixed(1)}%
                       </span>
-                    ) : <span style={{ color: "#b4bac5" }}>{"\u2014"}</span>}
+                    ) : <span style={{ color: "var(--text-faint)" }}>{"\u2014"}</span>}
                   </td>
                 </tr>
               ))}

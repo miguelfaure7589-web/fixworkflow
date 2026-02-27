@@ -1,15 +1,16 @@
 "use client";
 
+import { DollarSign, PieChart, Users, Target, Settings } from "lucide-react";
 import MiniProgressRing from "./MiniProgressRing";
 import SourceBadge from "./SourceBadge";
 import type { PillarData } from "./types";
 
-const PILLAR_CONFIG: Record<string, { label: string; color: string; icon: string }> = {
-  revenue: { label: "Revenue", color: "#4361ee", icon: "\ud83d\udcb0" },
-  profitability: { label: "Profitability", color: "#10b981", icon: "\ud83d\udcca" },
-  retention: { label: "Retention", color: "#f59e0b", icon: "\ud83d\udd04" },
-  acquisition: { label: "Acquisition", color: "#8b5cf6", icon: "\ud83c\udfaf" },
-  ops: { label: "Operations", color: "#f43f5e", icon: "\u2699\ufe0f" },
+const PILLAR_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+  revenue: { label: "Revenue", color: "#4361ee", icon: <DollarSign size={14} /> },
+  profitability: { label: "Profitability", color: "#10b981", icon: <PieChart size={14} /> },
+  retention: { label: "Retention", color: "#f59e0b", icon: <Users size={14} /> },
+  acquisition: { label: "Acquisition", color: "#8b5cf6", icon: <Target size={14} /> },
+  ops: { label: "Operations", color: "#f43f5e", icon: <Settings size={14} /> },
 };
 
 function DeltaBadge({ delta }: { delta: number }) {
@@ -43,18 +44,18 @@ export default function PillarHealthCards({
   return (
     <div style={{ marginBottom: 28 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
           Pillar Health
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 11, color: "#8d95a3" }}>Overall:</span>
+          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Overall:</span>
           <span style={{
             fontSize: 16, fontWeight: 800,
             color: overallScore >= 70 ? "#10b981" : overallScore >= 40 ? "#f59e0b" : "#ef4444",
           }}>
             {overallScore}
           </span>
-          <span style={{ fontSize: 11, color: "#b4bac5" }}>/100</span>
+          <span style={{ fontSize: 11, color: "var(--text-faint)" }}>/100</span>
         </div>
       </div>
       <div style={{
@@ -69,16 +70,16 @@ export default function PillarHealthCards({
 
           return (
             <div key={name} style={{
-              background: "#fff", border: "1px solid #f0f2f6", borderRadius: 12,
-              padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+              background: "var(--bg-card)", border: "1px solid var(--border-light)", borderRadius: 12,
+              padding: 16, boxShadow: "var(--shadow-card)",
               display: "flex", flexDirection: "column", gap: 8,
               borderTop: `3px solid ${cfg.color}`,
               overflow: "hidden", minWidth: 0,
             }}>
               {/* Header */}
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 14 }}>{cfg.icon}</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#5a6578" }}>{cfg.label}</span>
+                <span style={{ color: cfg.color, display: "inline-flex" }}>{cfg.icon}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-secondary)" }}>{cfg.label}</span>
               </div>
 
               {/* Ring + delta */}
@@ -89,20 +90,23 @@ export default function PillarHealthCards({
 
               {/* Key metric */}
               {data.keyMetric && (
-                <div style={{ background: "#f8f9fb", borderRadius: 8, padding: "6px 8px" }}>
-                  <div style={{ fontSize: 10, color: "#8d95a3", fontWeight: 600 }}>{data.keyMetric.label}</div>
+                <div style={{ background: "var(--bg-input)", borderRadius: 8, padding: "6px 8px" }}>
+                  <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 600 }}>{data.keyMetric.label}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                    <span style={{ fontSize: 14, fontWeight: 800, color: "#1b2434" }}>{data.keyMetric.value}</span>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: "var(--text-primary)" }}>{data.keyMetric.value}</span>
                     <SourceBadge source={data.keyMetric.source} />
                   </div>
                 </div>
               )}
 
-              {/* Top reason */}
+              {/* Top reason — 2-line clamp */}
               {data.reasons.length > 0 && (
                 <div style={{
-                  fontSize: 11, color: "#8d95a3", lineHeight: 1.4,
-                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  fontSize: 11, color: "var(--text-muted)", lineHeight: 1.4,
+                  overflow: "hidden",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
                 }}>
                   {data.reasons[0]}
                 </div>

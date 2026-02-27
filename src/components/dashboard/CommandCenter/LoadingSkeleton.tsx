@@ -7,7 +7,7 @@ function Bone({ width, height, radius = 8 }: { width: string | number; height: n
         width,
         height,
         borderRadius: radius,
-        background: "linear-gradient(90deg, #f0f2f6 25%, #e6e9ef 50%, #f0f2f6 75%)",
+        background: "linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%)",
         backgroundSize: "200% 100%",
         animation: "shimmer 1.5s ease-in-out infinite",
       }}

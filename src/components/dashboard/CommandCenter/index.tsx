@@ -38,7 +38,7 @@ class CommandCenterErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: "24px", textAlign: "center", color: "#8d95a3", fontSize: 13 }}>
+        <div style={{ padding: "24px", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
           Command Center encountered an error. Please refresh the page.
         </div>
       );
@@ -131,25 +131,25 @@ function CommandCenterInner({
   if (!isPremium) {
     return (
       <div style={{
-        background: "#fff", border: "1px solid #e6e9ef", borderRadius: 14,
-        overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+        background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 14,
+        overflow: "hidden", boxShadow: "var(--shadow-card)",
       }}>
         <div style={{ height: 4, background: "linear-gradient(90deg, #4361ee, #6366f1, #818cf8)" }} />
-        <div style={{ padding: "16px 24px", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid #f0f2f6" }}>
+        <div style={{ padding: "16px 24px", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid var(--border-light)" }}>
           <BarChart3 style={{ width: 15, height: 15, color: "#4361ee" }} />
-          <span style={{ fontSize: 13, fontWeight: 800, color: "#1b2434", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+          <span style={{ fontSize: 13, fontWeight: 800, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
             Revenue Command Center
           </span>
           <ProBadge small />
         </div>
-        <div style={{ padding: "48px 24px", textAlign: "center", background: "linear-gradient(180deg, #fafbfd 0%, #fff 100%)" }}>
+        <div style={{ padding: "48px 24px", textAlign: "center", background: "linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%)" }}>
           <div style={{ width: 56, height: 56, borderRadius: 14, background: "rgba(67,97,238,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
             <BarChart3 size={26} style={{ color: "#4361ee" }} />
           </div>
-          <p style={{ fontSize: 17, fontWeight: 700, color: "#1b2434", margin: "0 0 8px" }}>
+          <p style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 8px" }}>
             Your Revenue Command Center
           </p>
-          <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 24px", maxWidth: 380, marginLeft: "auto", marginRight: "auto", lineHeight: 1.5 }}>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 24px", maxWidth: 380, marginLeft: "auto", marginRight: "auto", lineHeight: 1.5 }}>
             Track revenue from connected integrations, monitor 5 pillar health scores, view weekly comparisons, set goals, and get AI-powered alerts — all in one premium dashboard.
           </p>
           <Link href="/pricing" style={{
@@ -168,8 +168,8 @@ function CommandCenterInner({
   // Pro user: always show the full command center (no collapsing)
   return (
     <div style={{
-      background: "#fff", border: "1px solid #e6e9ef", borderRadius: 14,
-      overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+      background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 14,
+      overflow: "hidden", boxShadow: "var(--shadow-card)",
     }}>
       {/* Gradient top accent */}
       <div style={{ height: 4, background: "linear-gradient(90deg, #4361ee, #6366f1, #818cf8)" }} />
@@ -178,11 +178,11 @@ function CommandCenterInner({
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: isMobile ? "14px 16px" : "16px 24px",
-        borderBottom: "1px solid #f0f2f6",
+        borderBottom: "1px solid var(--border-light)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <BarChart3 style={{ width: 15, height: 15, color: "#4361ee" }} />
-          <span style={{ fontSize: 13, fontWeight: 800, color: "#1b2434", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+          <span style={{ fontSize: 13, fontWeight: 800, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
             Revenue Command Center
           </span>
           <ProBadge small />
@@ -202,7 +202,7 @@ function CommandCenterInner({
         {loading ? (
           <LoadingSkeleton />
         ) : error ? (
-          <div style={{ textAlign: "center", padding: "24px 16px", color: "#8d95a3", fontSize: 13 }}>
+          <div style={{ textAlign: "center", padding: "24px 16px", color: "var(--text-muted)", fontSize: 13 }}>
             Failed to load Command Center data. <button onClick={refresh} style={{ color: "#4361ee", background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>Retry</button>
           </div>
         ) : data ? (
@@ -245,7 +245,7 @@ function CommandCenterInner({
 
             {/* 7. Manual Entry (collapsible fallback) */}
             <div style={{
-              background: "#fafbfd", border: "1px solid #f0f2f6", borderRadius: 12,
+              background: "var(--bg-elevated)", border: "1px solid var(--border-light)", borderRadius: 12,
               overflow: "hidden",
             }}>
               <button
@@ -255,13 +255,13 @@ function CommandCenterInner({
                   padding: "12px 16px", background: "none", border: "none", cursor: "pointer",
                 }}
               >
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#8d95a3", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   Manual Entry
                 </span>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontSize: 11, color: "#b4bac5" }}>Log weekly numbers manually</span>
+                  <span style={{ fontSize: 11, color: "var(--text-faint)" }}>Log weekly numbers manually</span>
                   <ChevronDown size={14} style={{
-                    color: "#8d95a3", transition: "transform 0.15s",
+                    color: "var(--text-muted)", transition: "transform 0.15s",
                     transform: manualOpen ? "rotate(180deg)" : "none",
                   }} />
                 </div>
@@ -275,8 +275,8 @@ function CommandCenterInner({
 
             {/* Integration hint */}
             {data.integrationStreams.length === 0 && (
-              <div style={{ marginTop: 16, padding: "10px 14px", background: "#fafbfd", borderRadius: 8, border: "1px solid #f0f2f6", textAlign: "center" }}>
-                <span style={{ fontSize: 12, color: "#8d95a3" }}>
+              <div style={{ marginTop: 16, padding: "10px 14px", background: "var(--bg-elevated)", borderRadius: 8, border: "1px solid var(--border-light)", textAlign: "center" }}>
+                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
                   Connect integrations for automatic data.{" "}
                   <Link href="/settings" style={{ color: "#4361ee", fontWeight: 600, textDecoration: "none" }}>
                     Set up Shopify, Stripe, or QuickBooks
@@ -289,8 +289,8 @@ function CommandCenterInner({
           /* No data state — still show the manual entry form */
           <div>
             <div style={{ textAlign: "center", padding: "24px 16px 16px" }}>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "#5a6578", margin: "0 0 6px" }}>Getting started</p>
-              <p style={{ fontSize: 13, color: "#8d95a3", margin: "0 0 16px" }}>Connect an integration or log your first week to populate your dashboard.</p>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", margin: "0 0 6px" }}>Getting started</p>
+              <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 16px" }}>Connect an integration or log your first week to populate your dashboard.</p>
               <Link href="/settings" style={{
                 display: "inline-block", padding: "10px 20px", borderRadius: 8,
                 background: "linear-gradient(135deg, #4361ee, #6366f1)",

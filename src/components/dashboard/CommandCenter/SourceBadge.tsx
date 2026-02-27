@@ -9,7 +9,7 @@ const SOURCE_CONFIG: Record<string, { label: string; bg: string; color: string }
   tracker: { label: "Manual", bg: "rgba(67,97,238,0.08)", color: "#4361ee" },
 };
 
-const DEFAULT_CONFIG = { bg: "rgba(141,149,163,0.08)", color: "#8d95a3" };
+const DEFAULT_CONFIG = { bg: "rgba(141,149,163,0.08)", color: "var(--text-muted)" };
 
 export default function SourceBadge({ source }: { source: string }) {
   const cfg = SOURCE_CONFIG[source] ?? DEFAULT_CONFIG;

@@ -82,8 +82,8 @@ function ConnectButton({ tool, integrations }: { tool: ScoredProduct; integratio
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 4,
           padding: '6px 12px', borderRadius: 8,
-          background: '#f9fafb', color: '#b4bac5',
-          fontSize: 12, fontWeight: 700, border: '1px solid #e6e9ef',
+          background: 'var(--bg-input)', color: 'var(--text-faint)',
+          fontSize: 12, fontWeight: 700, border: '1px solid var(--border-default)',
           cursor: 'default',
         }}
       >
@@ -145,25 +145,25 @@ function ToolCard({ tool, onClickTool, integrations }: { tool: ScoredProduct; on
   return (
     <div
       style={{
-        background: '#fff', borderRadius: 14, border: '1px solid #e6e9ef',
+        background: 'var(--bg-card)', borderRadius: 14, border: '1px solid var(--border-default)',
         padding: 20, display: 'flex', flexDirection: 'column',
         transition: 'border-color 0.2s, box-shadow 0.2s',
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#d0d5dd'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.04)'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e6e9ef'; e.currentTarget.style.boxShadow = 'none'; }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.04)'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.boxShadow = 'none'; }}
     >
       {/* Logo + Name */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
         <LogoImg src={faviconUrl(tool.domain || '', 64)} fallbackEmoji={tool.logo} size={36} radius={9} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: '#1b2434' }}>{tool.name}</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{tool.name}</span>
             {tool.matchLabel && (
               <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: `${tool.matchColor}14`, color: tool.matchColor }}>{tool.matchLabel}</span>
             )}
           </div>
-          <div style={{ fontSize: 11, color: '#b4bac5' }}>
-            {tool.category} &middot; <span style={{ color: '#8d95a3' }}>{tool.price}</span>
+          <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>
+            {tool.category} &middot; <span style={{ color: 'var(--text-muted)' }}>{tool.price}</span>
           </div>
         </div>
       </div>
@@ -181,7 +181,7 @@ function ToolCard({ tool, onClickTool, integrations }: { tool: ScoredProduct; on
       </div>
 
       {/* Reasoning — fully visible, no truncation */}
-      <p style={{ fontSize: 12, color: '#5a6578', lineHeight: 1.65, margin: 0, flex: 1 }}>{tool.filledReasoning}</p>
+      <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0, flex: 1 }}>{tool.filledReasoning}</p>
 
       {/* Potential impact */}
       {tool.filledPotential && (
@@ -238,18 +238,18 @@ export default function RecommendedTools({ tools, isPremium, integrations = [] }
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <div>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.4, color: '#8d95a3', textTransform: 'uppercase' as const }}>Recommended Tools</div>
-            <div style={{ fontSize: 12, color: '#b4bac5', marginTop: 2 }}>Ranked by impact on your score</div>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.4, color: 'var(--text-muted)', textTransform: 'uppercase' as const }}>Recommended Tools</div>
+            <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 2 }}>Ranked by impact on your score</div>
           </div>
         </div>
         <div style={{
-          background: '#fff', borderRadius: 14, border: '1px solid rgba(16,185,129,0.2)',
+          background: 'var(--bg-card)', borderRadius: 14, border: '1px solid rgba(16,185,129,0.2)',
           padding: '24px 20px', display: 'flex', alignItems: 'center', gap: 12,
         }}>
           <CheckCircle2 style={{ width: 24, height: 24, color: '#10b981', flexShrink: 0 }} />
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#1b2434' }}>All recommended tools connected</div>
-            <div style={{ fontSize: 12, color: '#8d95a3', marginTop: 2 }}>Your score is using real data from your integrations.</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>All recommended tools connected</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Your score is using real data from your integrations.</div>
           </div>
         </div>
       </div>
@@ -265,10 +265,10 @@ export default function RecommendedTools({ tools, isPremium, integrations = [] }
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
         <div>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.4, color: '#8d95a3', textTransform: 'uppercase' as const }}>Recommended Tools</div>
-          <div style={{ fontSize: 12, color: '#b4bac5', marginTop: 2 }}>Ranked by impact on your score</div>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.4, color: 'var(--text-muted)', textTransform: 'uppercase' as const }}>Recommended Tools</div>
+          <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 2 }}>Ranked by impact on your score</div>
         </div>
-        <span style={{ fontSize: 11, color: '#8d95a3' }}>{visibleTools.length} matched</span>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{visibleTools.length} matched</span>
       </div>
 
       {isPremium ? (
@@ -285,17 +285,17 @@ export default function RecommendedTools({ tools, isPremium, integrations = [] }
             <div
               style={{
                 marginTop: 12, padding: '14px 18px', borderRadius: 12,
-                background: '#fff', border: '1px solid #e6e9ef',
+                background: 'var(--bg-card)', border: '1px solid var(--border-default)',
                 display: 'flex', alignItems: 'center', gap: 12,
                 transition: 'border-color 0.2s, box-shadow 0.2s',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#d0d5dd'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.04)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e6e9ef'; e.currentTarget.style.boxShadow = 'none'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.04)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
               <LogoImg src={faviconUrl(compactTool.domain || '', 64)} fallbackEmoji={compactTool.logo} size={32} radius={8} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#1b2434' }}>{compactTool.name}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{compactTool.name}</span>
                   {compactTool.matchLabel && (
                     <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: `${compactTool.matchColor}14`, color: compactTool.matchColor }}>{compactTool.matchLabel}</span>
                   )}
@@ -303,7 +303,7 @@ export default function RecommendedTools({ tools, isPremium, integrations = [] }
                     <span style={{ fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 4, background: 'rgba(67,97,238,0.08)', color: '#4361ee' }}>{compactTool.targetPillars[0]}</span>
                   )}
                 </div>
-                <p style={{ fontSize: 12, color: '#5a6578', lineHeight: 1.5, margin: '4px 0 0' }}>{compactTool.filledReasoning}</p>
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: '4px 0 0' }}>{compactTool.filledReasoning}</p>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 <button
@@ -337,14 +337,14 @@ export default function RecommendedTools({ tools, isPremium, integrations = [] }
               </div>
               <div style={{
                 position: 'absolute', inset: 0,
-                background: 'rgba(255,255,255,0.6)',
+                background: 'var(--overlay-bg)',
                 backdropFilter: 'blur(2px)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 borderRadius: 14, gap: 8,
               }}>
                 <span style={{ fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 4, background: 'rgba(139,92,246,0.1)', color: '#8b5cf6', letterSpacing: 0.5 }}>PRO</span>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#1b2434' }}>+{visibleTools.length - 1} more tools ranked by impact</div>
-                <div style={{ fontSize: 12, color: '#8d95a3' }}>Unlock with Pro to see all personalized recommendations</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>+{visibleTools.length - 1} more tools ranked by impact</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Unlock with Pro to see all personalized recommendations</div>
                 <a
                   href="/pricing"
                   style={{

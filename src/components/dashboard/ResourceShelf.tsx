@@ -61,7 +61,7 @@ function ResourceCover({ item }: { item: ScoredProduct }) {
     return <TemplateLogo size={48} />;
   }
   return (
-    <div style={{ width: 48, height: 48, borderRadius: 10, background: '#f4f5f8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>
+    <div style={{ width: 48, height: 48, borderRadius: 10, background: 'var(--bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>
       {item.logo}
     </div>
   );
@@ -78,7 +78,7 @@ function ShelfCreditCard() {
       <div
         style={{
           flex: '0 0 290px', padding: 18, borderRadius: 12,
-          background: '#fafbfd', border: '1px solid rgba(16,185,129,0.25)',
+          background: 'var(--bg-elevated)', border: '1px solid rgba(16,185,129,0.25)',
           display: 'flex', flexDirection: 'column',
         }}
       >
@@ -92,9 +92,9 @@ function ShelfCreditCard() {
               <path d="M20 6L9 17l-5-5" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#1b2434' }}>You&apos;re all set!</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>You&apos;re all set!</span>
         </div>
-        <p style={{ fontSize: 12, color: '#5a6578', lineHeight: 1.6, margin: 0, flex: 1 }}>
+        <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, flex: 1 }}>
           A credit specialist will reach out within 24 hours
           {cr.submittedPhone ? ` at ${cr.submittedPhone}` : ''}. No cost, no obligation.
         </p>
@@ -112,7 +112,7 @@ function ShelfCreditCard() {
     <div
       style={{
         flex: '0 0 290px', padding: 18, borderRadius: 12,
-        background: '#fafbfd', border: '1px solid rgba(67,97,238,0.2)',
+        background: 'var(--bg-elevated)', border: '1px solid rgba(67,97,238,0.2)',
         display: 'flex', flexDirection: 'column',
         transition: 'border-color 0.2s',
       }}
@@ -132,7 +132,7 @@ function ShelfCreditCard() {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: '#1b2434' }}>Your Credit May Be Costing Your Business</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Your Credit May Be Costing Your Business</span>
           </div>
           <span style={{ fontSize: 9, fontWeight: 600, padding: '1px 5px', borderRadius: 3, background: 'rgba(67,97,238,0.08)', color: '#4361ee', display: 'inline-block', marginTop: 4 }}>
             Financial Health
@@ -143,12 +143,12 @@ function ShelfCreditCard() {
       {/* Free badge row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, fontSize: 12 }}>
         <span style={{ fontWeight: 600, color: '#10b981' }}>Free</span>
-        <span style={{ color: '#d0d5dd' }}>&middot;</span>
-        <span style={{ color: '#8d95a3' }}>No obligation</span>
+        <span style={{ color: 'var(--border-default)' }}>&middot;</span>
+        <span style={{ color: 'var(--text-muted)' }}>No obligation</span>
       </div>
 
       {/* Body */}
-      <p style={{ fontSize: 12, color: '#5a6578', lineHeight: 1.6, margin: 0, flex: 1 }}>
+      <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, flex: 1 }}>
         A credit specialist can review your profile and find ways to lower your rates and separate personal from business credit.
       </p>
 
@@ -165,7 +165,7 @@ function ShelfCreditCard() {
       {cr.needsPhone ? (
         /* Inline phone capture */
         <div style={{ marginTop: 12 }}>
-          <p style={{ fontSize: 11, color: '#5a6578', marginBottom: 6 }}>
+          <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>
             We need your phone number so a specialist can reach you.
           </p>
           <div style={{ display: 'flex', gap: 6 }}>
@@ -176,12 +176,12 @@ function ShelfCreditCard() {
               placeholder="(555) 123-4567"
               style={{
                 flex: 1, padding: '8px 10px', borderRadius: 7,
-                border: `1px solid ${cr.phoneError ? '#ef4444' : '#e6e9ef'}`,
-                fontSize: 12, color: '#1b2434', outline: 'none',
+                border: `1px solid ${cr.phoneError ? '#ef4444' : 'var(--border-default)'}`,
+                fontSize: 12, color: 'var(--text-primary)', outline: 'none',
                 minWidth: 0,
               }}
               onFocus={(e) => { e.currentTarget.style.borderColor = '#4361ee'; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = cr.phoneError ? '#ef4444' : '#e6e9ef'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = cr.phoneError ? '#ef4444' : 'var(--border-default)'; }}
             />
             <button
               onClick={cr.handlePhoneSubmit}
@@ -224,7 +224,7 @@ function ShelfCreditCard() {
             <button
               onClick={cr.handleDismiss}
               style={{
-                fontSize: 11, color: '#8d95a3', background: 'none',
+                fontSize: 11, color: 'var(--text-muted)', background: 'none',
                 border: 'none', cursor: 'pointer', padding: 0,
               }}
             >
@@ -255,15 +255,15 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
   const showCreditCard = activeTab === 'book' && (usesPersonalCredit === 'yes' || usesPersonalCredit === 'sometimes');
 
   return (
-    <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e6e9ef', padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+    <div style={{ background: 'var(--bg-card)', borderRadius: 14, border: '1px solid var(--border-default)', padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
       {/* Header */}
       <div style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.4, color: '#8d95a3', textTransform: 'uppercase' as const }}>Resources For Your Stage</div>
-        <div style={{ fontSize: 12, color: '#b4bac5', marginTop: 2 }}>Curated for {formatBizType(businessType)} businesses at {revenueRange}</div>
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.4, color: 'var(--text-muted)', textTransform: 'uppercase' as const }}>Resources For Your Stage</div>
+        <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 2 }}>Curated for {formatBizType(businessType)} businesses at {revenueRange}</div>
       </div>
 
       {/* Tab Bar */}
-      <div style={{ display: 'flex', background: '#f4f5f8', borderRadius: 9, padding: 3, marginBottom: 16 }}>
+      <div style={{ display: 'flex', background: 'var(--bg-subtle)', borderRadius: 9, padding: 3, marginBottom: 16 }}>
         {tabs.map(t => {
           const count = dataMap[t.key].length;
           const active = activeTab === t.key;
@@ -275,10 +275,10 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
               style={{
                 flex: 1, padding: '7px 0', borderRadius: 7, border: 'none',
                 cursor: locked ? 'default' : 'pointer',
-                background: active ? '#fff' : 'transparent',
+                background: active ? 'var(--bg-card)' : 'transparent',
                 boxShadow: active ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                 fontSize: 12, fontWeight: active ? 600 : 400,
-                color: active ? '#1b2434' : '#8d95a3',
+                color: active ? 'var(--text-primary)' : 'var(--text-muted)',
                 opacity: locked ? 0.6 : 1,
                 transition: 'all 0.15s',
               }}
@@ -293,10 +293,10 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
       {isLocked ? (
         <div style={{ textAlign: 'center', padding: '32px 20px' }}>
           <div style={{ marginBottom: 8 }}><Lock style={{ width: 28, height: 28, color: '#8b5cf6' }} /></div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: '#1b2434', marginBottom: 4 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
             {activeTab === 'course' ? 'Courses' : 'Templates'} are a Pro feature
           </div>
-          <div style={{ fontSize: 12, color: '#8d95a3', marginBottom: 16 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
             Unlock personalized {activeTab === 'course' ? 'learning paths' : 'business templates'} matched to your score.
           </div>
           <a href="/pricing" style={{ display: 'inline-block', padding: '8px 20px', borderRadius: 8, background: 'linear-gradient(135deg, #6366f1, #4361ee)', color: '#fff', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
@@ -312,19 +312,19 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
               key={item.id}
               style={{
                 flex: '0 0 290px', padding: 18, borderRadius: 12,
-                background: '#fafbfd', border: '1px solid #f0f2f6',
+                background: 'var(--bg-elevated)', border: '1px solid var(--border-light)',
                 display: 'flex', flexDirection: 'column',
                 transition: 'border-color 0.2s',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#d0d5dd'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#f0f2f6'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-default)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-light)'; }}
             >
               {/* Cover + info */}
               <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
                 <ResourceCover item={item} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#1b2434' }}>{item.name}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{item.name}</span>
                     {item.matchLabel && (
                       <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: `${item.matchColor}14`, color: item.matchColor }}>{item.matchLabel}</span>
                     )}
@@ -339,13 +339,13 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
 
               {/* Price + Rating */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, fontSize: 12, flexWrap: 'wrap' }}>
-                <span style={{ fontWeight: 600, color: item.price === 'Free' || item.hasFreeTier ? '#10b981' : '#1b2434' }}>{item.price}</span>
-                {item.rating && <><span style={{ color: '#d0d5dd' }}>&middot;</span><Star style={{ width: 12, height: 12, fill: '#facc15', color: '#facc15', display: 'inline', verticalAlign: 'middle' }} /> <span style={{ color: '#8d95a3' }}>{item.rating}</span></>}
-                {item.reviewCount && <><span style={{ color: '#d0d5dd' }}>&middot;</span><span style={{ color: '#8d95a3' }}>{item.reviewCount}</span></>}
+                <span style={{ fontWeight: 600, color: item.price === 'Free' || item.hasFreeTier ? '#10b981' : 'var(--text-primary)' }}>{item.price}</span>
+                {item.rating && <><span style={{ color: 'var(--border-default)' }}>&middot;</span><Star style={{ width: 12, height: 12, fill: '#facc15', color: '#facc15', display: 'inline', verticalAlign: 'middle' }} /> <span style={{ color: 'var(--text-muted)' }}>{item.rating}</span></>}
+                {item.reviewCount && <><span style={{ color: 'var(--border-default)' }}>&middot;</span><span style={{ color: 'var(--text-muted)' }}>{item.reviewCount}</span></>}
               </div>
 
               {/* Reasoning — fully visible */}
-              <p style={{ fontSize: 12, color: '#5a6578', lineHeight: 1.6, margin: 0, flex: 1 }}>{item.filledReasoning}</p>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, flex: 1 }}>{item.filledReasoning}</p>
 
               {/* Affiliate button */}
               <button
@@ -364,7 +364,7 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
             </div>
           ))}
           {items.length === 0 && !showCreditCard && (
-            <div style={{ width: '100%', textAlign: 'center', padding: '20px', fontSize: 13, color: '#8d95a3' }}>
+            <div style={{ width: '100%', textAlign: 'center', padding: '20px', fontSize: 13, color: 'var(--text-muted)' }}>
               No {activeTab}s matched for your profile yet.
             </div>
           )}
