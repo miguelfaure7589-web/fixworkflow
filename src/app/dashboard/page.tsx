@@ -630,7 +630,7 @@ const PROFILE_FIELDS = [
 
 // ── Revenue Health Section ──
 
-function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData, onScoreChangeData, onScoreData }: { isPremium: boolean; isAdmin: boolean; onScoreChange: (has: boolean) => void; onMissingData?: (keys: string[]) => void; onScoreChangeData?: (delta: number | null) => void; onScoreData?: (score: number, businessType: string) => void }) {
+function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData, onScoreChangeData }: { isPremium: boolean; isAdmin: boolean; onScoreChange: (has: boolean) => void; onMissingData?: (keys: string[]) => void; onScoreChangeData?: (delta: number | null) => void }) {
   const { data: healthSession } = useSession();
   const { toast } = useToast();
   const [healthData, setHealthData] = useState<RevenueHealthData | null>(null);
@@ -688,7 +688,6 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
           const fetchedScoreChange = json.scoreChange ?? null;
           setScoreChangeDelta(fetchedScoreChange);
           onScoreChangeData?.(fetchedScoreChange);
-          onScoreData?.(json.result.score, savedBusinessType || "");
           setHasProfile(true);
           onScoreChange(true);
           onMissingData?.(json.result?.missingData ?? []);
@@ -2722,8 +2721,8 @@ function LeaveReviewSection() {
                 <Star
                   key={s}
                   size={22}
-                  fill={s <= (existingReview?.rating || rating) ? "#f59e0b" : "rgba(255,255,255,0.08)"}
-                  color={s <= (existingReview?.rating || rating) ? "#f59e0b" : "var(--text-muted)"}
+                  fill={s <= (existingReview?.rating || rating) ? "#facc15" : "rgba(255,255,255,0.08)"}
+                  color={s <= (existingReview?.rating || rating) ? "#facc15" : "var(--text-muted)"}
                   strokeWidth={1.5}
                 />
               ))}
@@ -2760,14 +2759,14 @@ function LeaveReviewSection() {
                 onMouseLeave={() => setHover(0)}
                 style={{
                   background: "none", border: "none", cursor: "pointer", padding: 2,
-                  transition: "transform 0.15s ease",
-                  transform: s <= (hover || 0) ? "scale(1.1)" : "scale(1)",
+                  transition: "transform 0.1s",
+                  transform: (hover === s) ? "scale(1.15)" : "scale(1)",
                 }}
               >
                 <Star
                   size={28}
-                  fill={s <= (hover || rating) ? "#f59e0b" : "rgba(255,255,255,0.08)"}
-                  color={s <= (hover || rating) ? "#f59e0b" : "var(--text-muted)"}
+                  fill={s <= (hover || rating) ? "#facc15" : "rgba(255,255,255,0.08)"}
+                  color={s <= (hover || rating) ? "#facc15" : "var(--text-muted)"}
                   strokeWidth={1.5}
                 />
               </button>
@@ -2980,8 +2979,10 @@ export default function RevenueDashboard() {
   const [adminSyncing, setAdminSyncing] = useState(false);
   const [adminLastSync, setAdminLastSync] = useState<string | null>(null);
   const [overallScoreChange, setOverallScoreChange] = useState<number | null>(null);
-  const [healthScore, setHealthScore] = useState<number | null>(null);
-  const [healthBusinessType, setHealthBusinessType] = useState<string>("");
+
+  // Health score data (fetched independently for greeting subtitle)
+  const [healthScore, setHealthScore] = useState<number | undefined>(undefined);
+  const [healthBusinessType, setHealthBusinessType] = useState<string | undefined>(undefined);
 
   // User profile data
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
@@ -3096,6 +3097,11 @@ export default function RevenueDashboard() {
       if (d.bio) setUserBio(d.bio);
       if (d.businessStage) setUserBusinessStage(d.businessStage);
       if (d.businessProfile?.businessType) setHealthBusinessType(d.businessProfile.businessType);
+    }).catch(() => {});
+
+    // Fetch health score for greeting subtitle (works for all users, not just premium)
+    fetch("/api/revenue-health").then((r) => r.ok ? r.json() : null).then((d) => {
+      if (d?.result?.score !== undefined) setHealthScore(d.result.score);
     }).catch(() => {});
 
     if (!isPremium) {
@@ -3314,7 +3320,7 @@ export default function RevenueDashboard() {
         <div style={{ marginBottom: 12 }}>
           <PersonalizedGreeting
             session={session}
-            businessType={dashData?.businessProfile?.businessType || healthBusinessType || undefined}
+            businessType={dashData?.businessProfile?.businessType || healthBusinessType}
             overallScore={healthScore ?? dashData?.score?.total}
             scoreChange={overallScoreChange ?? undefined}
             profileGoal={userProfileGoal}
@@ -3374,7 +3380,7 @@ export default function RevenueDashboard() {
 
         {/* SECTION 3+4 — SCORE ROW + 5-PILLAR BREAKDOWN (hero of the page) */}
         <div style={{ marginBottom: 16 }}>
-          <RevenueHealthSection isPremium={isPremium} isAdmin={isAdmin} onScoreChange={setHasScore} onMissingData={setMissingKeys} onScoreChangeData={setOverallScoreChange} onScoreData={(s, bt) => { setHealthScore(s); if (bt) setHealthBusinessType(bt); }} key={scoreRefreshKey} />
+          <RevenueHealthSection isPremium={isPremium} isAdmin={isAdmin} onScoreChange={setHasScore} onMissingData={setMissingKeys} onScoreChangeData={setOverallScoreChange} key={scoreRefreshKey} />
         </div>
 
         {/* SECTION 5 — AI SUMMARY */}
