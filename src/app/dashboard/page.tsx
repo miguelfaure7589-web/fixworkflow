@@ -692,14 +692,15 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
           onScoreChange(true);
           onMissingData?.(json.result?.missingData ?? []);
         } else {
+          // Fallback: even if no profile returned, don't block rendering
           setHasProfile(false);
-          onScoreChange(false);
+          onScoreChange(true);
         }
         setLoading(false);
       })
       .catch(() => {
         setHasProfile(false);
-        onScoreChange(false);
+        onScoreChange(true);
         setLoading(false);
       });
   }, [onScoreChange]);
@@ -782,26 +783,26 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
     );
   }
 
-  // No profile — show CTA
-  if (!hasProfile && !showForm) {
-    return (
-      <div className="bg-gradient-to-br from-blue-50 to-violet-50 border border-blue-100 rounded-[12px] p-8 shadow-sm text-center">
-        <Activity className="w-8 h-8 text-blue-500 mx-auto mb-3" />
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Get Your Revenue Health Score</h3>
-        <p className="text-sm text-[var(--text-muted)] mb-5 max-w-md mx-auto">
-          Complete your business profile to receive a personalized score across 5 pillars:
-          Revenue, Profitability, Retention, Acquisition, and Operations.
-        </p>
-        <button
-          onClick={() => { setShowForm(true); setSaveError(null); }}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-full text-sm font-medium hover:bg-blue-700 transition-colors"
-        >
-          Complete Business Profile
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-    );
-  }
+  // No profile — CTA hidden (forced bypass)
+  // if (!hasProfile && !showForm) {
+  //   return (
+  //     <div className="bg-gradient-to-br from-blue-50 to-violet-50 border border-blue-100 rounded-[12px] p-8 shadow-sm text-center">
+  //       <Activity className="w-8 h-8 text-blue-500 mx-auto mb-3" />
+  //       <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Get Your Revenue Health Score</h3>
+  //       <p className="text-sm text-[var(--text-muted)] mb-5 max-w-md mx-auto">
+  //         Complete your business profile to receive a personalized score across 5 pillars:
+  //         Revenue, Profitability, Retention, Acquisition, and Operations.
+  //       </p>
+  //       <button
+  //         onClick={() => { setShowForm(true); setSaveError(null); }}
+  //         className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-full text-sm font-medium hover:bg-blue-700 transition-colors"
+  //       >
+  //         Complete Business Profile
+  //         <ChevronRight className="w-4 h-4" />
+  //       </button>
+  //     </div>
+  //   );
+  // }
 
   // Profile form
   if (showForm) {
@@ -860,8 +861,15 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
     );
   }
 
-  // Score display
-  if (!healthData) return null;
+  // Score display — if no data yet, show loading instead of hiding everything
+  if (!healthData) {
+    return (
+      <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] p-8 shadow-sm text-center">
+        <Loader2 className="w-5 h-5 text-[var(--text-muted)] animate-spin mx-auto" />
+        <p className="text-xs text-[var(--text-muted)] mt-2">Loading score data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6" data-health-section>
