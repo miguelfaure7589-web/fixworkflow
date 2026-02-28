@@ -28,6 +28,8 @@ async function authorize(req: Request): Promise<boolean> {
 // ── Core sync logic ──
 
 async function runWeeklySyncWithRecalculation() {
+  console.log(`[CRON] Weekly sync started at ${new Date().toISOString()}`);
+
   // Get all users with at least one active integration
   const users = await prisma.user.findMany({
     where: {

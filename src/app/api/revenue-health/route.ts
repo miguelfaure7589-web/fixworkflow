@@ -91,7 +91,12 @@ export async function GET() {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = (session.user as Record<string, unknown>).id as string;
+    const userId = (session.user as Record<string, unknown>).id as string | undefined;
+
+    if (!userId) {
+      console.error("[REVENUE_HEALTH_GET] No user ID in session:", JSON.stringify(session.user));
+      return Response.json({ error: "No user ID in session" }, { status: 401 });
+    }
 
     const profile = await prisma.revenueProfile.findUnique({
       where: { userId },
@@ -156,7 +161,11 @@ export async function GET() {
   } catch (err: unknown) {
     console.error("[REVENUE_HEALTH_GET] ERROR:", err);
     return Response.json(
-      { error: err instanceof Error ? err.message : "Internal server error" },
+      {
+        error: err instanceof Error ? err.message : "Internal server error",
+        stack: err instanceof Error ? err.stack?.split("\n").slice(0, 5) : undefined,
+        type: err?.constructor?.name,
+      },
       { status: 500 },
     );
   }

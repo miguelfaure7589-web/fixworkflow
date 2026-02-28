@@ -82,6 +82,7 @@ import {
 } from "@/lib/recommendations";
 import { useToast } from "@/components/Toast";
 import FeedbackModal from "@/components/FeedbackModal";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 
 // ── Revenue Health Score Types ──
 
@@ -552,12 +553,13 @@ function CollapsibleSection({
   className?: string;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  const isMobileCollapsible = useIsMobile();
 
   return (
     <div className={`bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] shadow-sm overflow-hidden ${className}`}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-[var(--bg-card-hover)] transition-colors duration-150"
+        className={`w-full flex items-center justify-between ${isMobileCollapsible ? "px-4 py-3" : "px-6 py-4"} text-left hover:bg-[var(--bg-card-hover)] transition-colors duration-150`}
       >
         <div className="flex items-center gap-2">
           {icon}
@@ -568,7 +570,7 @@ function CollapsibleSection({
           className={`w-4 h-4 text-[var(--text-muted)] transition-transform duration-150 ${open ? "rotate-180" : ""}`}
         />
       </button>
-      {open && <div className="px-6 pb-6">{children}</div>}
+      {open && <div className={isMobileCollapsible ? "px-4 pb-4" : "px-6 pb-6"}>{children}</div>}
     </div>
   );
 }
@@ -633,6 +635,7 @@ const PROFILE_FIELDS = [
 function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData, onScoreChangeData }: { isPremium: boolean; isAdmin: boolean; onScoreChange: (has: boolean) => void; onMissingData?: (keys: string[]) => void; onScoreChangeData?: (delta: number | null) => void }) {
   const { data: healthSession } = useSession();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [healthData, setHealthData] = useState<RevenueHealthData | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
@@ -674,8 +677,12 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
   const fetchScore = useCallback((retryCount = 0) => {
     setLoading(true);
     fetch("/api/revenue-health")
-      .then((r) => {
-        if (!r.ok) throw new Error(`Failed with status ${r.status}`);
+      .then(async (r) => {
+        if (!r.ok) {
+          const text = await r.text().catch(() => "");
+          console.error(`[fetchScore] API returned ${r.status}:`, text);
+          throw new Error(`Failed with status ${r.status}`);
+        }
         return r.json();
       })
       .then((json: { ok: boolean; result: RevenueHealthData | null; updatedAt?: string; previousScore?: number | null; scoreChangeReason?: string | null; previousPillarScores?: Record<string, number> | null; scoreChange?: number | null }) => {
@@ -884,7 +891,7 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
       {/* Score + Risk + Lever */}
       <div className="grid md:grid-cols-3 gap-6" style={{ alignItems: "stretch" }}>
         {/* Score Gauge */}
-        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 12, padding: 24, boxShadow: "var(--shadow-card)", display: "flex", flexDirection: "column", alignItems: "center", minHeight: 220 }}>
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 12, padding: isMobile ? 16 : 24, boxShadow: "var(--shadow-card)", display: "flex", flexDirection: "column", alignItems: "center", ...(isMobile ? {} : { minHeight: 220 }) }}>
           <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 16, display: "flex", alignItems: "center", gap: 6 }}>
             <Activity className="w-3.5 h-3.5" />
             Revenue Health Score
@@ -970,7 +977,7 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
         </div>
 
         {/* Primary Risk */}
-        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 12, padding: 24, boxShadow: "var(--shadow-card)", display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 220 }}>
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 12, padding: isMobile ? 16 : 24, boxShadow: "var(--shadow-card)", display: "flex", flexDirection: "column", justifyContent: "space-between", ...(isMobile ? {} : { minHeight: 220 }) }}>
           <div>
             <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
               <AlertTriangle style={{ width: 14, height: 14, color: "#ef4444" }} />
@@ -998,7 +1005,7 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
         </div>
 
         {/* Fastest Lever */}
-        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 12, padding: 24, boxShadow: "var(--shadow-card)", display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 220 }}>
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 12, padding: isMobile ? 16 : 24, boxShadow: "var(--shadow-card)", display: "flex", flexDirection: "column", justifyContent: "space-between", ...(isMobile ? {} : { minHeight: 220 }) }}>
           <div>
             <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
               <TrendingUp style={{ width: 14, height: 14, color: "#10b981" }} />
@@ -2517,6 +2524,7 @@ function PersonalizedGreeting({ session, businessType, overallScore, scoreChange
   profileGoal?: string | null;
 }) {
   const user = session?.user;
+  const isMobileGreeting = useIsMobile();
   if (!user) return null;
 
   const firstName = typeof user.name === "string" ? user.name.split(" ")[0] : "there";
@@ -2545,7 +2553,7 @@ function PersonalizedGreeting({ session, businessType, overallScore, scoreChange
   return (
     <div style={{ padding: "20px 0 4px 0" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>
+        <h1 style={{ fontSize: isMobileGreeting ? 18 : 22, fontWeight: 700, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>
           {greeting}, {firstName}
         </h1>
         {goalLabel && (
@@ -2973,6 +2981,7 @@ export default function RevenueDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [dashData, setDashData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -3351,7 +3360,7 @@ export default function RevenueDashboard() {
           // Priority: profile > tracker > phone
           if (showProfileNudge) {
             return (
-              <div style={{ marginBottom: 16, padding: "10px 16px", background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 8, display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
+              <div style={{ marginBottom: 16, padding: isMobile ? "10px 12px" : "10px 16px", background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 8, display: "flex", alignItems: "center", gap: 10, fontSize: isMobile ? 12 : 13, flexWrap: "wrap" as const }}>
                 <UserCircle style={{ width: 16, height: 16, color: "#4361ee", flexShrink: 0 }} />
                 <span style={{ flex: 1, color: "var(--text-secondary)" }}>
                   Complete your profile for personalized insights.{" "}
@@ -3365,7 +3374,7 @@ export default function RevenueDashboard() {
           }
           if (showTrackerNudge) {
             return (
-              <div style={{ marginBottom: 16, padding: "10px 16px", background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 8, display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
+              <div style={{ marginBottom: 16, padding: isMobile ? "10px 12px" : "10px 16px", background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 8, display: "flex", alignItems: "center", gap: 10, fontSize: isMobile ? 12 : 13, flexWrap: "wrap" as const }}>
                 <Activity style={{ width: 16, height: 16, color: "#4361ee", flexShrink: 0 }} />
                 <span style={{ flex: 1, color: "var(--text-secondary)" }}>
                   You haven&apos;t logged this week&apos;s numbers yet.{" "}
@@ -3379,7 +3388,7 @@ export default function RevenueDashboard() {
           }
           if (showPhoneNudge) {
             return (
-              <div style={{ marginBottom: 16, padding: "10px 16px", background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 8, display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
+              <div style={{ marginBottom: 16, padding: isMobile ? "10px 12px" : "10px 16px", background: "var(--bg-card)", border: "1px solid var(--border-primary)", borderRadius: 8, display: "flex", alignItems: "center", gap: 10, fontSize: isMobile ? 12 : 13, flexWrap: "wrap" as const }}>
                 <Info style={{ width: 16, height: 16, color: "var(--text-muted)", flexShrink: 0 }} />
                 <span style={{ flex: 1, color: "var(--text-secondary)" }}>
                   Add your phone number so our partners can reach you.{" "}
@@ -3421,38 +3430,40 @@ export default function RevenueDashboard() {
             const connectedCount = integrations.length;
             const pct = Math.round((connectedCount / 15) * 100);
             return (
-              <div style={{ background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-default)", padding: "18px 20px", display: "flex", alignItems: "center", gap: 16 }}>
-                <div style={{ width: 40, height: 40, minWidth: 40, borderRadius: 10, background: "rgba(67,97,238,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Plug size={20} color="#4361ee" />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Connected Integrations</span>
-                    <span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>{connectedCount} of 15 tools connected</span>
+              <div style={{ background: "var(--bg-card)", borderRadius: 12, border: "1px solid var(--border-default)", padding: isMobile ? "14px 16px" : "18px 20px", display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "center", gap: isMobile ? 12 : 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 12 : 16 }}>
+                  <div style={{ width: 40, height: 40, minWidth: 40, borderRadius: 10, background: "rgba(67,97,238,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Plug size={20} color="#4361ee" />
                   </div>
-                  <div style={{ height: 6, borderRadius: 3, background: "var(--border-primary)", marginBottom: 6 }}>
-                    <div style={{ height: 6, borderRadius: 3, background: "#4361ee", width: `${pct}%`, transition: "width 0.3s ease" }} />
-                  </div>
-                  {connectedCount > 0 ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      {integrations.map((intg) => {
-                        const domain = INTEGRATION_ICON_DOMAINS[intg.provider] || intg.provider;
-                        return (
-                          <img
-                            key={intg.id}
-                            src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
-                            alt={intg.provider}
-                            style={{ width: 20, height: 20, borderRadius: 4, objectFit: "contain", background: "var(--bg-card)", border: "1px solid var(--border-light)" }}
-                          />
-                        );
-                      })}
-                      <span style={{ fontSize: 12, color: "var(--text-muted)", marginLeft: 4 }}>connected</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: isMobile ? 13 : 14, fontWeight: 700, color: "var(--text-primary)" }}>Connected Integrations</span>
+                      <span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>{connectedCount} of 15 tools connected</span>
                     </div>
-                  ) : (
-                    <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Connect your business tools for a more accurate Revenue Health Score</span>
-                  )}
+                    <div style={{ height: 6, borderRadius: 3, background: "var(--border-primary)", marginBottom: 6 }}>
+                      <div style={{ height: 6, borderRadius: 3, background: "#4361ee", width: `${pct}%`, transition: "width 0.3s ease" }} />
+                    </div>
+                    {connectedCount > 0 ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        {integrations.map((intg) => {
+                          const domain = INTEGRATION_ICON_DOMAINS[intg.provider] || intg.provider;
+                          return (
+                            <img
+                              key={intg.id}
+                              src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+                              alt={intg.provider}
+                              style={{ width: 20, height: 20, borderRadius: 4, objectFit: "contain", background: "var(--bg-card)", border: "1px solid var(--border-light)" }}
+                            />
+                          );
+                        })}
+                        <span style={{ fontSize: 12, color: "var(--text-muted)", marginLeft: 4 }}>connected</span>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Connect your business tools for a more accurate Revenue Health Score</span>
+                    )}
+                  </div>
                 </div>
-                <Link href="/settings?tab=integrations" style={{ padding: "8px 16px", borderRadius: 8, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}>
+                <Link href="/settings?tab=integrations" style={{ padding: "8px 16px", borderRadius: 8, background: "linear-gradient(135deg, #4361ee, #6366f1)", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap", textAlign: "center" as const }}>
                   Browse Integrations &rarr;
                 </Link>
               </div>

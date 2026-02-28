@@ -305,8 +305,8 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
         </div>
       ) : (
         <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
-          {/* Pinned credit card for Books tab */}
-          {showCreditCard && <ShelfCreditCard />}
+          {/* Pinned credit card for Books tab — disabled for now */}
+          {/* {showCreditCard && <ShelfCreditCard />} */}
           {items.map(item => (
             <div
               key={item.id}
