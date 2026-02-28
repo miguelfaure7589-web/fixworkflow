@@ -101,7 +101,7 @@ export async function GET() {
   // Fetch user's previous score data
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { previousScore: true, scoreChangeReason: true, previousPillarScores: true },
+    select: { previousScore: true, scoreChangeReason: true, previousPillarScores: true, scoreChange: true, lastScoringSource: true },
   });
 
   // Check for existing snapshot
@@ -120,6 +120,8 @@ export async function GET() {
       previousScore: user?.previousScore ?? null,
       scoreChangeReason: user?.scoreChangeReason ?? null,
       previousPillarScores: user?.previousPillarScores ?? null,
+      scoreChange: user?.scoreChange ?? null,
+      lastScoringSource: user?.lastScoringSource ?? null,
     });
   }
 
@@ -136,5 +138,7 @@ export async function GET() {
     previousScore: user?.previousScore ?? null,
     scoreChangeReason: user?.scoreChangeReason ?? null,
     previousPillarScores: user?.previousPillarScores ?? null,
+    scoreChange: user?.scoreChange ?? null,
+    lastScoringSource: user?.lastScoringSource ?? null,
   });
 }

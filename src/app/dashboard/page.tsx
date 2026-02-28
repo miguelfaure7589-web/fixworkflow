@@ -49,6 +49,7 @@ import {
   DollarSign,
   Users,
   Settings,
+  TrendingDown,
 } from "lucide-react";
 import { dispatchChatPrefill } from "@/lib/prompts/chatContext";
 import { CATEGORY_PROMPT_MAP } from "@/lib/prompts/rationale";
@@ -629,7 +630,7 @@ const PROFILE_FIELDS = [
 
 // ── Revenue Health Section ──
 
-function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData }: { isPremium: boolean; isAdmin: boolean; onScoreChange: (has: boolean) => void; onMissingData?: (keys: string[]) => void }) {
+function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData, onScoreChangeData }: { isPremium: boolean; isAdmin: boolean; onScoreChange: (has: boolean) => void; onMissingData?: (keys: string[]) => void; onScoreChangeData?: (delta: number | null) => void }) {
   const { data: healthSession } = useSession();
   const { toast } = useToast();
   const [healthData, setHealthData] = useState<RevenueHealthData | null>(null);
@@ -647,6 +648,7 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
   const [previousScore, setPreviousScore] = useState<number | null>(null);
   const [scoreChangeReason, setScoreChangeReason] = useState<string | null>(null);
   const [previousPillarScores, setPreviousPillarScores] = useState<Record<string, number> | null>(null);
+  const [scoreChangeDelta, setScoreChangeDelta] = useState<number | null>(null);
 
   // Load existing profile values for pre-filling the form
   const loadProfileValues = useCallback(() => {
@@ -676,13 +678,16 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
         if (!r.ok) throw new Error("Failed");
         return r.json();
       })
-      .then((json: { ok: boolean; result: RevenueHealthData | null; updatedAt?: string; previousScore?: number | null; scoreChangeReason?: string | null; previousPillarScores?: Record<string, number> | null }) => {
+      .then((json: { ok: boolean; result: RevenueHealthData | null; updatedAt?: string; previousScore?: number | null; scoreChangeReason?: string | null; previousPillarScores?: Record<string, number> | null; scoreChange?: number | null }) => {
         if (json.result) {
           setHealthData(json.result);
           setUpdatedAt(json.updatedAt ?? null);
           setPreviousScore(json.previousScore ?? null);
           setScoreChangeReason(json.scoreChangeReason ?? null);
           setPreviousPillarScores(json.previousPillarScores ?? null);
+          const fetchedScoreChange = json.scoreChange ?? null;
+          setScoreChangeDelta(fetchedScoreChange);
+          onScoreChangeData?.(fetchedScoreChange);
           setHasProfile(true);
           onScoreChange(true);
           onMissingData?.(json.result?.missingData ?? []);
@@ -884,16 +889,28 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
                 Updated {new Date(updatedAt).toLocaleDateString()}
               </p>
             )}
-            {previousScore !== null && healthData.score - previousScore !== 0 && (
-              <p style={{
-                fontSize: 11, fontWeight: 600, marginTop: 4,
-                color: healthData.score - previousScore > 0 ? "#10b981" : "#ef4444",
-              }}>
-                {healthData.score - previousScore > 0
-                  ? `+${healthData.score - previousScore} pts this week`
-                  : `${healthData.score - previousScore} pts this week`}
-              </p>
-            )}
+            {(() => {
+              const delta = scoreChangeDelta ?? (previousScore !== null ? healthData.score - previousScore : null);
+              if (delta === null || delta === 0) {
+                return (
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>
+                    No change this week
+                  </p>
+                );
+              }
+              return (
+                <p style={{
+                  fontSize: 12, fontWeight: 600, marginTop: 4,
+                  color: delta > 0 ? "#10b981" : "#ef4444",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
+                }}>
+                  {delta > 0
+                    ? <TrendingUp style={{ width: 12, height: 12 }} />
+                    : <TrendingDown style={{ width: 12, height: 12 }} />}
+                  {delta > 0 ? `+${delta}` : delta} pts this week
+                </p>
+              );
+            })()}
             {/* Admin-only controls */}
             {(healthSession?.user as Record<string, unknown> | undefined)?.email === 'fixworkflows@gmail.com' && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap", justifyContent: "center" }}>
@@ -2491,15 +2508,20 @@ function PersonalizedGreeting({ session, businessType, overallScore, scoreChange
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const bType = businessType ? (BUSINESS_TYPE_LABELS[businessType] || businessType) : "";
 
-  let subtitle = "Your business overview";
-  if (overallScore !== undefined && scoreChange && scoreChange > 0) {
-    subtitle = `Revenue Health Score: ${overallScore}/100 · +${scoreChange} pts this week`;
-  } else if (overallScore !== undefined && bType) {
-    subtitle = `Revenue Health Score: ${overallScore}/100 · ${bType}`;
+  // Build subtitle parts
+  const hasChange = scoreChange !== undefined && scoreChange !== 0;
+  const changeColor = hasChange ? (scoreChange > 0 ? "#10b981" : "#ef4444") : undefined;
+  const changeText = hasChange
+    ? `${scoreChange > 0 ? "+" : ""}${scoreChange} pts this week`
+    : null;
+
+  let subtitleBase = "Your business overview";
+  if (overallScore !== undefined && bType) {
+    subtitleBase = `Revenue Health Score: ${overallScore}/100 · ${bType}`;
   } else if (overallScore !== undefined) {
-    subtitle = `Revenue Health Score: ${overallScore}/100`;
+    subtitleBase = `Revenue Health Score: ${overallScore}/100`;
   } else if (bType) {
-    subtitle = `Your ${bType} business overview`;
+    subtitleBase = `Your ${bType} business overview`;
   }
 
   const goalLabel = profileGoal ? PROFILE_GOAL_LABELS[profileGoal] : null;
@@ -2521,7 +2543,10 @@ function PersonalizedGreeting({ session, businessType, overallScore, scoreChange
         )}
       </div>
       <p style={{ fontSize: 13, fontWeight: 400, color: "var(--text-muted)", margin: "4px 0 0 0" }}>
-        {subtitle}
+        {subtitleBase}
+        {changeText && (
+          <span style={{ color: changeColor, fontWeight: 600 }}> · {changeText}</span>
+        )}
       </p>
     </div>
   );
@@ -2953,6 +2978,7 @@ export default function RevenueDashboard() {
   const [showTrackerReminder, setShowTrackerReminder] = useState(false);
   const [adminSyncing, setAdminSyncing] = useState(false);
   const [adminLastSync, setAdminLastSync] = useState<string | null>(null);
+  const [overallScoreChange, setOverallScoreChange] = useState<number | null>(null);
 
   // User profile data
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
@@ -3286,6 +3312,7 @@ export default function RevenueDashboard() {
             session={session}
             businessType={dashData?.businessProfile?.businessType}
             overallScore={dashData?.score?.total}
+            scoreChange={overallScoreChange ?? undefined}
             profileGoal={userProfileGoal}
           />
         </div>
@@ -3343,7 +3370,7 @@ export default function RevenueDashboard() {
 
         {/* SECTION 3+4 — SCORE ROW + 5-PILLAR BREAKDOWN (hero of the page) */}
         <div style={{ marginBottom: 16 }}>
-          <RevenueHealthSection isPremium={isPremium} isAdmin={isAdmin} onScoreChange={setHasScore} onMissingData={setMissingKeys} key={scoreRefreshKey} />
+          <RevenueHealthSection isPremium={isPremium} isAdmin={isAdmin} onScoreChange={setHasScore} onMissingData={setMissingKeys} onScoreChangeData={setOverallScoreChange} key={scoreRefreshKey} />
         </div>
 
         {/* SECTION 5 — AI SUMMARY */}

@@ -37,6 +37,9 @@ model User {
   previousScore        Int?
   scoreChangeReason    String?
   previousPillarScores Json?
+  scoreChange          Int?       // latest delta (+3, -5, etc.)
+  lastScoringSource    String?    // 'manual' | 'integration' | 'cron'
+  previousScoreDate    DateTime?  // when previous score was recorded
   goals                Json?     // { monthlyRevenue?: number, grossMargin?: number, ... }
   avatarUrl            String?
   bio                  String?   @db.Text

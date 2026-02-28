@@ -43,6 +43,9 @@ export async function POST(req: Request) {
         bio: true,
         businessStage: true,
         profileGoal: true,
+        scoreChange: true,
+        previousScore: true,
+        previousPillarScores: true,
       },
     });
 
@@ -83,6 +86,24 @@ export async function POST(req: Request) {
     const weakestPillar = pillarEntries[0];
     const strongestPillar = pillarEntries[pillarEntries.length - 1];
 
+    // Score change context
+    const scoreChange = user?.scoreChange ?? 0;
+    const prevScore = user?.previousScore ?? null;
+    const prevPillarScores = (user?.previousPillarScores as Record<string, number>) ?? {};
+
+    // Calculate pillar changes
+    const pillarChanges: Record<string, number> = {};
+    for (const [name, score] of Object.entries(pillarScores)) {
+      const prev = prevPillarScores[name];
+      if (prev !== undefined) {
+        pillarChanges[name] = score - prev;
+      }
+    }
+    const changesDescription = Object.entries(pillarChanges)
+      .filter(([, delta]) => delta !== 0)
+      .map(([name, delta]) => `${name}: ${delta > 0 ? "+" : ""}${delta}`)
+      .join(", ");
+
     // Build data payload for Claude
     const userData = {
       businessType: profile?.businessType || "unknown",
@@ -110,14 +131,23 @@ export async function POST(req: Request) {
       profileGoal: user?.profileGoal,
       primaryRisk: latestSnapshot.primaryRisk,
       fastestLever: latestSnapshot.fastestLever,
+      scoreChange,
+      previousScore: prevScore,
+      pillarChanges: changesDescription || null,
     };
+
+    // Build change context for prompt if score changed significantly
+    let changePromptSuffix = "";
+    if (Math.abs(scoreChange) >= 3 && prevScore !== null) {
+      changePromptSuffix = ` The user's score changed by ${scoreChange > 0 ? "+" : ""}${scoreChange} points this week (from ${prevScore} to ${latestSnapshot.score}). The biggest pillar changes were: ${changesDescription}. Mention what improved or declined and why based on the data sources.`;
+    }
 
     const anthropic = new Anthropic();
 
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 1000,
-      system: "You are a business analyst for FixWorkFlow. Write a concise, personalized business summary (150-250 words) for this user based on their data. Write in second person. Be specific — reference their actual numbers, not generic advice. Structure: current state assessment, biggest risk, biggest opportunity with specific math, connection to their stated challenges, 30-day priority recommendation. Do not use bullet points, headers, or formatting — write as a single flowing paragraph. Be direct and actionable.",
+      system: `You are a business analyst for FixWorkFlow. Write a concise, personalized business summary (150-250 words) for this user based on their data. Write in second person. Be specific — reference their actual numbers, not generic advice. Structure: current state assessment, biggest risk, biggest opportunity with specific math, connection to their stated challenges, 30-day priority recommendation. Do not use bullet points, headers, or formatting — write as a single flowing paragraph. Be direct and actionable.${changePromptSuffix}`,
       messages: [
         {
           role: "user",
