@@ -82,46 +82,65 @@ function snapshotToResult(snapshot: {
 }
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  try {
+    const session = await getServerSession(authOptions);
 
-  if (!session?.user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    if (!session?.user) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const userId = (session.user as Record<string, unknown>).id as string;
+    const userId = (session.user as Record<string, unknown>).id as string;
 
-  const profile = await prisma.revenueProfile.findUnique({
-    where: { userId },
-  });
+    const profile = await prisma.revenueProfile.findUnique({
+      where: { userId },
+    });
 
-  if (!profile) {
-    // No RevenueProfile — but check for a snapshot (user may have completed onboarding)
-    const fallbackSnapshot = await prisma.revenueScoreSnapshot.findFirst({
+    if (!profile) {
+      // No RevenueProfile — but check for a snapshot (user may have completed onboarding)
+      const fallbackSnapshot = await prisma.revenueScoreSnapshot.findFirst({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+      });
+      if (fallbackSnapshot) {
+        const { result, updatedAt } = snapshotToResult(fallbackSnapshot);
+        return Response.json({ ok: true, result, updatedAt });
+      }
+      return Response.json({ ok: true, result: null });
+    }
+
+    // Fetch user's previous score data
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { previousScore: true, scoreChangeReason: true, previousPillarScores: true, scoreChange: true, lastScoringSource: true },
+    });
+
+    // Check for existing snapshot
+    const existingSnapshot = await prisma.revenueScoreSnapshot.findFirst({
       where: { userId },
       orderBy: { createdAt: "desc" },
     });
-    if (fallbackSnapshot) {
-      const { result, updatedAt } = snapshotToResult(fallbackSnapshot);
-      return Response.json({ ok: true, result, updatedAt });
+
+    // If snapshot exists and is newer than the profile update, return it
+    if (existingSnapshot && existingSnapshot.createdAt >= profile.updatedAt) {
+      const { result, updatedAt } = snapshotToResult(existingSnapshot);
+      return Response.json({
+        ok: true,
+        result,
+        updatedAt,
+        previousScore: user?.previousScore ?? null,
+        scoreChangeReason: user?.scoreChangeReason ?? null,
+        previousPillarScores: user?.previousPillarScores ?? null,
+        scoreChange: user?.scoreChange ?? null,
+        lastScoringSource: user?.lastScoringSource ?? null,
+      });
     }
-    return Response.json({ ok: true, result: null });
-  }
 
-  // Fetch user's previous score data
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { previousScore: true, scoreChangeReason: true, previousPillarScores: true, scoreChange: true, lastScoringSource: true },
-  });
+    // Profile exists but no snapshot (or stale) — compute + save
+    const inputs = profileToInputs(profile);
+    const bt = (profile.businessType as BusinessTypeName | null) ?? undefined;
+    const result = computeRevenueHealthScore(inputs, bt);
+    const updatedAt = await saveSnapshot(userId, result);
 
-  // Check for existing snapshot
-  const existingSnapshot = await prisma.revenueScoreSnapshot.findFirst({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
-  });
-
-  // If snapshot exists and is newer than the profile update, return it
-  if (existingSnapshot && existingSnapshot.createdAt >= profile.updatedAt) {
-    const { result, updatedAt } = snapshotToResult(existingSnapshot);
     return Response.json({
       ok: true,
       result,
@@ -132,22 +151,11 @@ export async function GET() {
       scoreChange: user?.scoreChange ?? null,
       lastScoringSource: user?.lastScoringSource ?? null,
     });
+  } catch (err: unknown) {
+    console.error("[REVENUE_HEALTH_GET] ERROR:", err);
+    return Response.json(
+      { error: err instanceof Error ? err.message : "Internal server error" },
+      { status: 500 },
+    );
   }
-
-  // Profile exists but no snapshot (or stale) — compute + save
-  const inputs = profileToInputs(profile);
-  const bt = (profile.businessType as BusinessTypeName | null) ?? undefined;
-  const result = computeRevenueHealthScore(inputs, bt);
-  const updatedAt = await saveSnapshot(userId, result);
-
-  return Response.json({
-    ok: true,
-    result,
-    updatedAt,
-    previousScore: user?.previousScore ?? null,
-    scoreChangeReason: user?.scoreChangeReason ?? null,
-    previousPillarScores: user?.previousPillarScores ?? null,
-    scoreChange: user?.scoreChange ?? null,
-    lastScoringSource: user?.lastScoringSource ?? null,
-  });
 }

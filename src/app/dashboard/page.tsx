@@ -671,11 +671,11 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
       .catch(() => {});
   }, []);
 
-  const fetchScore = useCallback(() => {
+  const fetchScore = useCallback((retryCount = 0) => {
     setLoading(true);
     fetch("/api/revenue-health")
       .then((r) => {
-        if (!r.ok) throw new Error("Failed");
+        if (!r.ok) throw new Error(`Failed with status ${r.status}`);
         return r.json();
       })
       .then((json: { ok: boolean; result: RevenueHealthData | null; updatedAt?: string; previousScore?: number | null; scoreChangeReason?: string | null; previousPillarScores?: Record<string, number> | null; scoreChange?: number | null }) => {
@@ -691,17 +691,25 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
           setHasProfile(true);
           onScoreChange(true);
           onMissingData?.(json.result?.missingData ?? []);
+          setLoading(false);
+        } else if (retryCount < 2) {
+          // Retry — API may have returned null due to race condition
+          setTimeout(() => fetchScore(retryCount + 1), 1000);
         } else {
-          // Fallback: even if no profile returned, don't block rendering
           setHasProfile(false);
           onScoreChange(true);
+          setLoading(false);
         }
-        setLoading(false);
       })
       .catch(() => {
-        setHasProfile(false);
-        onScoreChange(true);
-        setLoading(false);
+        if (retryCount < 2) {
+          // Retry on error (e.g., 401 if session wasn't ready)
+          setTimeout(() => fetchScore(retryCount + 1), 1000);
+        } else {
+          setHasProfile(false);
+          onScoreChange(true);
+          setLoading(false);
+        }
       });
   }, [onScoreChange]);
 
