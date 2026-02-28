@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { computeRevenueHealthScore } from "@/lib/revenue-health";
 import type { RevenueInputs, RevenueHealthScoreResult, BusinessTypeName } from "@/lib/revenue-health";
 
+export const dynamic = "force-dynamic";
+
 function profileToInputs(profile: {
   revenueMonthly: number | null;
   grossMarginPct: number | null;
