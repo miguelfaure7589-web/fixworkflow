@@ -136,6 +136,8 @@ export async function POST(req: Request) {
       pillarChanges: changesDescription || null,
     };
 
+    console.log("AI_SUMMARY_DATA:", JSON.stringify(userData, null, 2));
+
     // Build change context for prompt if score changed significantly
     let changePromptSuffix = "";
     if (Math.abs(scoreChange) >= 3 && prevScore !== null) {
