@@ -95,6 +95,15 @@ export async function GET() {
   });
 
   if (!profile) {
+    // No RevenueProfile — but check for a snapshot (user may have completed onboarding)
+    const fallbackSnapshot = await prisma.revenueScoreSnapshot.findFirst({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+    if (fallbackSnapshot) {
+      const { result, updatedAt } = snapshotToResult(fallbackSnapshot);
+      return Response.json({ ok: true, result, updatedAt });
+    }
     return Response.json({ ok: true, result: null });
   }
 
