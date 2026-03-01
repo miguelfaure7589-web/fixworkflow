@@ -3,12 +3,15 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  // @ts-expect-error stripe version mismatch
-  apiVersion: "2024-06-20",
-});
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    // @ts-expect-error stripe version mismatch
+    apiVersion: "2024-06-20",
+  });
+}
 
 export async function POST(req: Request) {
+  const stripe = getStripe();
   console.log("[STRIPE WEBHOOK] ──── Incoming request ────");
   console.log("[STRIPE WEBHOOK] STRIPE_WEBHOOK_SECRET set:", !!process.env.STRIPE_WEBHOOK_SECRET);
 
