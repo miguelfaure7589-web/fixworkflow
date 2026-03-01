@@ -537,6 +537,9 @@ function PillarBar({ name, pillar, index = 0, businessType, missingData, isPro =
 }
 
 // ── Collapsible Section Wrapper ──
+// On mobile (≤768px): accordion with tap-to-expand/collapse
+// On desktop (>768px): always expanded, no chevron, no toggle
+// Legacy sections (alwaysCollapsible) keep accordion behavior on all screens
 
 function CollapsibleSection({
   title,
@@ -544,34 +547,70 @@ function CollapsibleSection({
   defaultOpen = false,
   badge,
   children,
-  className = "",
+  alwaysCollapsible = false,
 }: {
   title: string;
   icon?: React.ReactNode;
   defaultOpen?: boolean;
-  badge?: React.ReactNode;
+  badge?: string;
   children: React.ReactNode;
-  className?: string;
+  alwaysCollapsible?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const isMobileCollapsible = useIsMobile();
+  const isMobileAccordion = useMediaQuery("(max-width: 768px)");
+  const isCollapsible = alwaysCollapsible || isMobileAccordion;
 
+  // Desktop non-collapsible: just render children with spacing
+  if (!isCollapsible) {
+    return <div style={{ marginBottom: 16 }}>{children}</div>;
+  }
+
+  // Collapsible mode (mobile dashboard sections OR alwaysCollapsible legacy sections)
   return (
-    <div className={`bg-[var(--bg-card)] border border-[var(--border-default)] rounded-[12px] shadow-sm overflow-hidden ${className}`}>
+    <div style={{
+      background: "var(--bg-card)",
+      border: "1px solid var(--border-primary)",
+      borderRadius: 12,
+      padding: open ? "14px 16px 0" : "14px 16px",
+      marginBottom: 8,
+      boxShadow: alwaysCollapsible ? "0 1px 3px rgba(0,0,0,0.04)" : undefined,
+      overflow: "hidden",
+    }}>
       <button
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between ${isMobileCollapsible ? "px-4 py-3" : "px-6 py-4"} text-left hover:bg-[var(--bg-card-hover)] transition-colors duration-150`}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: 0,
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+        }}
       >
-        <div className="flex items-center gap-2">
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {icon}
-          <h2 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{title}</h2>
-          {badge}
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" as const, color: "var(--text-muted)" }}>{title}</span>
         </div>
-        <ChevronDown
-          className={`w-4 h-4 text-[var(--text-muted)] transition-transform duration-150 ${open ? "rotate-180" : ""}`}
-        />
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {badge && (
+            <span style={{ fontSize: 11, fontWeight: 500, color: "var(--text-muted)" }}>{badge}</span>
+          )}
+          <ChevronDown
+            style={{
+              width: 16, height: 16, color: "var(--text-muted)",
+              transition: "transform 0.2s",
+              transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            }}
+          />
+        </div>
       </button>
-      {open && <div className={isMobileCollapsible ? "px-4 pb-4" : "px-6 pb-6"}>{children}</div>}
+      {open && (
+        <div style={{ borderTop: "1px solid var(--border-primary)", marginTop: 14, padding: "16px 0 16px" }}>
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -1054,7 +1093,7 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
       </div>
 
       {/* 5 Pillar Breakdown */}
-      <CollapsibleSection title="5-Pillar Breakdown" defaultOpen>
+      <CollapsibleSection title="5-Pillar Breakdown" badge={`${healthData.score}/100`}>
         {(() => {
           const entries = Object.entries(healthData.pillars);
           const sorted = [...entries].sort(([, a], [, b]) => (a as PillarData).score - (b as PillarData).score);
@@ -3455,17 +3494,19 @@ export default function RevenueDashboard() {
         </div>
 
         {/* SECTION 5 — AI SUMMARY */}
-        <div style={{ marginBottom: 16 }}>
+        <CollapsibleSection title="Your Business at a Glance" defaultOpen={false} badge="AI Summary">
           <AiBusinessSummary isPremium={isPremium} />
-        </div>
+        </CollapsibleSection>
 
         {/* SECTION 6 — REVENUE COMMAND CENTER (Pro) */}
-        <div id="revenue-command-center" style={{ marginBottom: 16 }}>
-          <CommandCenter isPremium={isPremium} onScoreRefresh={() => setScoreRefreshKey((k) => k + 1)} />
-        </div>
+        <CollapsibleSection title="Revenue Command Center" defaultOpen={false} badge="PRO">
+          <div id="revenue-command-center">
+            <CommandCenter isPremium={isPremium} onScoreRefresh={() => setScoreRefreshKey((k) => k + 1)} />
+          </div>
+        </CollapsibleSection>
 
         {/* SECTION 7 — CONNECTED INTEGRATIONS BAR */}
-        <div style={{ marginBottom: 16 }}>
+        <CollapsibleSection title="Connected Integrations" defaultOpen={false} badge={`${integrations.length} of 15`}>
           {(() => {
             const INTEGRATION_ICON_DOMAINS: Record<string, string> = {
               shopify: "cdn.shopify.com",
@@ -3515,22 +3556,22 @@ export default function RevenueDashboard() {
               </div>
             );
           })()}
-        </div>
+        </CollapsibleSection>
 
         {/* SECTION 8 — PLAYBOOKS */}
-        <div style={{ marginBottom: 16 }}>
+        <CollapsibleSection title="Active Playbooks" defaultOpen={false} badge="2 active">
           <PlaybooksSection isPremium={isPremium} hasScore={hasScore} onScoreRefresh={() => setScoreRefreshKey((k) => k + 1)} integrations={integrations} />
-        </div>
+        </CollapsibleSection>
 
         {/* SECTION 9 — RECOMMENDED TOOLS */}
-        <div style={{ marginBottom: 16 }}>
+        <CollapsibleSection title="Recommended Tools" defaultOpen={false} badge="3 matched">
           <RecommendationsSection isPremium={isPremium} hasScore={hasScore} integrations={integrations} />
-        </div>
+        </CollapsibleSection>
 
         {/* Leave a Review */}
-        <div style={{ marginBottom: 16 }}>
+        <CollapsibleSection title="Feedback" defaultOpen={false}>
           <LeaveReviewSection />
-        </div>
+        </CollapsibleSection>
 
         {/* Bottom Upgrade Banner — free users only */}
         {!isPremium && <BottomUpgradeBanner />}
@@ -3579,7 +3620,7 @@ export default function RevenueDashboard() {
         {dashData && (
           <div className="space-y-6">
             {/* Top Row: Score + Revenue Opportunity */}
-            <CollapsibleSection title="Revenue Intelligence" icon={<Activity className="w-3.5 h-3.5 text-[var(--text-muted)]" />}>
+            <CollapsibleSection title="Revenue Intelligence" icon={<Activity className="w-3.5 h-3.5 text-[var(--text-muted)]" />} alwaysCollapsible>
               <div className="grid md:grid-cols-3 gap-6">
                 {/* Score Card */}
                 <div className="flex flex-col items-center">
@@ -3658,7 +3699,7 @@ export default function RevenueDashboard() {
             </CollapsibleSection>
 
             {/* Component Breakdown */}
-            <CollapsibleSection title="Score Breakdown">
+            <CollapsibleSection title="Score Breakdown" alwaysCollapsible>
               <div className="space-y-3">
                 {Object.entries(dashData.score.components).map(([key, val]) => (
                   <ComponentBar key={key} label={key} value={val as number} />
@@ -3670,7 +3711,7 @@ export default function RevenueDashboard() {
             {dashData.insight && (
               <>
                 {/* Summary */}
-                <CollapsibleSection title="Revenue Analysis">
+                <CollapsibleSection title="Revenue Analysis" alwaysCollapsible>
                   <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                     {dashData.insight.summary}
                   </p>
@@ -3682,6 +3723,7 @@ export default function RevenueDashboard() {
                   <CollapsibleSection
                     title="This Week's Directive"
                     icon={<Target className="w-3.5 h-3.5 text-[var(--text-muted)]" />}
+                    alwaysCollapsible
                   >
                     <ol className="space-y-2.5">
                       {dashData.insight.weeklyExecutionPlan.map((step, i) => (
@@ -3701,6 +3743,7 @@ export default function RevenueDashboard() {
                       <CollapsibleSection
                         title="Risk Warnings"
                         icon={<AlertTriangle className="w-3.5 h-3.5 text-red-400" />}
+                        alwaysCollapsible
                       >
                         <ul className="space-y-2">
                           {dashData.insight.riskWarnings.map((w, i) => (
@@ -3717,6 +3760,7 @@ export default function RevenueDashboard() {
                       <CollapsibleSection
                         title="Opportunity Signals"
                         icon={<TrendingUp className="w-3.5 h-3.5 text-emerald-500" />}
+                        alwaysCollapsible
                       >
                         <ul className="space-y-2">
                           {dashData.insight.opportunitySignals.map((s, i) => (
@@ -3733,7 +3777,7 @@ export default function RevenueDashboard() {
 
                 {/* Recommended Stack */}
                 {dashData.insight.recommendedTools.length > 0 && (
-                  <CollapsibleSection title="Recommended Stack">
+                  <CollapsibleSection title="Recommended Stack" alwaysCollapsible>
                     <div className="space-y-2">
                       {dashData.insight.recommendedTools.map((tool, i) => {
                         const [slug, ...reasonParts] = tool.split(":");
