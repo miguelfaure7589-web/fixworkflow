@@ -9,7 +9,7 @@
  */
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -82,7 +82,8 @@ import {
 } from "@/lib/recommendations";
 import { useToast } from "@/components/Toast";
 import FeedbackModal from "@/components/FeedbackModal";
-import { useIsMobile } from "@/hooks/useMediaQuery";
+import { useIsMobile, useMediaQuery } from "@/hooks/useMediaQuery";
+import ScrollDots from "@/components/ui/ScrollDots";
 
 // ── Revenue Health Score Types ──
 
@@ -653,6 +654,18 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
   const [previousPillarScores, setPreviousPillarScores] = useState<Record<string, number> | null>(null);
   const [scoreChangeDelta, setScoreChangeDelta] = useState<number | null>(null);
 
+  // Pillar carousel (mobile)
+  const isMobileCarousel = useMediaQuery("(max-width: 768px)");
+  const pillarScrollRef = useRef<HTMLDivElement>(null);
+  const [pillarActiveIdx, setPillarActiveIdx] = useState(0);
+
+  const handlePillarScroll = useCallback(() => {
+    const el = pillarScrollRef.current;
+    if (!el) return;
+    const idx = Math.round(el.scrollLeft / (el.scrollWidth / 5));
+    setPillarActiveIdx(Math.min(idx, 4));
+  }, []);
+
   // Load existing profile values for pre-filling the form
   const loadProfileValues = useCallback(() => {
     fetch("/api/revenue-health/profile")
@@ -1042,30 +1055,66 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
 
       {/* 5 Pillar Breakdown */}
       <CollapsibleSection title="5-Pillar Breakdown" defaultOpen>
-        <div className="space-y-4">
-          {(() => {
-            const entries = Object.entries(healthData.pillars);
-            const sorted = [...entries].sort(([, a], [, b]) => (a as PillarData).score - (b as PillarData).score);
-            const weakest1 = sorted[0]?.[0];
-            const weakest2 = sorted[1]?.[0];
-            return entries.map(([name, pillar], idx) => (
-              <PillarBar
-                key={name}
-                name={name}
-                pillar={pillar as PillarData}
-                index={idx}
-                businessType={savedBusinessType || "service_agency"}
-                missingData={healthData.missingData}
-                isPro={isPremium}
-                isTopOrBottom={name === weakest1 || name === weakest2}
-                onEditProfile={handleEditProfile}
-                delta={previousPillarScores && previousPillarScores[name] !== undefined
-                  ? (pillar as PillarData).score - previousPillarScores[name]
-                  : undefined}
-              />
-            ));
-          })()}
-        </div>
+        {(() => {
+          const entries = Object.entries(healthData.pillars);
+          const sorted = [...entries].sort(([, a], [, b]) => (a as PillarData).score - (b as PillarData).score);
+          const weakest1 = sorted[0]?.[0];
+          const weakest2 = sorted[1]?.[0];
+          const pillarCards = entries.map(([name, pillar], idx) => (
+            <PillarBar
+              key={name}
+              name={name}
+              pillar={pillar as PillarData}
+              index={idx}
+              businessType={savedBusinessType || "service_agency"}
+              missingData={healthData.missingData}
+              isPro={isPremium}
+              isTopOrBottom={name === weakest1 || name === weakest2}
+              onEditProfile={handleEditProfile}
+              delta={previousPillarScores && previousPillarScores[name] !== undefined
+                ? (pillar as PillarData).score - previousPillarScores[name]
+                : undefined}
+            />
+          ));
+
+          if (isMobileCarousel) {
+            return (
+              <>
+                <div
+                  ref={pillarScrollRef}
+                  onScroll={handlePillarScroll}
+                  className="scroll-no-scrollbar"
+                  style={{
+                    display: 'flex',
+                    overflowX: 'auto',
+                    scrollSnapType: 'x mandatory',
+                    gap: 12,
+                    WebkitOverflowScrolling: 'touch',
+                  }}
+                >
+                  {pillarCards.map((card, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        flex: '0 0 75vw',
+                        scrollSnapAlign: 'start',
+                        padding: 16,
+                        borderRadius: 12,
+                        border: '1px solid var(--border-light)',
+                        background: 'var(--bg-card)',
+                      }}
+                    >
+                      {card}
+                    </div>
+                  ))}
+                </div>
+                <ScrollDots count={entries.length} activeIndex={pillarActiveIdx} />
+              </>
+            );
+          }
+
+          return <div className="space-y-4">{pillarCards}</div>;
+        })()}
       </CollapsibleSection>
 
       {/* Missing Data — inline nudge under score card */}

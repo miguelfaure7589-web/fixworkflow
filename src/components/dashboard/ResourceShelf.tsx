@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import ScrollDots from '@/components/ui/ScrollDots';
 import Link from 'next/link';
 import { Lock, Star } from 'lucide-react';
 import type { ScoredProduct } from '@/lib/recommendations';
@@ -249,6 +251,18 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
     window.open(product.affiliateUrl, '_blank', 'noopener');
   }, []);
 
+  const isMobileShelf = useMediaQuery('(max-width: 768px)');
+  const shelfScrollRef = useRef<HTMLDivElement>(null);
+  const [shelfActiveIdx, setShelfActiveIdx] = useState(0);
+
+  const handleShelfScroll = useCallback(() => {
+    const el = shelfScrollRef.current;
+    if (!el || !el.children.length) return;
+    const cardWidth = el.scrollWidth / el.children.length;
+    const idx = Math.round(el.scrollLeft / cardWidth);
+    setShelfActiveIdx(Math.min(idx, el.children.length - 1));
+  }, []);
+
   const dataMap = { book: books, course: courses, template: templates };
   const items = dataMap[activeTab];
   const isLocked = !isPremium && activeTab !== 'book';
@@ -304,17 +318,28 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
           </a>
         </div>
       ) : (
-        <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
+        <>
+        <div
+          ref={shelfScrollRef}
+          onScroll={handleShelfScroll}
+          className={isMobileShelf ? 'scroll-no-scrollbar' : undefined}
+          style={{
+            display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4,
+            ...(isMobileShelf ? { scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' } : {}),
+          }}
+        >
           {/* Pinned credit card for Books tab — disabled for now */}
           {/* {showCreditCard && <ShelfCreditCard />} */}
           {items.map(item => (
             <div
               key={item.id}
               style={{
-                flex: '0 0 290px', padding: 18, borderRadius: 12,
+                flex: isMobileShelf ? '0 0 75vw' : '0 0 290px',
+                padding: 18, borderRadius: 12,
                 background: 'var(--bg-elevated)', border: '1px solid var(--border-light)',
                 display: 'flex', flexDirection: 'column',
                 transition: 'border-color 0.2s',
+                ...(isMobileShelf ? { scrollSnapAlign: 'start' } : {}),
               }}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-default)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-light)'; }}
@@ -369,6 +394,10 @@ export default function ResourceShelf({ books, courses, templates, isPremium, bu
             </div>
           )}
         </div>
+        {isMobileShelf && items.length > 0 && (
+          <ScrollDots count={items.length} activeIndex={shelfActiveIdx} />
+        )}
+        </>
       )}
     </div>
   );

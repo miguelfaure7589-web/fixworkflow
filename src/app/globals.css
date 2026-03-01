@@ -143,6 +143,10 @@ html {
   animation: toast-fade-out 0.3s ease-in forwards;
 }
 
+/* ── Hide scrollbar utility ── */
+.scroll-no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.scroll-no-scrollbar::-webkit-scrollbar { display: none; }
+
 /* ── Spinner animation ── */
 @keyframes spin-smooth {
   to { transform: rotate(360deg); }
