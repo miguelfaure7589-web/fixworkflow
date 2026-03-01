@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import AiChat from "@/components/AiChat";
 import Providers from "@/components/Providers";
+import InAppBrowserGuard from "@/components/InAppBrowserGuard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -93,8 +94,10 @@ export default function RootLayout({
           `}
         </Script>
         <Providers>
-          {children}
-          <AiChat />
+          <InAppBrowserGuard>
+            {children}
+            <AiChat />
+          </InAppBrowserGuard>
         </Providers>
       </body>
     </html>
