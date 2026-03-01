@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import { ExternalLink, TrendingUp, Plug, CheckCircle2 } from 'lucide-react';
 import type { ScoredProduct } from '@/lib/recommendations';
 import LogoImg, { faviconUrl } from '@/components/ui/LogoImg';
@@ -218,6 +219,7 @@ function isToolConnected(tool: ScoredProduct, integrations: IntegrationInfo[]): 
 }
 
 export default function RecommendedTools({ tools, isPremium, integrations = [] }: Props) {
+  const isMobile = useIsMobile();
   const handleClick = useCallback((tool: ScoredProduct) => {
     fetch('/api/affiliate/click', {
       method: 'POST',
@@ -273,8 +275,8 @@ export default function RecommendedTools({ tools, isPremium, integrations = [] }
 
       {isPremium ? (
         <>
-          {/* Pro: full 2x2 grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          {/* Pro: full 2x2 grid, 1-col on mobile */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
             {gridTools.map((tool) => (
               <ToolCard key={tool.id} tool={tool} onClickTool={handleClick} integrations={integrations} />
             ))}
@@ -329,7 +331,7 @@ export default function RecommendedTools({ tools, isPremium, integrations = [] }
           {gridTools.length > 1 && (
             <div style={{ position: 'relative', marginTop: 12, borderRadius: 14, overflow: 'hidden' }}>
               <div style={{ filter: 'blur(4px)', pointerEvents: 'none' as const, userSelect: 'none' as const }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
                   {gridTools.slice(1).map((tool) => (
                     <ToolCard key={tool.id} tool={tool} onClickTool={handleClick} integrations={integrations} />
                   ))}

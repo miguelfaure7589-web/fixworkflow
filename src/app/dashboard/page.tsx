@@ -898,13 +898,9 @@ function RevenueHealthSection({ isPremium, isAdmin, onScoreChange, onMissingData
           </h2>
           <SemiGauge score={healthData.score} />
           <div style={{ textAlign: "center", marginTop: 8 }}>
-            {savedBusinessType ? (
+            {savedBusinessType && (
               <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)" }}>
                 {BUSINESS_TYPE_LABELS[savedBusinessType] || savedBusinessType}
-              </p>
-            ) : (
-              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)" }}>
-                Service/Agency
               </p>
             )}
             {updatedAt && (
@@ -3124,9 +3120,10 @@ export default function RevenueDashboard() {
       if (d.businessProfile?.businessType) setHealthBusinessType(d.businessProfile.businessType);
     }).catch(() => {});
 
-    // Fetch health score for greeting subtitle (works for all users, not just premium)
+    // Fetch health score + business type for greeting subtitle (works for all users, not just premium)
     fetch("/api/revenue-health").then((r) => r.ok ? r.json() : null).then((d) => {
       if (d?.result?.score !== undefined) setHealthScore(d.result.score);
+      if (d?.businessType) setHealthBusinessType(d.businessType);
     }).catch(() => {});
 
     if (!isPremium) {
@@ -3345,7 +3342,7 @@ export default function RevenueDashboard() {
         <div style={{ marginBottom: 12 }}>
           <PersonalizedGreeting
             session={session}
-            businessType={dashData?.businessProfile?.businessType || healthBusinessType}
+            businessType={healthBusinessType || dashData?.businessProfile?.businessType}
             overallScore={healthScore ?? dashData?.score?.total}
             scoreChange={overallScoreChange ?? undefined}
             profileGoal={userProfileGoal}
